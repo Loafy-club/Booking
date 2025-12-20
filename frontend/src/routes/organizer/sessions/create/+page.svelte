@@ -5,7 +5,13 @@
 	import { requireRole } from '$lib/guards/auth';
 	import Navigation from '$lib/components/Navigation.svelte';
 	import { Button } from '$lib/components/ui/button';
-	import * as Card from '$lib/components/ui/card';
+	import { GlassCard } from '$lib/components/ui/glass-card';
+	import { PageBackground } from '$lib/components/ui/page-background';
+	import { BackButton } from '$lib/components/ui/back-button';
+	import { AnimatedContainer } from '$lib/components/ui/animated-container';
+	import { Label } from '$lib/components/ui/label';
+	import { Input } from '$lib/components/ui/input';
+	import { Alert, AlertDescription } from '$lib/components/ui/alert';
 
 	let loading = $state(false);
 	let error = $state<string | null>(null);
@@ -31,7 +37,6 @@
 		error = null;
 
 		try {
-			// Validate dates
 			const startTime = new Date(formData.start_time);
 			const endTime = new Date(formData.end_time);
 
@@ -61,8 +66,6 @@
 			}
 
 			const response = await api.sessions.create(payload);
-
-			// Redirect to session detail
 			goto(`/sessions/${response.data.id}`);
 		} catch (err: any) {
 			error = err.response?.data?.message || err.message || 'Failed to create session';
@@ -73,152 +76,160 @@
 
 <svelte:head>
 	<title>Create Session - Loafy Club</title>
+	<link rel="preconnect" href="https://fonts.googleapis.com">
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous">
+	<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 </svelte:head>
 
-<Navigation />
+<PageBackground variant="subtle">
+	<Navigation />
 
-<div class="mx-auto max-w-3xl px-4 py-8 sm:px-6 lg:px-8">
-	<div class="mb-6">
-		<Button variant="ghost" onclick={() => goto('/sessions')}>
-			← Back to Sessions
-		</Button>
+	<div class="mx-auto max-w-3xl px-4 py-8 sm:px-6 lg:px-8">
+		<AnimatedContainer animation="fade-up">
+			<BackButton href="/sessions" label="Back to Sessions" />
+		</AnimatedContainer>
+
+		<AnimatedContainer animation="fade-up" delay={100}>
+			<GlassCard>
+				<h1 class="text-3xl font-bold text-gray-800" style="font-family: 'Baloo 2', sans-serif;">
+					Create New Session
+				</h1>
+				<p class="mt-2 text-gray-600">Schedule a new pickleball session</p>
+
+				<form onsubmit={handleSubmit} class="mt-8 space-y-6">
+					<div>
+						<Label for="title">
+							Title <span class="text-red-500">*</span>
+						</Label>
+						<Input
+							id="title"
+							type="text"
+							bind:value={formData.title}
+							required
+							placeholder="Sunday Morning Pickleball"
+							class="mt-1 rounded-xl border-2 border-gray-200 focus:border-orange-400 focus:ring-orange-200"
+						/>
+					</div>
+
+					<div>
+						<Label for="description">Description</Label>
+						<textarea
+							id="description"
+							bind:value={formData.description}
+							rows="3"
+							class="mt-1 block w-full rounded-xl border-2 border-gray-200 px-4 py-3 focus:border-orange-400 focus:outline-none focus:ring-2 focus:ring-orange-200 transition-colors"
+							placeholder="Optional description of the session..."
+						></textarea>
+					</div>
+
+					<div>
+						<Label for="location">
+							Location <span class="text-red-500">*</span>
+						</Label>
+						<Input
+							id="location"
+							type="text"
+							bind:value={formData.location}
+							required
+							placeholder="Hanoi Sports Center"
+							class="mt-1 rounded-xl border-2 border-gray-200 focus:border-orange-400 focus:ring-orange-200"
+						/>
+					</div>
+
+					<div class="grid gap-4 sm:grid-cols-2">
+						<div>
+							<Label for="start_time">
+								Start Time <span class="text-red-500">*</span>
+							</Label>
+							<Input
+								id="start_time"
+								type="datetime-local"
+								bind:value={formData.start_time}
+								required
+								class="mt-1 rounded-xl border-2 border-gray-200 focus:border-orange-400 focus:ring-orange-200"
+							/>
+						</div>
+
+						<div>
+							<Label for="end_time">
+								End Time <span class="text-red-500">*</span>
+							</Label>
+							<Input
+								id="end_time"
+								type="datetime-local"
+								bind:value={formData.end_time}
+								required
+								class="mt-1 rounded-xl border-2 border-gray-200 focus:border-orange-400 focus:ring-orange-200"
+							/>
+						</div>
+					</div>
+
+					<div class="grid gap-4 sm:grid-cols-2">
+						<div>
+							<Label for="max_slots">
+								Maximum Slots <span class="text-red-500">*</span>
+							</Label>
+							<Input
+								id="max_slots"
+								type="number"
+								bind:value={formData.max_slots}
+								required
+								min="1"
+								max="100"
+								class="mt-1 rounded-xl border-2 border-gray-200 focus:border-orange-400 focus:ring-orange-200"
+							/>
+						</div>
+
+						<div>
+							<Label for="price_vnd">
+								Price (VND) <span class="text-red-500">*</span>
+							</Label>
+							<Input
+								id="price_vnd"
+								type="number"
+								bind:value={formData.price_vnd}
+								required
+								min="0"
+								step="1000"
+								class="mt-1 rounded-xl border-2 border-gray-200 focus:border-orange-400 focus:ring-orange-200"
+							/>
+						</div>
+					</div>
+
+					<div>
+						<Label for="early_access">Early Access Ends At (Optional)</Label>
+						<Input
+							id="early_access"
+							type="datetime-local"
+							bind:value={formData.early_access_ends_at}
+							class="mt-1 rounded-xl border-2 border-gray-200 focus:border-orange-400 focus:ring-orange-200"
+						/>
+						<p class="mt-1 text-xs text-gray-500">
+							Subscribers get early access until this time (Phase 2 feature)
+						</p>
+					</div>
+
+					{#if error}
+						<Alert variant="destructive">
+							<AlertDescription>{error}</AlertDescription>
+						</Alert>
+					{/if}
+
+					<div class="flex gap-4 pt-4">
+						<Button
+							type="submit"
+							size="lg"
+							class="bg-gradient-to-r from-orange-500 to-pink-500 border-0"
+							disabled={loading}
+						>
+							{loading ? 'Creating...' : 'Create Session'}
+						</Button>
+						<Button type="button" variant="outline" size="lg" onclick={() => goto('/sessions')}>
+							Cancel
+						</Button>
+					</div>
+				</form>
+			</GlassCard>
+		</AnimatedContainer>
 	</div>
-
-	<Card.Root class="p-6">
-		<h1 class="text-3xl font-bold text-gray-900">Create New Session</h1>
-		<p class="mt-2 text-gray-600">Schedule a new pickleball session</p>
-
-		<form onsubmit={handleSubmit} class="mt-8 space-y-6">
-			<div>
-				<label for="title" class="block text-sm font-medium text-gray-700">
-					Title <span class="text-destructive">*</span>
-				</label>
-				<input
-					id="title"
-					type="text"
-					bind:value={formData.title}
-					required
-					class="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
-					placeholder="Sunday Morning Pickleball"
-				/>
-			</div>
-
-			<div>
-				<label for="description" class="block text-sm font-medium text-gray-700">
-					Description
-				</label>
-				<textarea
-					id="description"
-					bind:value={formData.description}
-					rows="3"
-					class="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
-					placeholder="Optional description of the session..."
-				></textarea>
-			</div>
-
-			<div>
-				<label for="location" class="block text-sm font-medium text-gray-700">
-					Location <span class="text-destructive">*</span>
-				</label>
-				<input
-					id="location"
-					type="text"
-					bind:value={formData.location}
-					required
-					class="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
-					placeholder="Hanoi Sports Center"
-				/>
-			</div>
-
-			<div class="grid gap-4 sm:grid-cols-2">
-				<div>
-					<label for="start_time" class="block text-sm font-medium text-gray-700">
-						Start Time <span class="text-destructive">*</span>
-					</label>
-					<input
-						id="start_time"
-						type="datetime-local"
-						bind:value={formData.start_time}
-						required
-						class="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
-					/>
-				</div>
-
-				<div>
-					<label for="end_time" class="block text-sm font-medium text-gray-700">
-						End Time <span class="text-destructive">*</span>
-					</label>
-					<input
-						id="end_time"
-						type="datetime-local"
-						bind:value={formData.end_time}
-						required
-						class="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
-					/>
-				</div>
-			</div>
-
-			<div class="grid gap-4 sm:grid-cols-2">
-				<div>
-					<label for="max_slots" class="block text-sm font-medium text-gray-700">
-						Maximum Slots <span class="text-destructive">*</span>
-					</label>
-					<input
-						id="max_slots"
-						type="number"
-						bind:value={formData.max_slots}
-						required
-						min="1"
-						max="100"
-						class="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
-					/>
-				</div>
-
-				<div>
-					<label for="price_vnd" class="block text-sm font-medium text-gray-700">
-						Price (VND) <span class="text-destructive">*</span>
-					</label>
-					<input
-						id="price_vnd"
-						type="number"
-						bind:value={formData.price_vnd}
-						required
-						min="0"
-						step="1000"
-						class="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
-					/>
-				</div>
-			</div>
-
-			<div>
-				<label for="early_access" class="block text-sm font-medium text-gray-700">
-					Early Access Ends At (Optional)
-				</label>
-				<input
-					id="early_access"
-					type="datetime-local"
-					bind:value={formData.early_access_ends_at}
-					class="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
-				/>
-				<p class="mt-1 text-xs text-gray-500">
-					Subscribers get early access until this time (Phase 2 feature)
-				</p>
-			</div>
-
-			{#if error}
-				<div class="rounded-md bg-destructive/10 p-4">
-					<p class="text-sm text-destructive">{error}</p>
-				</div>
-			{/if}
-
-			<div class="flex gap-4">
-				<Button type="submit" size="lg" disabled={loading}>
-					{loading ? 'Creating...' : 'Create Session'}
-				</Button>
-				<Button type="button" variant="outline" size="lg" onclick={() => goto('/sessions')}>
-					Cancel
-				</Button>
-			</div>
-		</form>
-	</Card.Root>
-</div>
+</PageBackground>

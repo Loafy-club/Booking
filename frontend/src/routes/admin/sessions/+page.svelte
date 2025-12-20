@@ -6,7 +6,14 @@
 	import { requireRole } from '$lib/guards/auth';
 	import Navigation from '$lib/components/Navigation.svelte';
 	import { Button } from '$lib/components/ui/button';
-	import * as Card from '$lib/components/ui/card';
+	import { GlassCard } from '$lib/components/ui/glass-card';
+	import { PageBackground } from '$lib/components/ui/page-background';
+	import { SectionHeader } from '$lib/components/ui/section-header';
+	import { LoadingSpinner } from '$lib/components/ui/loading-spinner';
+	import { ErrorState } from '$lib/components/ui/error-state';
+	import { EmptyState } from '$lib/components/ui/empty-state';
+	import { StatusBadge } from '$lib/components/ui/status-badge';
+	import { AnimatedContainer } from '$lib/components/ui/animated-container';
 	import type { Session } from '$lib/types';
 
 	let sessions = $state<Session[]>([]);
@@ -15,7 +22,6 @@
 
 	onMount(async () => {
 		if (!requireRole('admin')) return;
-
 		await loadSessions();
 	});
 
@@ -54,132 +60,128 @@
 			alert(err.response?.data?.message || err.message || 'Failed to delete session');
 		}
 	}
-
-	function getStatusColor(status: string): string {
-		switch (status) {
-			case 'draft':
-				return 'bg-gray-100 text-gray-800';
-			case 'published':
-				return 'bg-green-100 text-green-800';
-			case 'in_progress':
-				return 'bg-blue-100 text-blue-800';
-			case 'completed':
-				return 'bg-purple-100 text-purple-800';
-			case 'cancelled':
-				return 'bg-red-100 text-red-800';
-			default:
-				return 'bg-gray-100 text-gray-800';
-		}
-	}
 </script>
 
 <svelte:head>
 	<title>Admin - Sessions - Loafy Club</title>
+	<link rel="preconnect" href="https://fonts.googleapis.com">
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous">
+	<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 </svelte:head>
 
-<Navigation />
+<PageBackground variant="subtle">
+	<Navigation />
 
-<div class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-	<div class="mb-8 flex items-center justify-between">
-		<div>
-			<h1 class="text-3xl font-bold text-gray-900">Manage Sessions</h1>
-			<p class="mt-2 text-gray-600">View and manage all pickleball sessions</p>
-		</div>
+	<div class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+		<AnimatedContainer animation="fade-up">
+			<SectionHeader title="Manage Sessions" subtitle="View and manage all pickleball sessions">
+				{#snippet actions()}
+					<Button
+						class="bg-gradient-to-r from-orange-500 to-pink-500 border-0"
+						onclick={() => goto('/organizer/sessions/create')}
+					>
+						Create Session
+					</Button>
+				{/snippet}
+			</SectionHeader>
+		</AnimatedContainer>
 
-		<Button onclick={() => goto('/organizer/sessions/create')}>Create Session</Button>
+		{#if loading}
+			<LoadingSpinner text="Loading sessions..." />
+		{:else if error}
+			<ErrorState message={error} onRetry={loadSessions} />
+		{:else if sessions.length === 0}
+			<EmptyState
+				title="No Sessions Found"
+				description="Create your first pickleball session"
+				actionText="Create Session"
+				onAction={() => goto('/organizer/sessions/create')}
+			/>
+		{:else}
+			<AnimatedContainer animation="fade-up" delay={100}>
+				<GlassCard class="overflow-hidden p-0">
+					<div class="overflow-x-auto">
+						<table class="min-w-full divide-y divide-gray-200">
+							<thead class="bg-gray-50/80">
+								<tr>
+									<th class="px-6 py-4 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+										Session
+									</th>
+									<th class="px-6 py-4 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+										Date/Time
+									</th>
+									<th class="px-6 py-4 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+										Slots
+									</th>
+									<th class="px-6 py-4 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+										Price
+									</th>
+									<th class="px-6 py-4 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+										Status
+									</th>
+									<th class="px-6 py-4 text-right text-xs font-medium uppercase tracking-wider text-gray-500">
+										Actions
+									</th>
+								</tr>
+							</thead>
+							<tbody class="divide-y divide-gray-200 bg-white/50">
+								{#each sessions as session}
+									<tr class="hover:bg-gray-50/50 transition-colors">
+										<td class="whitespace-nowrap px-6 py-4">
+											<div class="text-sm font-medium text-gray-800">{session.title}</div>
+											<div class="text-sm text-gray-500">{session.location}</div>
+										</td>
+										<td class="whitespace-nowrap px-6 py-4 text-sm text-gray-600">
+											{formatDate(session.start_time)}
+										</td>
+										<td class="whitespace-nowrap px-6 py-4 text-sm text-gray-600">
+											<span class={session.available_slots > 0 ? 'text-green-600' : 'text-red-600'}>
+												{session.available_slots}
+											</span>
+											/ {session.max_slots}
+										</td>
+										<td class="whitespace-nowrap px-6 py-4 text-sm font-medium text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-pink-500">
+											{formatCurrency(session.price_vnd)}
+										</td>
+										<td class="whitespace-nowrap px-6 py-4">
+											<select
+												value={session.status}
+												onchange={(e) => updateSessionStatus(session.id, e.currentTarget.value)}
+												class="rounded-lg border-2 border-gray-200 px-3 py-1.5 text-xs font-medium focus:border-orange-400 focus:outline-none focus:ring-2 focus:ring-orange-200 transition-colors"
+											>
+												<option value="draft">Draft</option>
+												<option value="published">Published</option>
+												<option value="in_progress">In Progress</option>
+												<option value="completed">Completed</option>
+												<option value="cancelled">Cancelled</option>
+											</select>
+										</td>
+										<td class="whitespace-nowrap px-6 py-4 text-right text-sm font-medium">
+											<div class="flex justify-end gap-2">
+												<Button
+													variant="ghost"
+													size="sm"
+													onclick={() => goto(`/sessions/${session.id}`)}
+												>
+													View
+												</Button>
+												<Button
+													variant="ghost"
+													size="sm"
+													onclick={() => deleteSession(session.id, session.title)}
+													class="text-red-600 hover:text-red-700 hover:bg-red-50"
+												>
+													Delete
+												</Button>
+											</div>
+										</td>
+									</tr>
+								{/each}
+							</tbody>
+						</table>
+					</div>
+				</GlassCard>
+			</AnimatedContainer>
+		{/if}
 	</div>
-
-	{#if loading}
-		<div class="flex justify-center py-12">
-			<div class="h-12 w-12 animate-spin rounded-full border-4 border-primary border-t-transparent"></div>
-		</div>
-	{:else if error}
-		<div class="rounded-lg bg-destructive/10 p-6 text-center">
-			<p class="text-destructive">{error}</p>
-			<Button class="mt-4" onclick={loadSessions}>Try Again</Button>
-		</div>
-	{:else if sessions.length === 0}
-		<div class="rounded-lg bg-gray-50 p-12 text-center">
-			<p class="text-lg text-gray-600">No sessions found</p>
-			<Button class="mt-4" onclick={() => goto('/organizer/sessions/create')}>
-				Create First Session
-			</Button>
-		</div>
-	{:else}
-		<div class="overflow-hidden rounded-lg border bg-white shadow">
-			<table class="min-w-full divide-y divide-gray-200">
-				<thead class="bg-gray-50">
-					<tr>
-						<th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
-							Session
-						</th>
-						<th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
-							Date/Time
-						</th>
-						<th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
-							Slots
-						</th>
-						<th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
-							Price
-						</th>
-						<th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
-							Status
-						</th>
-						<th class="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500">
-							Actions
-						</th>
-					</tr>
-				</thead>
-				<tbody class="divide-y divide-gray-200 bg-white">
-					{#each sessions as session}
-						<tr>
-							<td class="whitespace-nowrap px-6 py-4">
-								<div class="text-sm font-medium text-gray-900">{session.title}</div>
-								<div class="text-sm text-gray-500">{session.location}</div>
-							</td>
-							<td class="whitespace-nowrap px-6 py-4 text-sm text-gray-500">
-								{formatDate(session.start_time)}
-							</td>
-							<td class="whitespace-nowrap px-6 py-4 text-sm text-gray-500">
-								{session.available_slots} / {session.max_slots}
-							</td>
-							<td class="whitespace-nowrap px-6 py-4 text-sm text-gray-500">
-								{formatCurrency(session.price_vnd)}
-							</td>
-							<td class="whitespace-nowrap px-6 py-4">
-								<select
-									value={session.status}
-									onchange={(e) => updateSessionStatus(session.id, e.currentTarget.value)}
-									class={`rounded-full px-2 py-1 text-xs font-medium ${getStatusColor(session.status)}`}
-								>
-									<option value="draft">Draft</option>
-									<option value="published">Published</option>
-									<option value="in_progress">In Progress</option>
-									<option value="completed">Completed</option>
-									<option value="cancelled">Cancelled</option>
-								</select>
-							</td>
-							<td class="whitespace-nowrap px-6 py-4 text-right text-sm font-medium">
-								<Button
-									variant="ghost"
-									size="sm"
-									onclick={() => goto(`/sessions/${session.id}`)}
-								>
-									View
-								</Button>
-								<Button
-									variant="ghost"
-									size="sm"
-									onclick={() => deleteSession(session.id, session.title)}
-									class="text-destructive hover:text-destructive"
-								>
-									Delete
-								</Button>
-							</td>
-						</tr>
-					{/each}
-				</tbody>
-			</table>
-		</div>
-	{/if}
-</div>
+</PageBackground>
