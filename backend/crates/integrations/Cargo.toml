@@ -1,0 +1,28 @@
+[package]
+name = "loafy-integrations"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+
+[dependencies]
+# Workspace crates
+loafy-types = { path = "../types" }
+
+# Workspace dependencies
+tokio = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+chrono = { workspace = true }
+uuid = { workspace = true }
+anyhow = { workspace = true }
+thiserror = { workspace = true }
+tracing = { workspace = true }
+reqwest = { workspace = true }
+
+# Stripe
+stripe = { version = "0.37", features = ["async", "webhook-events"] }
+
+# Google Cloud Vision
+google-vision1 = "6.0"
+yup-oauth2 = "11.0"
