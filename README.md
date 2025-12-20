@@ -2,19 +2,61 @@
 
 A comprehensive booking platform for Loafy Club, a pickleball club in Hanoi. Supports both local players (QR payments) and international players (Stripe), with subscriptions, waitlists, and advanced features.
 
+## 📊 Project Status
+
+**Current Phase**: Phase 1 - MVP Core Booking Flow
+**Implementation**: 87% Complete (13/15 tasks)
+**Status**: ✅ Ready for Testing
+
+### ✅ Phase 1 - Completed Features
+- ✅ User authentication via Supabase (Google, Facebook, Apple OAuth)
+- ✅ Session management (create, view, update, delete) with role-based access
+- ✅ Booking system with race condition protection (SELECT FOR UPDATE)
+- ✅ Stripe payment integration with 30-minute payment deadline
+- ✅ Background job to release unpaid bookings
+- ✅ Full responsive frontend (auth, sessions, bookings, payments)
+- ✅ Admin and organizer dashboards
+
+### 🚧 Phase 1 - In Progress
+- ⏳ Integration tests
+- ⏳ End-to-end testing
+
+### 📅 Future Phases
+- **Phase 2**: Subscriptions + Waitlist (10 tickets for 800k VND, priority queue)
+- **Phase 3**: QR payments with OCR, referrals, birthday bonuses, email notifications
+- **Phase 4**: Production deployment, monitoring, security audit
+
+See [PROGRESS.md](PROGRESS.md) for detailed progress tracking.
+
 ## Features
 
-- **Session Management**: Organizers can create and manage pickleball sessions
-- **Flexible Booking**: Book for yourself and guests, with or without subscriptions
-- **Dual Payment Options**:
-  - **Stripe**: For card payments (international users)
-  - **QR Transfer**: For local payments with OCR verification
-- **Subscription System**: 10 tickets for 800k VND, valid for 3 months with auto-renewal
-- **Waitlist**: Priority queue system with staggered notifications
-- **Referral System**: Both referrer and referee get bonus tickets
-- **Birthday Bonuses**: Active subscribers get a free ticket on their birthday
-- **Email Notifications**: Daily recap emails and real-time alerts
-- **Multi-language**: English and Vietnamese support
+### Phase 1 (Current)
+- ✅ **User Authentication**: OAuth via Google, Facebook, Apple (Supabase)
+- ✅ **Session Management**: Create, view, update, delete sessions (organizer/admin)
+- ✅ **Booking System**: Book for yourself + up to 3 guests
+- ✅ **Stripe Payments**: Secure card payments with 30-minute deadline
+- ✅ **Race Protection**: SELECT FOR UPDATE to prevent overbooking
+- ✅ **Role-Based Access**: User, Organizer, Admin roles
+- ✅ **Background Jobs**: Auto-release unpaid bookings after deadline
+
+### Phase 2 (Planned)
+- 🔜 **Subscription System**: 10 tickets for 800k VND (3 months, auto-renew)
+- 🔜 **Early Access**: Subscribers get 7-day early booking window
+- 🔜 **Waitlist**: Priority queue with staggered notifications
+- 🔜 **Ticket Management**: Use tickets or pay per session
+
+### Phase 3 (Planned)
+- 🔜 **QR Payments**: Local bank transfer with OCR verification
+- 🔜 **Referral System**: Bonus tickets for referrer and referee
+- 🔜 **Birthday Bonuses**: Free ticket for active subscribers
+- 🔜 **Email Notifications**: Daily recaps and booking alerts
+- 🔜 **Guest Bookings**: Non-members can book at full price
+
+### Phase 4 (Planned)
+- 🔜 **Multi-language**: Full English and Vietnamese support
+- 🔜 **Production Deployment**: Vultr VPS with Caddy HTTPS
+- 🔜 **Monitoring**: Structured logging and error tracking
+- 🔜 **Documentation**: OpenAPI specs and user guides
 
 ## Tech Stack
 
