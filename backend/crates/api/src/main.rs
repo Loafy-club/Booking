@@ -1,7 +1,7 @@
 mod middleware;
 mod routes;
 
-use axum::{routing::{get, post}, Router};
+use axum::{routing::{get, post, put, delete}, Router};
 use loafy_integrations::supabase::SupabaseAuth;
 use middleware::AppState;
 use std::net::SocketAddr;
@@ -69,8 +69,19 @@ async fn main() -> anyhow::Result<()> {
         .route("/api/auth/callback", post(routes::auth::handle_callback))
         .route("/api/auth/me", get(routes::auth::get_current_user))
         .route("/api/auth/logout", post(routes::auth::logout))
+        // Session routes
+        .route("/api/sessions", get(routes::sessions::list_sessions))
+        .route("/api/sessions/:id", get(routes::sessions::get_session))
+        .route("/api/sessions", post(routes::sessions::create_session))
+        .route("/api/sessions/:id", put(routes::sessions::update_session))
+        .route("/api/sessions/:id", delete(routes::sessions::delete_session))
+        // Booking routes
+        .route("/api/bookings", get(routes::bookings::list_my_bookings))
+        .route("/api/bookings/:id", get(routes::bookings::get_booking))
+        .route("/api/bookings", post(routes::bookings::create_booking))
+        .route("/api/bookings/:id", delete(routes::bookings::cancel_booking_route))
         // TODO: Add more routes
-        // Sessions, Bookings, Payments
+        // Payments
         .layer(
             CorsLayer::new()
                 .allow_origin(frontend_url.parse::<axum::http::HeaderValue>()?)
