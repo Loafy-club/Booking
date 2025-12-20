@@ -15,3 +15,4 @@ thiserror = { workspace = true }
 validator = { workspace = true }
 ts-rs = { workspace = true }
 utoipa = { workspace = true }
+sqlx = { workspace = true }

@@ -7,8 +7,8 @@
 	import { formatCurrency, formatDate } from '$lib/utils';
 	import { requireAuth } from '$lib/guards/auth';
 	import Navigation from '$lib/components/Navigation.svelte';
-	import Button from '$lib/components/ui/Button.svelte';
-	import Card from '$lib/components/ui/Card.svelte';
+	import { Button } from '$lib/components/ui/button';
+	import * as Card from '$lib/components/ui/card';
 	import type { Booking } from '$lib/types';
 
 	let bookingId = $derived($page.params.id);
@@ -152,7 +152,7 @@
 
 		<div class="grid gap-6 lg:grid-cols-3">
 			<div class="lg:col-span-2">
-				<Card class="p-6">
+				<Card.Root class="p-6">
 					<h1 class="text-2xl font-bold text-gray-900">Complete Payment</h1>
 					<p class="mt-2 text-sm text-gray-600">
 						Booking {booking.booking_code}
@@ -188,11 +188,11 @@
 							Payments are securely processed by Stripe
 						</p>
 					</form>
-				</Card>
+				</Card.Root>
 			</div>
 
 			<div class="lg:col-span-1">
-				<Card class="sticky top-4 p-6">
+				<Card.Root class="sticky top-4 p-6">
 					<h2 class="text-lg font-semibold text-gray-900">Order Summary</h2>
 
 					<div class="mt-4 space-y-3">
@@ -237,7 +237,7 @@
 							Your payment information is encrypted and processed securely by Stripe. We never store your card details.
 						</p>
 					</div>
-				</Card>
+				</Card.Root>
 			</div>
 		</div>
 	{/if}

@@ -8,6 +8,7 @@ license.workspace = true
 [dependencies]
 # Workspace crates
 loafy-types = { path = "../types" }
+loafy-db = { path = "../db" }
 
 # Workspace dependencies
 tokio = { workspace = true }
@@ -20,8 +21,9 @@ thiserror = { workspace = true }
 tracing = { workspace = true }
 reqwest = { workspace = true }
 
-# Stripe
-stripe = { version = "0.37", features = ["async", "webhook-events"] }
+# Stripe - temporarily comment out for testing
+# We'll add proper integration after getting backend running
+# stripe-rust = "0.12"
 
 # Google Cloud Vision
 google-vision1 = "6.0"

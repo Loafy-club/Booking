@@ -5,8 +5,8 @@
 	import { formatCurrency, formatDate } from '$lib/utils';
 	import { requireRole } from '$lib/guards/auth';
 	import Navigation from '$lib/components/Navigation.svelte';
-	import Button from '$lib/components/ui/Button.svelte';
-	import Card from '$lib/components/ui/Card.svelte';
+	import { Button } from '$lib/components/ui/button';
+	import * as Card from '$lib/components/ui/card';
 	import type { Session } from '$lib/types';
 
 	let sessions = $state<Session[]>([]);

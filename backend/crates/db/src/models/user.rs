@@ -1,4 +1,4 @@
-use chrono::NaiveDateTime;
+use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use sqlx::FromRow;
 use uuid::Uuid;
@@ -13,15 +13,15 @@ pub struct User {
     pub role_id: Uuid,
     pub auth_provider: String,
     pub auth_provider_id: String,
-    pub created_at: NaiveDateTime,
-    pub updated_at: NaiveDateTime,
+    pub created_at: DateTime<Utc>,
+    pub updated_at: DateTime<Utc>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, FromRow)]
 pub struct Role {
     pub id: Uuid,
     pub name: String,
-    pub created_at: NaiveDateTime,
+    pub created_at: DateTime<Utc>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, FromRow)]
@@ -35,8 +35,8 @@ pub struct UserWithRole {
     pub role_id: Uuid,
     pub auth_provider: String,
     pub auth_provider_id: String,
-    pub user_created_at: NaiveDateTime,
-    pub user_updated_at: NaiveDateTime,
+    pub user_created_at: DateTime<Utc>,
+    pub user_updated_at: DateTime<Utc>,
     // Role fields
     pub role_name: String,
 }

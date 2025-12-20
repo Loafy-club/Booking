@@ -1,4 +1,4 @@
-use chrono::NaiveDateTime;
+use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use sqlx::FromRow;
 use uuid::Uuid;
@@ -21,8 +21,8 @@ pub struct Booking {
     pub verification_status: Option<String>,
     pub payment_screenshot_url: Option<String>,
     pub stripe_payment_id: Option<String>,
-    pub payment_deadline: Option<NaiveDateTime>,
-    pub cancelled_at: Option<NaiveDateTime>,
-    pub created_at: NaiveDateTime,
-    pub updated_at: NaiveDateTime,
+    pub payment_deadline: Option<DateTime<Utc>>,
+    pub cancelled_at: Option<DateTime<Utc>>,
+    pub created_at: DateTime<Utc>,
+    pub updated_at: DateTime<Utc>,
 }

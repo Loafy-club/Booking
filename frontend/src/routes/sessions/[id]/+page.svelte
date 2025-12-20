@@ -7,8 +7,8 @@
 	import { formatCurrency, formatDate } from '$lib/utils';
 	import { requireAuth } from '$lib/guards/auth';
 	import Navigation from '$lib/components/Navigation.svelte';
-	import Button from '$lib/components/ui/Button.svelte';
-	import Card from '$lib/components/ui/Card.svelte';
+	import { Button } from '$lib/components/ui/button';
+	import * as Card from '$lib/components/ui/card';
 	import type { Session } from '$lib/types';
 
 	let sessionId = $derived($page.params.id);
@@ -136,7 +136,7 @@
 
 		<div class="grid gap-6 lg:grid-cols-3">
 			<div class="lg:col-span-2">
-				<Card class="p-6">
+				<Card.Root class="p-6">
 					<h1 class="text-3xl font-bold text-gray-900">{session.title}</h1>
 
 					{#if session.description}
@@ -214,11 +214,11 @@
 							</div>
 						</div>
 					</div>
-				</Card>
+				</Card.Root>
 			</div>
 
 			<div class="lg:col-span-1">
-				<Card class="sticky top-4 p-6">
+				<Card.Root class="sticky top-4 p-6">
 					<h2 class="text-xl font-semibold text-gray-900">Book Your Spot</h2>
 
 					{#if !canBook()}
@@ -228,8 +228,9 @@
 					{:else}
 						<div class="mt-6 space-y-4">
 							<div>
-								<label class="block text-sm font-medium text-gray-700">Number of Guests</label>
+								<label for="guest-count" class="block text-sm font-medium text-gray-700">Number of Guests</label>
 								<select
+									id="guest-count"
 									bind:value={guestCount}
 									class="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
 								>
@@ -241,8 +242,8 @@
 								<p class="mt-1 text-xs text-gray-500">Maximum 3 guests per booking</p>
 							</div>
 
-							<div>
-								<label class="block text-sm font-medium text-gray-700">Payment Method</label>
+							<fieldset>
+								<legend class="block text-sm font-medium text-gray-700">Payment Method</legend>
 								<div class="mt-2 space-y-2">
 									<label class="flex items-center">
 										<input
@@ -264,7 +265,7 @@
 										<span class="ml-2 text-sm text-gray-500">QR Payment (Coming Soon)</span>
 									</label>
 								</div>
-							</div>
+							</fieldset>
 
 							<div class="border-t pt-4">
 								<div class="flex justify-between text-sm text-gray-600">
@@ -301,7 +302,7 @@
 							</p>
 						</div>
 					{/if}
-				</Card>
+				</Card.Root>
 			</div>
 		</div>
 	{/if}

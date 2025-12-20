@@ -5,8 +5,8 @@
 	import { formatCurrency, formatDate } from '$lib/utils';
 	import { requireAuth } from '$lib/guards/auth';
 	import Navigation from '$lib/components/Navigation.svelte';
-	import Button from '$lib/components/ui/Button.svelte';
-	import Card from '$lib/components/ui/Card.svelte';
+	import { Button } from '$lib/components/ui/button';
+	import * as Card from '$lib/components/ui/card';
 	import type { Booking } from '$lib/types';
 
 	let bookings = $state<Booking[]>([]);
@@ -102,7 +102,7 @@
 	{:else}
 		<div class="space-y-4">
 			{#each bookings as booking}
-				<Card class="overflow-hidden">
+				<Card.Root class="overflow-hidden">
 					<div class="p-6">
 						<div class="flex items-start justify-between">
 							<div class="flex-1">
@@ -197,7 +197,7 @@
 							</Button>
 						{/if}
 					</div>
-				</Card>
+				</Card.Root>
 			{/each}
 		</div>
 	{/if}

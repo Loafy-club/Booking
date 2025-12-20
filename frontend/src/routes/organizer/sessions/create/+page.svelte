@@ -4,8 +4,8 @@
 	import { api } from '$lib/api/client';
 	import { requireRole } from '$lib/guards/auth';
 	import Navigation from '$lib/components/Navigation.svelte';
-	import Button from '$lib/components/ui/Button.svelte';
-	import Card from '$lib/components/ui/Card.svelte';
+	import { Button } from '$lib/components/ui/button';
+	import * as Card from '$lib/components/ui/card';
 
 	let loading = $state(false);
 	let error = $state<string | null>(null);
@@ -84,7 +84,7 @@
 		</Button>
 	</div>
 
-	<Card class="p-6">
+	<Card.Root class="p-6">
 		<h1 class="text-3xl font-bold text-gray-900">Create New Session</h1>
 		<p class="mt-2 text-gray-600">Schedule a new pickleball session</p>
 
@@ -220,5 +220,5 @@
 				</Button>
 			</div>
 		</form>
-	</Card>
+	</Card.Root>
 </div>

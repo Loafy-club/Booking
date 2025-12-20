@@ -61,7 +61,8 @@ impl SupabaseAuth {
 
         // Decode payload (second part)
         let payload = parts[1];
-        let decoded = base64::decode_config(payload, base64::URL_SAFE_NO_PAD)
+        use base64::{engine::general_purpose::URL_SAFE_NO_PAD, Engine};
+        let decoded = URL_SAFE_NO_PAD.decode(payload)
             .map_err(|e| anyhow!("Failed to decode JWT payload: {}", e))?;
 
         let claims: JwtClaims = serde_json::from_slice(&decoded)

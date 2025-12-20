@@ -6,8 +6,8 @@
 	import { formatCurrency, formatDate } from '$lib/utils';
 	import { requireAuth } from '$lib/guards/auth';
 	import Navigation from '$lib/components/Navigation.svelte';
-	import Button from '$lib/components/ui/Button.svelte';
-	import Card from '$lib/components/ui/Card.svelte';
+	import { Button } from '$lib/components/ui/button';
+	import * as Card from '$lib/components/ui/card';
 	import type { Booking } from '$lib/types';
 
 	let bookingId = $derived($page.params.id);
@@ -100,7 +100,7 @@
 			</Button>
 		</div>
 
-		<Card class="p-6">
+		<Card.Root class="p-6">
 			<div class="mb-6 flex items-center justify-between">
 				<div>
 					<h1 class="text-3xl font-bold text-gray-900">Booking {booking.booking_code}</h1>
@@ -243,6 +243,6 @@
 					Back to Bookings
 				</Button>
 			</div>
-		</Card>
+		</Card.Root>
 	{/if}
 </div>

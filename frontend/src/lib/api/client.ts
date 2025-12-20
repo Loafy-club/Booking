@@ -11,19 +11,24 @@ class ApiClient {
 			baseURL: API_BASE_URL,
 			headers: {
 				'Content-Type': 'application/json'
-			},
-			withCredentials: true
+			}
 		});
 
 		// Request interceptor to add auth token
 		this.client.interceptors.request.use(
 			async (config: InternalAxiosRequestConfig) => {
-				const {
-					data: { session }
-				} = await supabase.auth.getSession();
+				try {
+					const {
+						data: { session }
+					} = await supabase.auth.getSession();
 
-				if (session?.access_token) {
-					config.headers.Authorization = `Bearer ${session.access_token}`;
+					if (session?.access_token) {
+						config.headers.Authorization = `Bearer ${session.access_token}`;
+					}
+				} catch (error) {
+					// Supabase not configured or session retrieval failed
+					// Continue without auth header for public endpoints
+					console.warn('Auth session not available:', error);
 				}
 
 				return config;
@@ -65,7 +70,7 @@ export const api = {
 
 	// Sessions
 	sessions: {
-		list: (params?: { start_date?: string; end_date?: string; status?: string }) =>
+		list: (params?: { from_date?: string; organizer_id?: string; available_only?: boolean }) =>
 			apiClient.get('/api/sessions', { params }),
 		get: (id: string) => apiClient.get(`/api/sessions/${id}`),
 		create: (data: {

@@ -1,6 +1,6 @@
 use axum::{
     async_trait,
-    extract::FromRequestParts,
+    extract::{FromRef, FromRequestParts},
     http::{request::Parts, StatusCode},
     RequestPartsExt,
 };
@@ -50,8 +50,8 @@ where
 
         let token = bearer.token();
 
-        // Get app state
-        let app_state = AppState::from_ref(state);
+        // Get app state using FromRef
+        let app_state: AppState = AppState::from_ref(state);
 
         // Verify JWT token
         let claims = app_state
@@ -112,8 +112,8 @@ where
             Err(_) => return Ok(OptionalAuthUser(None)), // No auth header, return None
         };
 
-        // Get app state
-        let app_state = AppState::from_ref(state);
+        // Get app state using FromRef
+        let app_state: AppState = AppState::from_ref(state);
 
         // Verify JWT token
         let claims = match app_state.supabase.verify_token(&token) {

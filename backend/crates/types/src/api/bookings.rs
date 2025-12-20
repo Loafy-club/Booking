@@ -1,4 +1,4 @@
-use chrono::NaiveDateTime;
+use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use ts_rs::TS;
 use utoipa::ToSchema;
@@ -23,8 +23,8 @@ pub struct BookingResponse {
     pub payment_method: PaymentMethod,
     pub payment_status: PaymentStatus,
     pub verification_status: Option<VerificationStatus>,
-    pub payment_deadline: Option<NaiveDateTime>,
-    pub created_at: NaiveDateTime,
+    pub payment_deadline: Option<DateTime<Utc>>,
+    pub created_at: DateTime<Utc>,
 }
 
 #[derive(Debug, Deserialize, Validate, ToSchema)]
