@@ -26,3 +26,6 @@ stripe = { version = "0.37", features = ["async", "webhook-events"] }
 # Google Cloud Vision
 google-vision1 = "6.0"
 yup-oauth2 = "11.0"
+
+# Base64 decoding
+base64 = "0.22"

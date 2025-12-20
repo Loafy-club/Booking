@@ -30,6 +30,8 @@ dotenvy = { workspace = true }
 validator = { workspace = true }
 utoipa = { workspace = true }
 utoipa-swagger-ui = { workspace = true }
+rust_decimal = { workspace = true }
+axum-extra = { workspace = true }
 
 [dev-dependencies]
 sqlx = { workspace = true, features = ["runtime-tokio-rustls", "postgres"] }
