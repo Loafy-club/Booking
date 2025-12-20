@@ -80,8 +80,9 @@ async fn main() -> anyhow::Result<()> {
         .route("/api/bookings/:id", get(routes::bookings::get_booking))
         .route("/api/bookings", post(routes::bookings::create_booking))
         .route("/api/bookings/:id", delete(routes::bookings::cancel_booking_route))
-        // TODO: Add more routes
-        // Payments
+        // Payment routes
+        .route("/api/payments/stripe/intent", post(routes::payments::create_payment_intent))
+        .route("/api/webhooks/stripe", post(routes::payments::stripe_webhook))
         .layer(
             CorsLayer::new()
                 .allow_origin(frontend_url.parse::<axum::http::HeaderValue>()?)
