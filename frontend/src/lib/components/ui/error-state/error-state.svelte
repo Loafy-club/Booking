@@ -1,12 +1,61 @@
+<script lang="ts" module>
+	import { type VariantProps, tv } from "tailwind-variants";
+
+	export const errorStateVariants = tv({
+		slots: {
+			wrapper: "mx-auto max-w-md",
+			content: "text-center",
+			iconWrapper: "mx-auto mb-4 flex items-center justify-center rounded-full bg-red-100",
+			icon: "text-red-600",
+			title: "font-semibold text-gray-800 font-display",
+			message: "text-gray-600",
+			action: "",
+		},
+		variants: {
+			size: {
+				default: {
+					iconWrapper: "h-12 w-12",
+					icon: "h-6 w-6",
+					title: "text-lg",
+					message: "mt-2",
+					action: "mt-6",
+				},
+				sm: {
+					iconWrapper: "h-10 w-10",
+					icon: "h-5 w-5",
+					title: "text-base",
+					message: "mt-1 text-sm",
+					action: "mt-4",
+				},
+				lg: {
+					iconWrapper: "h-16 w-16",
+					icon: "h-8 w-8",
+					title: "text-xl",
+					message: "mt-3 text-lg",
+					action: "mt-8",
+				},
+			},
+		},
+		defaultVariants: {
+			size: "default",
+		},
+	});
+
+	export type ErrorStateSize = VariantProps<typeof errorStateVariants>["size"];
+</script>
+
 <script lang="ts">
 	import { GlassCard } from '$lib/components/ui/glass-card';
 	import { Button } from '$lib/components/ui/button';
+	import { AlertTriangle } from 'lucide-svelte';
+	import { cn } from "$lib/utils";
 
 	interface Props {
 		title?: string;
 		message: string;
 		onRetry?: () => void;
 		retryText?: string;
+		size?: ErrorStateSize;
 		class?: string;
 	}
 
@@ -15,22 +64,23 @@
 		message,
 		onRetry,
 		retryText = 'Try Again',
+		size = 'default',
 		class: className = ''
 	}: Props = $props();
+
+	const styles = $derived(errorStateVariants({ size }));
 </script>
 
-<div class="mx-auto max-w-md {className}">
+<div class={cn(styles.wrapper(), className)}>
 	<GlassCard variant="default">
-		<div class="text-center">
-			<div class="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-red-100">
-				<svg class="h-6 w-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-				</svg>
+		<div class={styles.content()}>
+			<div class={styles.iconWrapper()}>
+				<AlertTriangle class={styles.icon()} />
 			</div>
-			<h3 class="text-lg font-semibold text-gray-800" style="font-family: 'Baloo 2', sans-serif;">{title}</h3>
-			<p class="mt-2 text-gray-600">{message}</p>
+			<h3 class={styles.title()}>{title}</h3>
+			<p class={styles.message()}>{message}</p>
 			{#if onRetry}
-				<Button class="mt-6" onclick={onRetry}>{retryText}</Button>
+				<Button class={styles.action()} onclick={onRetry}>{retryText}</Button>
 			{/if}
 		</div>
 	</GlassCard>

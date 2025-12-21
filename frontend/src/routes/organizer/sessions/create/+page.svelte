@@ -2,7 +2,9 @@
 	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
 	import { api } from '$lib/api/client';
+	import { extractErrorMessage } from '$lib/utils';
 	import { requireRole } from '$lib/guards/auth';
+	import { useTranslation } from '$lib/i18n/index.svelte';
 	import Navigation from '$lib/components/Navigation.svelte';
 	import { Button } from '$lib/components/ui/button';
 	import { GlassCard } from '$lib/components/ui/glass-card';
@@ -11,7 +13,10 @@
 	import { AnimatedContainer } from '$lib/components/ui/animated-container';
 	import { Label } from '$lib/components/ui/label';
 	import { Input } from '$lib/components/ui/input';
+	import { Textarea } from '$lib/components/ui/textarea';
 	import { Alert, AlertDescription } from '$lib/components/ui/alert';
+
+	const t = useTranslation();
 
 	let loading = $state(false);
 	let error = $state<string | null>(null);
@@ -41,11 +46,11 @@
 			const endTime = new Date(formData.end_time);
 
 			if (startTime >= endTime) {
-				throw new Error('End time must be after start time');
+				throw new Error(t('organizer.createSession.errors.endTimeAfterStart'));
 			}
 
 			if (startTime < new Date()) {
-				throw new Error('Start time must be in the future');
+				throw new Error(t('organizer.createSession.errors.startTimeInFuture'));
 			}
 
 			const payload: any = {
@@ -68,17 +73,14 @@
 			const response = await api.sessions.create(payload);
 			goto(`/sessions/${response.data.id}`);
 		} catch (err: any) {
-			error = err.response?.data?.message || err.message || 'Failed to create session';
+			error = extractErrorMessage(err, t('organizer.createSession.errors.createFailed'));
 			loading = false;
 		}
 	}
 </script>
 
 <svelte:head>
-	<title>Create Session - Loafy Club</title>
-	<link rel="preconnect" href="https://fonts.googleapis.com">
-	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous">
-	<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+	<title>{t('organizer.createSession.pageTitle')} - Loafy Club</title>
 </svelte:head>
 
 <PageBackground variant="subtle">
@@ -86,80 +88,81 @@
 
 	<div class="mx-auto max-w-3xl px-4 py-8 sm:px-6 lg:px-8">
 		<AnimatedContainer animation="fade-up">
-			<BackButton href="/sessions" label="Back to Sessions" />
+			<BackButton href="/sessions" label={t('organizer.createSession.backToSessions')} />
 		</AnimatedContainer>
 
 		<AnimatedContainer animation="fade-up" delay={100}>
 			<GlassCard>
-				<h1 class="text-3xl font-bold text-gray-800" style="font-family: 'Baloo 2', sans-serif;">
-					Create New Session
+				<h1 class="text-3xl font-bold text-gray-800 font-display">
+					{t('organizer.createSession.title')}
 				</h1>
-				<p class="mt-2 text-gray-600">Schedule a new pickleball session</p>
+				<p class="mt-2 text-gray-600">{t('organizer.createSession.subtitle')}</p>
 
 				<form onsubmit={handleSubmit} class="mt-8 space-y-6">
 					<div>
 						<Label for="title">
-							Title <span class="text-red-500">*</span>
+							{t('organizer.createSession.form.title')} <span class="text-red-500">{t('organizer.createSession.form.required')}</span>
 						</Label>
 						<Input
 							id="title"
 							type="text"
 							bind:value={formData.title}
 							required
-							placeholder="Sunday Morning Pickleball"
-							class="mt-1 rounded-xl border-2 border-gray-200 focus:border-orange-400 focus:ring-orange-200"
+							placeholder={t('organizer.createSession.form.titlePlaceholder')}
+							variant="styled" class="mt-1"
 						/>
 					</div>
 
 					<div>
-						<Label for="description">Description</Label>
-						<textarea
+						<Label for="description">{t('organizer.createSession.form.description')}</Label>
+						<Textarea
 							id="description"
 							bind:value={formData.description}
-							rows="3"
-							class="mt-1 block w-full rounded-xl border-2 border-gray-200 px-4 py-3 focus:border-orange-400 focus:outline-none focus:ring-2 focus:ring-orange-200 transition-colors"
-							placeholder="Optional description of the session..."
-						></textarea>
+							rows={3}
+							variant="styled"
+							class="mt-1"
+							placeholder={t('organizer.createSession.form.descriptionPlaceholder')}
+						/>
 					</div>
 
 					<div>
 						<Label for="location">
-							Location <span class="text-red-500">*</span>
+							{t('organizer.createSession.form.location')} <span class="text-red-500">{t('organizer.createSession.form.required')}</span>
 						</Label>
 						<Input
 							id="location"
 							type="text"
 							bind:value={formData.location}
 							required
-							placeholder="Hanoi Sports Center"
-							class="mt-1 rounded-xl border-2 border-gray-200 focus:border-orange-400 focus:ring-orange-200"
+							placeholder={t('organizer.createSession.form.locationPlaceholder')}
+							variant="styled" class="mt-1"
 						/>
 					</div>
 
 					<div class="grid gap-4 sm:grid-cols-2">
 						<div>
 							<Label for="start_time">
-								Start Time <span class="text-red-500">*</span>
+								{t('organizer.createSession.form.startTime')} <span class="text-red-500">{t('organizer.createSession.form.required')}</span>
 							</Label>
 							<Input
 								id="start_time"
 								type="datetime-local"
 								bind:value={formData.start_time}
 								required
-								class="mt-1 rounded-xl border-2 border-gray-200 focus:border-orange-400 focus:ring-orange-200"
+								variant="styled" class="mt-1"
 							/>
 						</div>
 
 						<div>
 							<Label for="end_time">
-								End Time <span class="text-red-500">*</span>
+								{t('organizer.createSession.form.endTime')} <span class="text-red-500">{t('organizer.createSession.form.required')}</span>
 							</Label>
 							<Input
 								id="end_time"
 								type="datetime-local"
 								bind:value={formData.end_time}
 								required
-								class="mt-1 rounded-xl border-2 border-gray-200 focus:border-orange-400 focus:ring-orange-200"
+								variant="styled" class="mt-1"
 							/>
 						</div>
 					</div>
@@ -167,7 +170,7 @@
 					<div class="grid gap-4 sm:grid-cols-2">
 						<div>
 							<Label for="max_slots">
-								Maximum Slots <span class="text-red-500">*</span>
+								{t('organizer.createSession.form.maxSlots')} <span class="text-red-500">{t('organizer.createSession.form.required')}</span>
 							</Label>
 							<Input
 								id="max_slots"
@@ -176,13 +179,13 @@
 								required
 								min="1"
 								max="100"
-								class="mt-1 rounded-xl border-2 border-gray-200 focus:border-orange-400 focus:ring-orange-200"
+								variant="styled" class="mt-1"
 							/>
 						</div>
 
 						<div>
 							<Label for="price_vnd">
-								Price (VND) <span class="text-red-500">*</span>
+								{t('organizer.createSession.form.priceVnd')} <span class="text-red-500">{t('organizer.createSession.form.required')}</span>
 							</Label>
 							<Input
 								id="price_vnd"
@@ -191,21 +194,21 @@
 								required
 								min="0"
 								step="1000"
-								class="mt-1 rounded-xl border-2 border-gray-200 focus:border-orange-400 focus:ring-orange-200"
+								variant="styled" class="mt-1"
 							/>
 						</div>
 					</div>
 
 					<div>
-						<Label for="early_access">Early Access Ends At (Optional)</Label>
+						<Label for="early_access">{t('organizer.createSession.form.earlyAccess')}</Label>
 						<Input
 							id="early_access"
 							type="datetime-local"
 							bind:value={formData.early_access_ends_at}
-							class="mt-1 rounded-xl border-2 border-gray-200 focus:border-orange-400 focus:ring-orange-200"
+							variant="styled" class="mt-1"
 						/>
 						<p class="mt-1 text-xs text-gray-500">
-							Subscribers get early access until this time (Phase 2 feature)
+							{t('organizer.createSession.form.earlyAccessNote')}
 						</p>
 					</div>
 
@@ -218,14 +221,14 @@
 					<div class="flex gap-4 pt-4">
 						<Button
 							type="submit"
+							variant="gradient"
 							size="lg"
-							class="bg-gradient-to-r from-orange-500 to-pink-500 border-0"
 							disabled={loading}
 						>
-							{loading ? 'Creating...' : 'Create Session'}
+							{loading ? t('organizer.createSession.buttons.creating') : t('organizer.createSession.buttons.create')}
 						</Button>
 						<Button type="button" variant="outline" size="lg" onclick={() => goto('/sessions')}>
-							Cancel
+							{t('organizer.createSession.buttons.cancel')}
 						</Button>
 					</div>
 				</form>

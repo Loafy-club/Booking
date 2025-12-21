@@ -1,4 +1,5 @@
 mod middleware;
+mod response;
 mod routes;
 
 use axum::{routing::{get, post, put, delete}, Router};
@@ -69,6 +70,8 @@ async fn main() -> anyhow::Result<()> {
         .route("/api/auth/callback", post(routes::auth::handle_callback))
         .route("/api/auth/me", get(routes::auth::get_current_user))
         .route("/api/auth/logout", post(routes::auth::logout))
+        // User routes
+        .route("/api/users/me", put(routes::users::update_profile).delete(routes::users::delete_account))
         // Session routes
         .route("/api/sessions", get(routes::sessions::list_sessions))
         .route("/api/sessions/:id", get(routes::sessions::get_session))

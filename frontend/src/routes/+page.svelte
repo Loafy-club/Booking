@@ -4,6 +4,11 @@
 	import { goto } from '$app/navigation';
 	import Navigation from '$lib/components/Navigation.svelte';
 	import { Button } from '$lib/components/ui/button';
+	import { useTranslation } from '$lib/i18n/index.svelte';
+	import { FooterContent } from '$lib/components/ui/footer-content';
+	import { Calendar, Zap, Users } from 'lucide-svelte';
+
+	const t = useTranslation();
 
 	let scrollY = $state(0);
 	let loaded = $state(false);
@@ -47,9 +52,6 @@
 
 <svelte:head>
 	<title>Loafy Club - Pickleball in Hanoi</title>
-	<link rel="preconnect" href="https://fonts.googleapis.com">
-	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous">
-	<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 </svelte:head>
 
 <div class="relative bg-gradient-to-b from-sky-100 via-orange-50 to-amber-50">
@@ -97,8 +99,8 @@
 				class="absolute left-[3%] top-[28%] z-20 opacity-0 {loaded ? 'animate-bubble-in' : ''}"
 			>
 				<div class="relative bg-white rounded-2xl px-5 py-3 shadow-lg animate-bubble">
-					<p class="text-base text-gray-800 font-semibold whitespace-nowrap" style="font-family: 'Baloo 2', sans-serif;">
-						All levels welcome! 🎯
+					<p class="text-base text-gray-800 font-semibold whitespace-nowrap font-display">
+						{t('home.bubbles.allLevels')}
 					</p>
 					<div class="absolute -bottom-2 right-4">
 						<div class="w-0 h-0 border-l-8 border-l-transparent border-r-8 border-r-transparent border-t-10 border-t-white"></div>
@@ -119,8 +121,8 @@
 				class="absolute left-[28%] top-[51%] z-20 opacity-0 {loaded ? 'animate-bubble-in-delay-1' : ''}"
 			>
 				<div class="relative bg-white rounded-2xl px-5 py-3 shadow-lg animate-bubble-delay-1">
-					<p class="text-base text-gray-800 font-semibold whitespace-nowrap" style="font-family: 'Baloo 2', sans-serif;">
-						Bad air? We go indoor! 🏠
+					<p class="text-base text-gray-800 font-semibold whitespace-nowrap font-display">
+						{t('home.bubbles.indoor')}
 					</p>
 					<!-- Tail pointing left toward player 2 -->
 					<div class="absolute -left-2 top-1/2 -translate-y-1/2">
@@ -142,8 +144,8 @@
 				class="absolute right-[7%] top-[32%] z-20 opacity-0 {loaded ? 'animate-bubble-in-delay-2' : ''}"
 			>
 				<div class="relative bg-white rounded-2xl px-5 py-3 shadow-lg animate-bubble-delay-2">
-					<p class="text-base text-gray-800 font-semibold whitespace-nowrap" style="font-family: 'Baloo 2', sans-serif;">
-						Solo or with friends! 👥
+					<p class="text-base text-gray-800 font-semibold whitespace-nowrap font-display">
+						{t('home.bubbles.solo')}
 					</p>
 					<div class="absolute -bottom-2 left-1/2 -translate-x-1/2">
 						<div class="w-0 h-0 border-l-8 border-l-transparent border-r-8 border-r-transparent border-t-10 border-t-white"></div>
@@ -164,8 +166,8 @@
 				class="absolute right-[28%] top-[49%] z-20 opacity-0 {loaded ? 'animate-bubble-in-delay-3' : ''}"
 			>
 				<div class="relative bg-white rounded-2xl px-5 py-3 shadow-lg animate-bubble-delay-3">
-					<p class="text-base text-gray-800 font-semibold whitespace-nowrap" style="font-family: 'Baloo 2', sans-serif;">
-						Locals & internationals unite! 🌏
+					<p class="text-base text-gray-800 font-semibold whitespace-nowrap font-display">
+						{t('home.bubbles.international')}
 					</p>
 					<!-- Tail pointing right toward player 4 -->
 					<div class="absolute -right-2 top-1/2 -translate-y-1/2">
@@ -180,8 +182,8 @@
 			style="transform: translateY({scrollY * 0.25}px)"
 		>
 			<div
-				class="text-center opacity-0 {loaded ? 'animate-slide-in-blur' : ''}"
-				style="animation-fill-mode: forwards; font-family: 'Baloo 2', sans-serif;"
+				class="text-center opacity-0 font-display {loaded ? 'animate-slide-in-blur' : ''}"
+				style="animation-fill-mode: forwards;"
 			>
 				<h1 class="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-extrabold tracking-tight" style="line-height: 0.85;">
 					<span class="block text-white drop-shadow-[0_4px_8px_rgba(0,0,0,0.4)]" style="text-shadow: 3px 3px 0 rgba(255,180,130,0.6), -1px -1px 0 rgba(255,255,255,0.2);">
@@ -202,11 +204,12 @@
 				style="animation-fill-mode: forwards;"
 			>
 				<Button
+					variant="gradient"
 					size="lg"
-					class="text-lg px-8 py-6 shadow-xl hover:shadow-2xl hover:scale-105 transition-all duration-300 bg-gradient-to-r from-orange-500 to-pink-500 text-white hover:from-orange-600 hover:to-pink-600 border-0"
+					class="text-lg px-8 py-6 shadow-xl hover:shadow-2xl hover:scale-105 transition-all duration-300"
 					onclick={() => goto('/sessions')}
 				>
-					Browse Sessions
+					{t('home.cta.browseSessions')}
 				</Button>
 				{#if !authStore.isAuthenticated}
 					<Button
@@ -214,7 +217,7 @@
 						class="text-lg px-8 py-6 bg-white text-gray-800 hover:bg-gray-100 shadow-xl hover:shadow-2xl hover:scale-105 transition-all duration-300 border-0"
 						onclick={() => goto('/auth/login')}
 					>
-						Sign In
+						{t('home.cta.signIn')}
 					</Button>
 				{/if}
 			</div>
@@ -234,7 +237,7 @@
 						<circle class="mouse-wheel" cx="14" cy="12" r="3" fill="white" fill-opacity="0.8"/>
 					</svg>
 				</div>
-				<span class="text-xs font-medium text-white/80" style="font-family: 'Baloo 2', sans-serif; text-shadow: 1px 1px 2px rgba(0,0,0,0.5);">Scroll</span>
+				<span class="text-xs font-medium text-white/80 font-display" style="text-shadow: 1px 1px 2px rgba(0,0,0,0.5);">{t('home.cta.scroll')}</span>
 			</div>
 		</div>
 	</section>
@@ -264,8 +267,8 @@
 
 		<div class="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
 			<div class="text-center mb-16 scroll-reveal">
-				<h2 class="text-4xl sm:text-5xl font-bold text-gray-800" style="font-family: 'Baloo 2', sans-serif;">
-					Play. Book. <span class="text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-pink-500">Repeat.</span>
+				<h2 class="text-4xl sm:text-5xl font-bold text-gray-800 font-display">
+					{t('home.features.tagline')}
 				</h2>
 			</div>
 
@@ -277,12 +280,10 @@
 						<div class="absolute inset-0 bg-gradient-to-br from-yellow-300 to-orange-400 rounded-[2rem] blur-xl opacity-40 group-hover:opacity-60 transition-opacity duration-500 group-hover:scale-105"></div>
 						<div class="relative bg-white/80 backdrop-blur-sm rounded-[2rem] p-8 shadow-lg hover:shadow-2xl transition-all duration-500 hover:-translate-y-2">
 							<div class="w-16 h-16 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-2xl flex items-center justify-center mb-6 shadow-lg group-hover:scale-110 transition-transform duration-300">
-								<svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-									<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-								</svg>
+								<Calendar class="w-8 h-8 text-white" />
 							</div>
-							<h3 class="text-2xl font-bold text-gray-800 mb-3" style="font-family: 'Baloo 2', sans-serif;">Find Sessions</h3>
-							<p class="text-gray-600 leading-relaxed">Browse upcoming sessions that fit your schedule. Morning, afternoon, or evening — we've got you covered.</p>
+							<h3 class="text-2xl font-bold text-gray-800 mb-3 font-display">{t('home.features.findSessions.title')}</h3>
+							<p class="text-gray-600 leading-relaxed">{t('home.features.findSessions.description')}</p>
 						</div>
 					</div>
 				</div>
@@ -293,12 +294,10 @@
 						<div class="absolute inset-0 bg-gradient-to-br from-orange-300 to-pink-400 rounded-[2rem] blur-xl opacity-40 group-hover:opacity-60 transition-opacity duration-500 group-hover:scale-105"></div>
 						<div class="relative bg-white/80 backdrop-blur-sm rounded-[2rem] p-8 shadow-lg hover:shadow-2xl transition-all duration-500 hover:-translate-y-2">
 							<div class="w-16 h-16 bg-gradient-to-br from-orange-400 to-pink-500 rounded-2xl flex items-center justify-center mb-6 shadow-lg group-hover:scale-110 transition-transform duration-300">
-								<svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-									<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
-								</svg>
+								<Zap class="w-8 h-8 text-white" />
 							</div>
-							<h3 class="text-2xl font-bold text-gray-800 mb-3" style="font-family: 'Baloo 2', sans-serif;">Book Instantly</h3>
-							<p class="text-gray-600 leading-relaxed">Reserve your spot in seconds. Pay online with card or local bank transfer. No hassle.</p>
+							<h3 class="text-2xl font-bold text-gray-800 mb-3 font-display">{t('home.features.bookInstantly.title')}</h3>
+							<p class="text-gray-600 leading-relaxed">{t('home.features.bookInstantly.description')}</p>
 						</div>
 					</div>
 				</div>
@@ -309,12 +308,10 @@
 						<div class="absolute inset-0 bg-gradient-to-br from-pink-300 to-rose-400 rounded-[2rem] blur-xl opacity-40 group-hover:opacity-60 transition-opacity duration-500 group-hover:scale-105"></div>
 						<div class="relative bg-white/80 backdrop-blur-sm rounded-[2rem] p-8 shadow-lg hover:shadow-2xl transition-all duration-500 hover:-translate-y-2">
 							<div class="w-16 h-16 bg-gradient-to-br from-pink-400 to-rose-500 rounded-2xl flex items-center justify-center mb-6 shadow-lg group-hover:scale-110 transition-transform duration-300">
-								<svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-									<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
-								</svg>
+								<Users class="w-8 h-8 text-white" />
 							</div>
-							<h3 class="text-2xl font-bold text-gray-800 mb-3" style="font-family: 'Baloo 2', sans-serif;">Beyond the Court</h3>
-							<p class="text-gray-600 leading-relaxed">Monthly socials, tournaments, and post-game hangouts. More than just a club.</p>
+							<h3 class="text-2xl font-bold text-gray-800 mb-3 font-display">{t('home.features.beyondCourt.title')}</h3>
+							<p class="text-gray-600 leading-relaxed">{t('home.features.beyondCourt.description')}</p>
 						</div>
 					</div>
 				</div>
@@ -366,35 +363,36 @@
 
 				<!-- Content -->
 				<div class="scroll-reveal from-right order-1 lg:order-2" style="transition-delay: 200ms;">
-					<h2 class="text-4xl sm:text-5xl font-bold text-gray-800 mb-6" style="font-family: 'Baloo 2', sans-serif;">
-						Meet <span class="text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-pink-500">Loafy</span>
+					<h2 class="text-4xl sm:text-5xl font-bold text-gray-800 mb-6 font-display">
+						{t('home.mascot.title')}
 					</h2>
 					<p class="text-xl text-gray-600 mb-8 leading-relaxed">
-						Our corgi mascot embodies the spirit of our club — friendly, playful, and always ready for a good game.
+						{t('home.mascot.description')}
 					</p>
 
 					<!-- Stats -->
 					<div class="grid grid-cols-3 gap-4 mb-8">
 						<div class="text-center p-4 bg-white/60 backdrop-blur-sm rounded-2xl shadow-sm">
-							<div class="text-3xl sm:text-4xl font-bold text-orange-500" style="font-family: 'Baloo 2', sans-serif;">50+</div>
-							<div class="text-sm text-gray-500">Players</div>
+							<div class="text-3xl sm:text-4xl font-bold text-orange-500 font-display">50+</div>
+							<div class="text-sm text-gray-500">{t('home.mascot.stats.players')}</div>
 						</div>
 						<div class="text-center p-4 bg-white/60 backdrop-blur-sm rounded-2xl shadow-sm">
-							<div class="text-3xl sm:text-4xl font-bold text-pink-500" style="font-family: 'Baloo 2', sans-serif;">100+</div>
-							<div class="text-sm text-gray-500">Sessions</div>
+							<div class="text-3xl sm:text-4xl font-bold text-pink-500 font-display">100+</div>
+							<div class="text-sm text-gray-500">{t('home.mascot.stats.sessions')}</div>
 						</div>
 						<div class="text-center p-4 bg-white/60 backdrop-blur-sm rounded-2xl shadow-sm">
-							<div class="text-3xl sm:text-4xl font-bold text-rose-500" style="font-family: 'Baloo 2', sans-serif;">∞</div>
-							<div class="text-sm text-gray-500">Fun</div>
+							<div class="text-3xl sm:text-4xl font-bold text-rose-500 font-display">∞</div>
+							<div class="text-sm text-gray-500">{t('home.mascot.stats.fun')}</div>
 						</div>
 					</div>
 
 					<Button
+						variant="gradient"
 						size="lg"
-						class="text-lg px-8 py-6 bg-gradient-to-r from-orange-500 to-pink-500 hover:from-orange-600 hover:to-pink-600 shadow-xl hover:shadow-2xl hover:scale-105 transition-all duration-300"
+						class="text-lg px-8 py-6 shadow-xl hover:shadow-2xl hover:scale-105 transition-all duration-300"
 						onclick={() => goto('/sessions')}
 					>
-						Join the Club
+						{t('home.mascot.joinClub')}
 					</Button>
 				</div>
 			</div>
@@ -425,11 +423,11 @@
 
 		<div class="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
 			<div class="scroll-reveal">
-				<h2 class="text-4xl sm:text-5xl font-bold text-white mb-6" style="font-family: 'Baloo 2', sans-serif;">
-					Ready to play?
+				<h2 class="text-4xl sm:text-5xl font-bold text-white mb-6 font-display">
+					{t('home.ctaSection.title')}
 				</h2>
 				<p class="text-xl text-white/90 mb-10 max-w-2xl mx-auto">
-					Your next game is just a click away. Join our community and start booking sessions today.
+					{t('home.ctaSection.description')}
 				</p>
 				<div class="flex flex-col sm:flex-row items-center justify-center gap-4">
 					<Button
@@ -437,7 +435,7 @@
 						class="text-lg px-10 py-7 bg-white text-orange-600 hover:bg-white/90 shadow-2xl hover:shadow-3xl hover:scale-105 transition-all duration-300"
 						onclick={() => goto('/sessions')}
 					>
-						Browse Sessions
+						{t('home.ctaSection.browseSessions')}
 					</Button>
 					{#if !authStore.isAuthenticated}
 						<Button
@@ -445,7 +443,7 @@
 							class="text-lg px-10 py-7 bg-transparent border-2 border-white text-white hover:bg-white/20 hover:text-white shadow-xl hover:shadow-2xl hover:scale-105 transition-all duration-300"
 							onclick={() => goto('/auth/login')}
 						>
-							Create Account
+							{t('home.ctaSection.createAccount')}
 						</Button>
 					{/if}
 				</div>
@@ -465,15 +463,7 @@
 	<!-- ===== FOOTER ===== -->
 	<footer class="bg-gray-800 py-12 -mt-2">
 		<div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-			<div class="flex flex-col sm:flex-row items-center justify-between gap-6">
-				<a href="/" class="flex items-center gap-3 group">
-					<img src="/mascot.png" alt="Loafy" class="h-12 w-12 object-contain group-hover:scale-110 transition-transform duration-300" />
-					<span class="text-xl font-semibold text-white" style="font-family: 'Baloo 2', sans-serif;">Loafy Club</span>
-				</a>
-				<p class="text-gray-400 text-sm">
-					Pickleball in Hanoi, made easy.
-				</p>
-			</div>
+			<FooterContent />
 		</div>
 	</footer>
 </div>

@@ -1,0 +1,361 @@
+{
+	"common": {
+		"save": "Save",
+		"cancel": "Cancel",
+		"delete": "Delete",
+		"edit": "Edit",
+		"loading": "Loading...",
+		"error": "Error",
+		"success": "Success",
+		"signIn": "Sign In",
+		"signOut": "Sign Out",
+		"profile": "Profile",
+		"settings": "Settings",
+		"preferences": "Preferences",
+		"account": "Account",
+		"retry": "Retry",
+		"back": "Back",
+		"next": "Next",
+		"submit": "Submit",
+		"confirm": "Confirm",
+		"close": "Close"
+	},
+	"nav": {
+		"sessions": "Sessions",
+		"myBookings": "My Bookings",
+		"createSession": "Create Session",
+		"admin": "Admin"
+	},
+	"home": {
+		"hero": {
+			"title": "Play Pickleball in Hanoi",
+			"subtitle": "Join our community of players and book your next session",
+			"cta": "Browse Sessions"
+		},
+		"bubbles": {
+			"allLevels": "All levels welcome! 🎯",
+			"indoor": "Bad air? We go indoor! 🏠",
+			"solo": "Solo or with friends! 👥",
+			"international": "Locals & internationals unite! 🌏"
+		},
+		"cta": {
+			"browseSessions": "Browse Sessions",
+			"signIn": "Sign In",
+			"scroll": "Scroll"
+		},
+		"features": {
+			"tagline": "Play. Book. Repeat.",
+			"findSessions": {
+				"title": "Find Sessions",
+				"description": "Browse upcoming sessions that fit your schedule. Morning, afternoon, or evening — we've got you covered."
+			},
+			"bookInstantly": {
+				"title": "Book Instantly",
+				"description": "Reserve your spot in seconds. Pay online with card or local bank transfer. No hassle."
+			},
+			"beyondCourt": {
+				"title": "Beyond the Court",
+				"description": "Monthly socials, tournaments, and post-game hangouts. More than just a club."
+			}
+		},
+		"mascot": {
+			"title": "Meet Loafy",
+			"description": "Our corgi mascot embodies the spirit of our club — friendly, playful, and always ready for a good game.",
+			"stats": {
+				"players": "Players",
+				"sessions": "Sessions",
+				"fun": "Fun"
+			},
+			"joinClub": "Join the Club"
+		},
+		"ctaSection": {
+			"title": "Ready to play?",
+			"description": "Your next game is just a click away. Join our community and start booking sessions today.",
+			"browseSessions": "Browse Sessions",
+			"createAccount": "Create Account"
+		},
+		"footer": {
+			"tagline": "Pickleball in Hanoi, made easy."
+		}
+	},
+	"account": {
+		"title": "Account Settings",
+		"subtitle": "Manage your profile and preferences",
+		"notAuthenticated": "Please sign in to access your account settings.",
+		"profile": {
+			"title": "Profile Information",
+			"photo": "Profile photo",
+			"photoComingSoon": "Avatar upload coming soon",
+			"fullName": "Full Name",
+			"namePlaceholder": "Enter your name",
+			"phone": "Phone Number",
+			"phonePlaceholder": "+84 xxx xxx xxx",
+			"email": "Email Address",
+			"emailNote": "Email cannot be changed (managed by OAuth)",
+			"role": "Account Role",
+			"saveChanges": "Save Changes",
+			"saving": "Saving..."
+		},
+		"preferences": {
+			"title": "App Preferences",
+			"language": "Language",
+			"languageNote": "Choose your preferred language",
+			"theme": "Theme",
+			"themeNote": "Currently: {mode} mode",
+			"themeSystem": "System",
+			"themeLight": "Light",
+			"themeDark": "Dark",
+			"emailNotifications": "Email Notifications",
+			"emailNotificationsLabel": "Receive email updates about your bookings",
+			"emailNotificationsNote": "Email preferences stored locally",
+			"savePreferences": "Save Preferences"
+		},
+		"connected": {
+			"title": "Connected Accounts",
+			"description": "Link additional accounts for easier sign-in",
+			"connected": "Connected",
+			"notConnected": "Not connected",
+			"link": "Link",
+			"unlink": "Unlink",
+			"cannotUnlinkLast": "You must have at least one connected account",
+			"mustHaveOne": "You need at least one connected account to sign in"
+		},
+		"actions": {
+			"title": "Account Actions",
+			"signOutTitle": "Sign Out",
+			"signOutDescription": "Sign out of your account on this device",
+			"deleteTitle": "Delete Account",
+			"deleteDescription": "Permanently delete your account and all data"
+		},
+		"delete": {
+			"confirmTitle": "Are you absolutely sure?",
+			"confirmDescription": "This action cannot be undone. This will permanently delete your account and remove all your data from our servers.",
+			"typeConfirm": "Type DELETE to confirm:",
+			"confirmMismatch": "Please type DELETE to confirm",
+			"confirmButton": "Delete My Account",
+			"deleting": "Deleting...",
+			"failed": "Failed to delete account. Please try again."
+		},
+		"messages": {
+			"saveSuccess": "Changes saved successfully!",
+			"saveError": "Failed to save changes"
+		}
+	},
+	"sessions": {
+		"pageTitle": "Pickleball Sessions",
+		"pageSubtitle": "Find and book available sessions at Loafy Club",
+		"title": "Upcoming Sessions",
+		"subtitle": "Find and book your next pickleball session",
+		"noSessions": "No sessions available",
+		"noUpcoming": "There are no upcoming sessions available at the moment.",
+		"noSessionsDesc": "No sessions to display.",
+		"checkBack": "Check back later",
+		"loadingText": "Loading sessions...",
+		"book": "Book Now",
+		"fullyBooked": "Fully Booked",
+		"sessionEnded": "Session Ended",
+		"cancelled": "Cancelled",
+		"spotsLeft": "{count} spots left",
+		"spotsAvailable": "spots available",
+		"full": "Full",
+		"upcoming": "Upcoming",
+		"completed": "Completed",
+		"upcomingSessions": "Upcoming Sessions",
+		"allSessions": "All Sessions",
+		"pricePerPlayer": "Price per player",
+		"court": "court",
+		"courts": "courts",
+		"perCourt": "per court",
+		"at": "at",
+		"status": {
+			"cancelled": "Cancelled",
+			"full": "Full",
+			"upcoming": "Upcoming",
+			"completed": "Completed",
+			"draft": "Draft",
+			"published": "Published",
+			"inProgress": "In Progress"
+		}
+	},
+	"bookings": {
+		"title": "My Bookings",
+		"subtitle": "View and manage your session bookings",
+		"noBookings": "No Bookings Yet",
+		"noBookingsDesc": "Browse sessions to make your first booking",
+		"browseSessions": "Browse Sessions",
+		"loadingText": "Loading bookings...",
+		"loadingBooking": "Loading booking...",
+		"cancel": "Cancel",
+		"cancelBooking": "Cancel Booking",
+		"cancelling": "Cancelling...",
+		"viewDetails": "View Details",
+		"bookingCode": "Booking",
+		"bookedOn": "Booked On",
+		"createdOn": "Created on {date}",
+		"paymentMethod": "Payment Method",
+		"paymentStatus": "Payment Status",
+		"cardPayment": "Card Payment",
+		"qrPayment": "QR Payment",
+		"numberOfPeople": "Number of People",
+		"youPlusGuests": "You + {count} guest",
+		"youPlusGuestsPlural": "You + {count} guests",
+		"totalAmount": "Total Amount",
+		"paymentRequired": "Payment required by {date}",
+		"paymentRequiredTitle": "Payment Required",
+		"paymentRequiredDesc": "Please complete payment by {date} to confirm your booking.",
+		"cancelledOn": "Cancelled on {date}",
+		"bookingCancelledTitle": "Booking Cancelled",
+		"bookingCancelledDesc": "This booking was cancelled on {date}.",
+		"completePayment": "Complete Payment",
+		"confirmCancel": "Are you sure you want to cancel booking {code}?",
+		"cancelError": "Failed to cancel booking",
+		"backToBookings": "Back to Bookings",
+		"backToBooking": "Back to Booking",
+		"priceBreakdown": "Price Breakdown",
+		"yourSlot": "Your slot",
+		"guestSlots": "Guest slots ({count})",
+		"paymentDetails": "Payment Details",
+		"status": {
+			"confirmed": "Confirmed",
+			"pending": "Pending Payment",
+			"cancelled": "Cancelled"
+		}
+	},
+	"payment": {
+		"pageTitle": "Payment",
+		"loadingPayment": "Loading payment...",
+		"completePayment": "Complete Payment",
+		"viewBooking": "View Booking",
+		"alreadyPaid": "This booking has already been paid",
+		"bookingCancelled": "This booking has been cancelled",
+		"methodNotSupported": "This payment method is not supported yet",
+		"failedToLoad": "Failed to load booking",
+		"failedToInit": "Failed to initialize payment",
+		"paymentNotInit": "Payment system not initialized",
+		"paymentFailed": "Payment failed",
+		"processing": "Processing...",
+		"pay": "Pay {amount}",
+		"completeBy": "Complete payment by {date} to confirm your booking",
+		"securedByStripe": "Payments are securely processed by Stripe",
+		"orderSummary": "Order Summary",
+		"total": "Total",
+		"securePayment": "Secure Payment",
+		"securePaymentDesc": "Your payment information is encrypted and processed securely by Stripe. We never store your card details."
+	},
+	"auth": {
+		"login": {
+			"title": "Welcome back",
+			"subtitle": "Sign in to book your pickleball sessions",
+			"googleButton": "Continue with Google",
+			"facebookButton": "Continue with Facebook",
+			"or": "Or",
+			"browseWithoutSignIn": "Browse sessions without signing in",
+			"termsText": "By signing in, you agree to our",
+			"termsLink": "Terms of Service",
+			"and": "and",
+			"privacyLink": "Privacy Policy",
+			"backToHome": "Back to home"
+		},
+		"callback": {
+			"signingIn": "Signing you in...",
+			"pleaseWait": "Please wait while we complete authentication",
+			"failed": "Authentication Failed",
+			"redirecting": "Redirecting to login in 5 seconds..."
+		}
+	},
+	"sessionDetail": {
+		"loadingSession": "Loading session...",
+		"backToSessions": "Back to Sessions",
+		"location": "Location",
+		"dateTime": "Date & Time",
+		"availability": "Availability",
+		"spotsOf": "{available} of {total} spots available",
+		"price": "Price",
+		"perPerson": "per person",
+		"bookYourSpot": "Book Your Spot",
+		"sessionCancelled": "This session has been cancelled",
+		"sessionFull": "This session is fully booked",
+		"sessionStarted": "This session has already started",
+		"numberOfGuests": "Number of Guests",
+		"justMe": "Just me",
+		"guest": "{count} guest",
+		"guests": "{count} guests",
+		"maxGuests": "Maximum 3 guests per booking",
+		"paymentMethod": "Payment Method",
+		"stripe": "Credit/Debit Card (Stripe)",
+		"qrComingSoon": "QR Payment (Coming Soon)",
+		"pricePerPerson": "Price per person",
+		"numberOfPeople": "Number of people",
+		"total": "Total",
+		"creatingBooking": "Creating Booking...",
+		"paymentTime": "You'll have 30 minutes to complete payment",
+		"onlySpotsAvailable": "Only {count} spots available"
+	},
+	"organizer": {
+		"createSession": {
+			"pageTitle": "Create Session",
+			"title": "Create New Session",
+			"subtitle": "Schedule a new pickleball session",
+			"backToSessions": "Back to Sessions",
+			"form": {
+				"title": "Title",
+				"titlePlaceholder": "Sunday Morning Pickleball",
+				"description": "Description",
+				"descriptionPlaceholder": "Optional description of the session...",
+				"location": "Location",
+				"locationPlaceholder": "Hanoi Sports Center",
+				"startTime": "Start Time",
+				"endTime": "End Time",
+				"maxSlots": "Maximum Slots",
+				"priceVnd": "Price (VND)",
+				"earlyAccess": "Early Access Ends At (Optional)",
+				"earlyAccessNote": "Subscribers get early access until this time (Phase 2 feature)",
+				"required": "*"
+			},
+			"errors": {
+				"endTimeAfterStart": "End time must be after start time",
+				"startTimeInFuture": "Start time must be in the future",
+				"createFailed": "Failed to create session"
+			},
+			"buttons": {
+				"creating": "Creating...",
+				"create": "Create Session",
+				"cancel": "Cancel"
+			}
+		}
+	},
+	"admin": {
+		"sessions": {
+			"pageTitle": "Admin - Sessions",
+			"title": "Manage Sessions",
+			"subtitle": "View and manage all pickleball sessions",
+			"createSession": "Create Session",
+			"loadingText": "Loading sessions...",
+			"noSessions": "No Sessions Found",
+			"noSessionsDesc": "Create your first pickleball session",
+			"table": {
+				"session": "Session",
+				"dateTime": "Date/Time",
+				"slots": "Slots",
+				"price": "Price",
+				"status": "Status",
+				"actions": "Actions"
+			},
+			"status": {
+				"cancelled": "Cancelled",
+				"active": "Active"
+			},
+			"actions": {
+				"view": "View",
+				"delete": "Delete"
+			},
+			"confirmDelete": "Are you sure you want to delete \"{title}\"?",
+			"updateFailed": "Failed to update session",
+			"deleteFailed": "Failed to delete session"
+		}
+	},
+	"languages": {
+		"en": "English",
+		"vi": "Tieng Viet"
+	}
+}

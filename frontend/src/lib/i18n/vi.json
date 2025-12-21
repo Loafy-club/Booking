@@ -1,0 +1,361 @@
+{
+	"common": {
+		"save": "Luu",
+		"cancel": "Huy",
+		"delete": "Xoa",
+		"edit": "Sua",
+		"loading": "Dang tai...",
+		"error": "Loi",
+		"success": "Thanh cong",
+		"signIn": "Dang nhap",
+		"signOut": "Dang xuat",
+		"profile": "Ho so",
+		"settings": "Cai dat",
+		"preferences": "Tuy chon",
+		"account": "Tai khoan",
+		"retry": "Thu lai",
+		"back": "Quay lai",
+		"next": "Tiep",
+		"submit": "Gui",
+		"confirm": "Xac nhan",
+		"close": "Dong"
+	},
+	"nav": {
+		"sessions": "Buoi choi",
+		"myBookings": "Dat cho cua toi",
+		"createSession": "Tao buoi choi",
+		"admin": "Quan tri"
+	},
+	"home": {
+		"hero": {
+			"title": "Choi Pickleball tai Ha Noi",
+			"subtitle": "Tham gia cong dong nguoi choi va dat buoi choi tiep theo",
+			"cta": "Xem cac buoi choi"
+		},
+		"bubbles": {
+			"allLevels": "Moi trinh do deu duoc! 🎯",
+			"indoor": "O nhiem? Choi trong nha! 🏠",
+			"solo": "Di mot minh hay voi ban be! 👥",
+			"international": "Nguoi Viet & quoc te hoa nhap! 🌏"
+		},
+		"cta": {
+			"browseSessions": "Xem buoi choi",
+			"signIn": "Dang nhap",
+			"scroll": "Cuon xuong"
+		},
+		"features": {
+			"tagline": "Choi. Dat. Lap lai.",
+			"findSessions": {
+				"title": "Tim buoi choi",
+				"description": "Xem cac buoi choi phu hop voi lich cua ban. Sang, chieu, hay toi — chung toi co het."
+			},
+			"bookInstantly": {
+				"title": "Dat ngay",
+				"description": "Giu cho trong vai giay. Thanh toan truc tuyen bang the hoac chuyen khoan. Khong phien phuc."
+			},
+			"beyondCourt": {
+				"title": "Khong chi la san bong",
+				"description": "Giao luu hang thang, giai dau va hop mat sau tran. Hon ca mot cau lac bo."
+			}
+		},
+		"mascot": {
+			"title": "Gap go Loafy",
+			"description": "Linh vat corgi cua chung toi the hien tinh than cau lac bo — than thien, vui ve, va luon san sang choi.",
+			"stats": {
+				"players": "Nguoi choi",
+				"sessions": "Buoi choi",
+				"fun": "Vui"
+			},
+			"joinClub": "Tham gia CLB"
+		},
+		"ctaSection": {
+			"title": "San sang choi?",
+			"description": "Tran dau tiep theo chi cach mot cu nhan chuot. Tham gia cong dong va bat dau dat buoi choi ngay.",
+			"browseSessions": "Xem buoi choi",
+			"createAccount": "Tao tai khoan"
+		},
+		"footer": {
+			"tagline": "Pickleball o Ha Noi, don gian hon."
+		}
+	},
+	"account": {
+		"title": "Cai dat tai khoan",
+		"subtitle": "Quan ly ho so va tuy chon cua ban",
+		"notAuthenticated": "Vui long dang nhap de truy cap cai dat tai khoan.",
+		"profile": {
+			"title": "Thong tin ho so",
+			"photo": "Anh dai dien",
+			"photoComingSoon": "Chuc nang tai anh se som co",
+			"fullName": "Ho va ten",
+			"namePlaceholder": "Nhap ten cua ban",
+			"phone": "So dien thoai",
+			"phonePlaceholder": "+84 xxx xxx xxx",
+			"email": "Dia chi email",
+			"emailNote": "Khong the thay doi email (quan ly boi OAuth)",
+			"role": "Vai tro tai khoan",
+			"saveChanges": "Luu thay doi",
+			"saving": "Dang luu..."
+		},
+		"preferences": {
+			"title": "Tuy chon ung dung",
+			"language": "Ngon ngu",
+			"languageNote": "Chon ngon ngu ban muon su dung",
+			"theme": "Giao dien",
+			"themeNote": "Hien tai: che do {mode}",
+			"themeSystem": "He thong",
+			"themeLight": "Sang",
+			"themeDark": "Toi",
+			"emailNotifications": "Thong bao email",
+			"emailNotificationsLabel": "Nhan cap nhat email ve cac dat cho cua ban",
+			"emailNotificationsNote": "Tuy chon email duoc luu cuc bo",
+			"savePreferences": "Luu tuy chon"
+		},
+		"connected": {
+			"title": "Tai khoan lien ket",
+			"description": "Lien ket them tai khoan de dang nhap de dang hon",
+			"connected": "Da lien ket",
+			"notConnected": "Chua lien ket",
+			"link": "Lien ket",
+			"unlink": "Huy lien ket",
+			"cannotUnlinkLast": "Ban phai co it nhat mot tai khoan lien ket",
+			"mustHaveOne": "Ban can it nhat mot tai khoan lien ket de dang nhap"
+		},
+		"actions": {
+			"title": "Hanh dong tai khoan",
+			"signOutTitle": "Dang xuat",
+			"signOutDescription": "Dang xuat khoi tai khoan tren thiet bi nay",
+			"deleteTitle": "Xoa tai khoan",
+			"deleteDescription": "Xoa vinh vien tai khoan va tat ca du lieu"
+		},
+		"delete": {
+			"confirmTitle": "Ban co chac chan khong?",
+			"confirmDescription": "Hanh dong nay khong the hoan tac. Thao tac nay se xoa vinh vien tai khoan cua ban va xoa tat ca du lieu khoi may chu cua chung toi.",
+			"typeConfirm": "Nhap DELETE de xac nhan:",
+			"confirmMismatch": "Vui long nhap DELETE de xac nhan",
+			"confirmButton": "Xoa tai khoan cua toi",
+			"deleting": "Dang xoa...",
+			"failed": "Khong the xoa tai khoan. Vui long thu lai."
+		},
+		"messages": {
+			"saveSuccess": "Thay doi da duoc luu!",
+			"saveError": "Khong the luu thay doi"
+		}
+	},
+	"sessions": {
+		"pageTitle": "Cac buoi choi Pickleball",
+		"pageSubtitle": "Tim va dat cac buoi choi tai Loafy Club",
+		"title": "Cac buoi choi sap toi",
+		"subtitle": "Tim va dat buoi choi pickleball tiep theo",
+		"noSessions": "Khong co buoi choi nao",
+		"noUpcoming": "Hien tai khong co buoi choi nao sap toi.",
+		"noSessionsDesc": "Khong co buoi choi de hien thi.",
+		"checkBack": "Vui long quay lai sau",
+		"loadingText": "Dang tai cac buoi choi...",
+		"book": "Dat ngay",
+		"fullyBooked": "Da het cho",
+		"sessionEnded": "Da ket thuc",
+		"cancelled": "Da huy",
+		"spotsLeft": "Con {count} cho",
+		"spotsAvailable": "cho con trong",
+		"full": "Het cho",
+		"upcoming": "Sap toi",
+		"completed": "Da xong",
+		"upcomingSessions": "Buoi choi sap toi",
+		"allSessions": "Tat ca buoi choi",
+		"pricePerPlayer": "Gia moi nguoi",
+		"court": "san",
+		"courts": "san",
+		"perCourt": "moi san",
+		"at": "luc",
+		"status": {
+			"cancelled": "Da huy",
+			"full": "Het cho",
+			"upcoming": "Sap toi",
+			"completed": "Da xong",
+			"draft": "Ban nhap",
+			"published": "Da dang",
+			"inProgress": "Dang dien ra"
+		}
+	},
+	"bookings": {
+		"title": "Dat cho cua toi",
+		"subtitle": "Xem va quan ly cac buoi choi da dat",
+		"noBookings": "Chua co dat cho",
+		"noBookingsDesc": "Xem cac buoi choi de dat cho dau tien",
+		"browseSessions": "Xem buoi choi",
+		"loadingText": "Dang tai dat cho...",
+		"loadingBooking": "Dang tai dat cho...",
+		"cancel": "Huy",
+		"cancelBooking": "Huy dat cho",
+		"cancelling": "Dang huy...",
+		"viewDetails": "Xem chi tiet",
+		"bookingCode": "Dat cho",
+		"bookedOn": "Ngay dat",
+		"createdOn": "Tao ngay {date}",
+		"paymentMethod": "Phuong thuc thanh toan",
+		"paymentStatus": "Trang thai thanh toan",
+		"cardPayment": "The tin dung",
+		"qrPayment": "Thanh toan QR",
+		"numberOfPeople": "So nguoi",
+		"youPlusGuests": "Ban + {count} khach",
+		"youPlusGuestsPlural": "Ban + {count} khach",
+		"totalAmount": "Tong tien",
+		"paymentRequired": "Can thanh toan truoc {date}",
+		"paymentRequiredTitle": "Can thanh toan",
+		"paymentRequiredDesc": "Vui long hoan tat thanh toan truoc {date} de xac nhan dat cho.",
+		"cancelledOn": "Da huy ngay {date}",
+		"bookingCancelledTitle": "Dat cho da huy",
+		"bookingCancelledDesc": "Dat cho nay da bi huy ngay {date}.",
+		"completePayment": "Hoan tat thanh toan",
+		"confirmCancel": "Ban co chac muon huy dat cho {code}?",
+		"cancelError": "Khong the huy dat cho",
+		"backToBookings": "Quay lai danh sach",
+		"backToBooking": "Quay lai dat cho",
+		"priceBreakdown": "Chi tiet gia",
+		"yourSlot": "Cho cua ban",
+		"guestSlots": "Cho khach ({count})",
+		"paymentDetails": "Chi tiet thanh toan",
+		"status": {
+			"confirmed": "Da xac nhan",
+			"pending": "Cho thanh toan",
+			"cancelled": "Da huy"
+		}
+	},
+	"auth": {
+		"login": {
+			"title": "Chao mung tro lai",
+			"subtitle": "Dang nhap de dat buoi choi pickleball",
+			"googleButton": "Tiep tuc voi Google",
+			"facebookButton": "Tiep tuc voi Facebook",
+			"or": "Hoac",
+			"browseWithoutSignIn": "Xem buoi choi ma khong dang nhap",
+			"termsText": "Khi dang nhap, ban dong y voi",
+			"termsLink": "Dieu khoan dich vu",
+			"and": "va",
+			"privacyLink": "Chinh sach bao mat",
+			"backToHome": "Quay lai trang chu"
+		},
+		"callback": {
+			"signingIn": "Dang dang nhap...",
+			"pleaseWait": "Vui long doi trong khi chung toi xac thuc",
+			"failed": "Xac thuc that bai",
+			"redirecting": "Chuyen huong den trang dang nhap sau 5 giay..."
+		}
+	},
+	"sessionDetail": {
+		"loadingSession": "Dang tai buoi choi...",
+		"backToSessions": "Quay lai danh sach",
+		"location": "Dia diem",
+		"dateTime": "Ngay & Gio",
+		"availability": "Con trong",
+		"spotsOf": "{available} / {total} cho con trong",
+		"price": "Gia",
+		"perPerson": "moi nguoi",
+		"bookYourSpot": "Dat cho cua ban",
+		"sessionCancelled": "Buoi choi nay da bi huy",
+		"sessionFull": "Buoi choi nay da het cho",
+		"sessionStarted": "Buoi choi nay da bat dau",
+		"numberOfGuests": "So khach di cung",
+		"justMe": "Chi minh toi",
+		"guest": "{count} khach",
+		"guests": "{count} khach",
+		"maxGuests": "Toi da 3 khach moi lan dat",
+		"paymentMethod": "Phuong thuc thanh toan",
+		"stripe": "The tin dung (Stripe)",
+		"qrComingSoon": "Thanh toan QR (Sap co)",
+		"pricePerPerson": "Gia moi nguoi",
+		"numberOfPeople": "So nguoi",
+		"total": "Tong",
+		"creatingBooking": "Dang tao dat cho...",
+		"paymentTime": "Ban co 30 phut de hoan tat thanh toan",
+		"onlySpotsAvailable": "Chi con {count} cho trong"
+	},
+	"organizer": {
+		"createSession": {
+			"pageTitle": "Tao buoi choi",
+			"title": "Tao buoi choi moi",
+			"subtitle": "Len lich buoi choi pickleball moi",
+			"backToSessions": "Quay lai danh sach",
+			"form": {
+				"title": "Tieu de",
+				"titlePlaceholder": "Pickleball Sang Chu Nhat",
+				"description": "Mo ta",
+				"descriptionPlaceholder": "Mo ta tuy chon cho buoi choi...",
+				"location": "Dia diem",
+				"locationPlaceholder": "Trung tam The thao Ha Noi",
+				"startTime": "Thoi gian bat dau",
+				"endTime": "Thoi gian ket thuc",
+				"maxSlots": "So cho toi da",
+				"priceVnd": "Gia (VND)",
+				"earlyAccess": "Truy cap som ket thuc luc (Tuy chon)",
+				"earlyAccessNote": "Thanh vien duoc truy cap som den thoi gian nay (Tinh nang giai doan 2)",
+				"required": "*"
+			},
+			"errors": {
+				"endTimeAfterStart": "Thoi gian ket thuc phai sau thoi gian bat dau",
+				"startTimeInFuture": "Thoi gian bat dau phai trong tuong lai",
+				"createFailed": "Khong the tao buoi choi"
+			},
+			"buttons": {
+				"creating": "Dang tao...",
+				"create": "Tao buoi choi",
+				"cancel": "Huy"
+			}
+		}
+	},
+	"admin": {
+		"sessions": {
+			"pageTitle": "Quan tri - Buoi choi",
+			"title": "Quan ly buoi choi",
+			"subtitle": "Xem va quan ly tat ca buoi choi pickleball",
+			"createSession": "Tao buoi choi",
+			"loadingText": "Dang tai buoi choi...",
+			"noSessions": "Khong co buoi choi",
+			"noSessionsDesc": "Tao buoi choi pickleball dau tien",
+			"table": {
+				"session": "Buoi choi",
+				"dateTime": "Ngay/Gio",
+				"slots": "Cho",
+				"price": "Gia",
+				"status": "Trang thai",
+				"actions": "Hanh dong"
+			},
+			"status": {
+				"cancelled": "Da huy",
+				"active": "Dang hoat dong"
+			},
+			"actions": {
+				"view": "Xem",
+				"delete": "Xoa"
+			},
+			"confirmDelete": "Ban co chac muon xoa \"{title}\"?",
+			"updateFailed": "Khong the cap nhat buoi choi",
+			"deleteFailed": "Khong the xoa buoi choi"
+		}
+	},
+	"payment": {
+		"pageTitle": "Thanh toan",
+		"loadingPayment": "Dang tai thanh toan...",
+		"completePayment": "Hoan tat thanh toan",
+		"viewBooking": "Xem dat cho",
+		"alreadyPaid": "Dat cho nay da duoc thanh toan",
+		"bookingCancelled": "Dat cho nay da bi huy",
+		"methodNotSupported": "Phuong thuc thanh toan nay chua duoc ho tro",
+		"failedToLoad": "Khong the tai dat cho",
+		"failedToInit": "Khong the khoi tao thanh toan",
+		"paymentNotInit": "He thong thanh toan chua duoc khoi tao",
+		"paymentFailed": "Thanh toan that bai",
+		"processing": "Dang xu ly...",
+		"pay": "Thanh toan {amount}",
+		"completeBy": "Hoan tat thanh toan truoc {date} de xac nhan dat cho",
+		"securedByStripe": "Thanh toan duoc xu ly an toan boi Stripe",
+		"orderSummary": "Tom tat don hang",
+		"total": "Tong",
+		"securePayment": "Thanh toan an toan",
+		"securePaymentDesc": "Thong tin thanh toan cua ban duoc ma hoa va xu ly an toan boi Stripe. Chung toi khong luu thong tin the cua ban."
+	},
+	"languages": {
+		"en": "English",
+		"vi": "Tieng Viet"
+	}
+}

@@ -1,12 +1,44 @@
+<script lang="ts" module>
+	import { type VariantProps, tv } from "tailwind-variants";
+
+	export const sectionHeaderVariants = tv({
+		slots: {
+			wrapper: "mb-8",
+			title: "font-bold font-display",
+			subtitle: "mt-2",
+			actions: "flex items-center gap-3",
+		},
+		variants: {
+			centered: {
+				true: { wrapper: "text-center" },
+				false: { wrapper: "flex items-center justify-between" },
+			},
+			size: {
+				default: { title: "text-3xl sm:text-4xl", subtitle: "text-lg" },
+				sm: { title: "text-2xl sm:text-3xl", subtitle: "text-base" },
+				lg: { title: "text-4xl sm:text-5xl", subtitle: "text-xl" },
+			},
+		},
+		defaultVariants: {
+			centered: false,
+			size: "default",
+		},
+	});
+
+	export type SectionHeaderSize = VariantProps<typeof sectionHeaderVariants>["size"];
+</script>
+
 <script lang="ts">
 	import type { Snippet } from 'svelte';
 	import { GradientText } from '$lib/components/ui/gradient-text';
+	import { cn } from "$lib/utils";
 
 	interface Props {
 		title: string;
 		subtitle?: string;
 		gradient?: boolean;
 		centered?: boolean;
+		size?: SectionHeaderSize;
 		actions?: Snippet;
 		class?: string;
 	}
@@ -16,14 +48,17 @@
 		subtitle,
 		gradient = false,
 		centered = false,
+		size = 'default',
 		actions,
 		class: className = ''
 	}: Props = $props();
+
+	const styles = $derived(sectionHeaderVariants({ centered, size }));
 </script>
 
-<div class="mb-8 {centered ? 'text-center' : 'flex items-center justify-between'} {className}">
+<div class={cn(styles.wrapper(), className)}>
 	<div>
-		<h1 class="text-3xl sm:text-4xl font-bold text-gray-800" style="font-family: 'Baloo 2', sans-serif;">
+		<h1 class={styles.title()} style="color: var(--color-heading);">
 			{#if gradient}
 				<GradientText>{title}</GradientText>
 			{:else}
@@ -31,11 +66,11 @@
 			{/if}
 		</h1>
 		{#if subtitle}
-			<p class="mt-2 text-lg text-gray-600">{subtitle}</p>
+			<p class={styles.subtitle()} style="color: var(--color-body);">{subtitle}</p>
 		{/if}
 	</div>
 	{#if actions && !centered}
-		<div class="flex items-center gap-3">
+		<div class={styles.actions()}>
 			{@render actions()}
 		</div>
 	{/if}

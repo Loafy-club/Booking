@@ -23,6 +23,21 @@ impl SupabaseStorage {
         }
     }
 
+    /// Build storage object URL
+    fn object_url(&self, bucket: &str, path: &str) -> String {
+        format!("{}/storage/v1/object/{}/{}", self.url, bucket, path)
+    }
+
+    /// Build public URL for an object
+    fn public_url(&self, bucket: &str, path: &str) -> String {
+        format!("{}/storage/v1/object/public/{}/{}", self.url, bucket, path)
+    }
+
+    /// Get authorization header value
+    fn auth_header(&self) -> String {
+        format!("Bearer {}", self.service_key)
+    }
+
     /// Upload file to Supabase Storage
     pub async fn upload_file(
         &self,
@@ -31,19 +46,14 @@ impl SupabaseStorage {
         file_bytes: Vec<u8>,
         content_type: &str,
     ) -> Result<String> {
-        let url = format!(
-            "{}/storage/v1/object/{}/{}",
-            self.url, bucket, path
-        );
-
         let form = multipart::Form::new()
             .part("file", multipart::Part::bytes(file_bytes)
                 .mime_str(content_type)?);
 
         let response = self
             .client
-            .post(&url)
-            .header("Authorization", format!("Bearer {}", self.service_key))
+            .post(&self.object_url(bucket, path))
+            .header("Authorization", self.auth_header())
             .multipart(form)
             .send()
             .await
@@ -55,26 +65,15 @@ impl SupabaseStorage {
             return Err(anyhow!("Supabase Storage upload error {}: {}", status, text));
         }
 
-        // Return public URL
-        let public_url = format!(
-            "{}/storage/v1/object/public/{}/{}",
-            self.url, bucket, path
-        );
-
-        Ok(public_url)
+        Ok(self.public_url(bucket, path))
     }
 
     /// Delete file from Supabase Storage
     pub async fn delete_file(&self, bucket: &str, path: &str) -> Result<()> {
-        let url = format!(
-            "{}/storage/v1/object/{}/{}",
-            self.url, bucket, path
-        );
-
         let response = self
             .client
-            .delete(&url)
-            .header("Authorization", format!("Bearer {}", self.service_key))
+            .delete(&self.object_url(bucket, path))
+            .header("Authorization", self.auth_header())
             .send()
             .await
             .map_err(|e| anyhow!("Failed to delete file from Supabase Storage: {}", e))?;
@@ -88,6 +87,11 @@ impl SupabaseStorage {
         Ok(())
     }
 
+    /// Build sign URL for an object
+    fn sign_url(&self, bucket: &str, path: &str) -> String {
+        format!("{}/storage/v1/object/sign/{}/{}", self.url, bucket, path)
+    }
+
     /// Get signed URL for temporary access to private file
     pub async fn get_signed_url(
         &self,
@@ -95,11 +99,6 @@ impl SupabaseStorage {
         path: &str,
         expires_in: u64, // seconds
     ) -> Result<String> {
-        let url = format!(
-            "{}/storage/v1/object/sign/{}/{}",
-            self.url, bucket, path
-        );
-
         #[derive(Serialize)]
         struct SignRequest {
             #[serde(rename = "expiresIn")]
@@ -114,8 +113,8 @@ impl SupabaseStorage {
 
         let response = self
             .client
-            .post(&url)
-            .header("Authorization", format!("Bearer {}", self.service_key))
+            .post(&self.sign_url(bucket, path))
+            .header("Authorization", self.auth_header())
             .json(&SignRequest { expires_in })
             .send()
             .await

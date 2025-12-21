@@ -1,7 +1,6 @@
 use chrono::{Duration, Utc};
 use loafy_db::{models::Booking, queries::sessions, PgPool};
 use loafy_types::AppError;
-use sqlx::Postgres;
 use uuid::Uuid;
 
 use super::utils::generate_booking_code;

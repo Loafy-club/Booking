@@ -1,8 +1,9 @@
-use anyhow::{anyhow, Result};
+use anyhow::Result;
 use serde::{Deserialize, Serialize};
 
 // Temporary stub types until we integrate proper Stripe library
 #[derive(Clone)]
+#[allow(dead_code)]
 pub struct Client {
     secret_key: String,
 }
@@ -22,6 +23,7 @@ pub struct PaymentIntent {
 pub type PaymentIntentId = String;
 
 #[derive(Clone)]
+#[allow(dead_code)]
 pub struct StripePayments {
     client: Client,
 }

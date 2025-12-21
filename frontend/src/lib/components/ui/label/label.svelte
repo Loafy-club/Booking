@@ -1,20 +1,42 @@
+<script lang="ts" module>
+	import { type VariantProps, tv } from "tailwind-variants";
+
+	export const labelVariants = tv({
+		base: "flex items-center gap-2 text-sm leading-none font-medium select-none group-data-[disabled=true]:pointer-events-none group-data-[disabled=true]:opacity-50 peer-disabled:cursor-not-allowed peer-disabled:opacity-50",
+		variants: {
+			size: {
+				default: "text-sm",
+				sm: "text-xs",
+				lg: "text-base",
+			},
+		},
+		defaultVariants: {
+			size: "default",
+		},
+	});
+
+	export type LabelSize = VariantProps<typeof labelVariants>["size"];
+</script>
+
 <script lang="ts">
 	import { Label as LabelPrimitive } from "bits-ui";
 	import { cn } from "$lib/utils.js";
 
+	type Props = LabelPrimitive.RootProps & {
+		size?: LabelSize;
+	};
+
 	let {
 		ref = $bindable(null),
 		class: className,
+		size = "default",
 		...restProps
-	}: LabelPrimitive.RootProps = $props();
+	}: Props = $props();
 </script>
 
 <LabelPrimitive.Root
 	bind:ref
 	data-slot="label"
-	class={cn(
-		"flex items-center gap-2 text-sm leading-none font-medium select-none group-data-[disabled=true]:pointer-events-none group-data-[disabled=true]:opacity-50 peer-disabled:cursor-not-allowed peer-disabled:opacity-50",
-		className
-	)}
+	class={cn(labelVariants({ size }), className)}
 	{...restProps}
 />

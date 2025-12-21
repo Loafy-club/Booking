@@ -11,7 +11,6 @@ use axum_extra::{
 use loafy_db::{queries::users, models::UserWithRole, PgPool};
 use loafy_integrations::supabase::SupabaseAuth;
 use loafy_types::AppError;
-use uuid::Uuid;
 
 /// Extractor for authenticated user (required)
 /// Usage: async fn handler(AuthUser(user): AuthUser)
@@ -19,6 +18,7 @@ pub struct AuthUser(pub UserWithRole);
 
 /// Extractor for optional authenticated user
 /// Usage: async fn handler(OptionalAuthUser(user): OptionalAuthUser)
+#[allow(dead_code)]
 pub struct OptionalAuthUser(pub Option<UserWithRole>);
 
 /// Application state containing Supabase client and database pool
@@ -53,10 +53,11 @@ where
         // Get app state using FromRef
         let app_state: AppState = AppState::from_ref(state);
 
-        // Verify JWT token
+        // Verify JWT token (async)
         let claims = app_state
             .supabase
             .verify_token(token)
+            .await
             .map_err(|e| {
                 (
                     StatusCode::UNAUTHORIZED,
@@ -64,19 +65,11 @@ where
                 )
             })?;
 
-        // Get user ID from claims
-        let user_id: Uuid = claims
-            .sub
-            .parse()
-            .map_err(|_| {
-                (
-                    StatusCode::UNAUTHORIZED,
-                    "Invalid user ID in token".to_string(),
-                )
-            })?;
+        // Get Supabase user ID from claims (stored as auth_provider_id in our DB)
+        let supabase_user_id = &claims.sub;
 
-        // Fetch user from database
-        let user = users::find_with_role_by_id(&app_state.db, user_id)
+        // Fetch user from database by auth_provider_id
+        let user = users::find_with_role_by_auth_provider_id(&app_state.db, supabase_user_id)
             .await
             .map_err(|e| {
                 (
@@ -115,20 +108,17 @@ where
         // Get app state using FromRef
         let app_state: AppState = AppState::from_ref(state);
 
-        // Verify JWT token
-        let claims = match app_state.supabase.verify_token(&token) {
+        // Verify JWT token (async)
+        let claims = match app_state.supabase.verify_token(&token).await {
             Ok(claims) => claims,
             Err(_) => return Ok(OptionalAuthUser(None)), // Invalid token, return None
         };
 
-        // Get user ID from claims
-        let user_id: Uuid = match claims.sub.parse() {
-            Ok(id) => id,
-            Err(_) => return Ok(OptionalAuthUser(None)),
-        };
+        // Get Supabase user ID from claims
+        let supabase_user_id = &claims.sub;
 
-        // Fetch user from database
-        let user = users::find_with_role_by_id(&app_state.db, user_id)
+        // Fetch user from database by auth_provider_id
+        let user = users::find_with_role_by_auth_provider_id(&app_state.db, supabase_user_id)
             .await
             .map_err(|e| {
                 (

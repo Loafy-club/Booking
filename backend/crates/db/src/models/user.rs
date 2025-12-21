@@ -15,6 +15,7 @@ pub struct User {
     pub auth_provider_id: String,
     pub created_at: DateTime<Utc>,
     pub updated_at: DateTime<Utc>,
+    pub deleted_at: Option<DateTime<Utc>>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, FromRow)]
@@ -37,6 +38,7 @@ pub struct UserWithRole {
     pub auth_provider_id: String,
     pub user_created_at: DateTime<Utc>,
     pub user_updated_at: DateTime<Utc>,
+    pub user_deleted_at: Option<DateTime<Utc>>,
     // Role fields
     pub role_name: String,
 }
@@ -56,5 +58,9 @@ impl UserWithRole {
 
     pub fn is_moderator(&self) -> bool {
         self.role_name == "moderator" || self.is_admin()
+    }
+
+    pub fn is_deleted(&self) -> bool {
+        self.user_deleted_at.is_some()
     }
 }

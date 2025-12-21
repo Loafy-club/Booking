@@ -65,6 +65,126 @@
 	--color-sunset-pink: hsl(340 70% 80%);
 	--color-sunset-orange: hsl(25 90% 70%);
 	--color-sunset-gold: hsl(45 90% 65%);
+
+	/* Glass card background */
+	--color-glass: rgba(255, 255, 255, 0.8);
+	--color-glass-border: rgba(255, 255, 255, 0.3);
+
+	/* Page gradient stops */
+	--color-page-from: hsl(200 80% 96%);
+	--color-page-via: hsl(32 95% 97%);
+	--color-page-to: hsl(340 80% 96%);
+
+	/* Decorative blobs */
+	--color-blob-yellow: rgba(253, 224, 71, 0.4);
+	--color-blob-orange: rgba(253, 186, 116, 0.4);
+	--color-blob-pink: rgba(249, 168, 212, 0.4);
+	--color-blob-rose: rgba(253, 164, 175, 0.3);
+
+	/* Heading and body text */
+	--color-heading: hsl(240 20% 20%);
+	--color-body: hsl(240 10% 35%);
+	--color-subtle: hsl(240 10% 50%);
+
+	/* Sidebar/tab colors */
+	--color-tab-inactive: hsl(240 10% 45%);
+	--color-tab-hover: hsl(240 10% 95%);
+
+	/* Alert colors */
+	--color-success-bg: hsl(142 76% 96%);
+	--color-success-border: hsl(142 76% 85%);
+	--color-success-text: hsl(142 70% 30%);
+
+	--color-error-bg: hsl(0 84% 96%);
+	--color-error-border: hsl(0 84% 85%);
+	--color-error-text: hsl(0 70% 35%);
+
+	/* Role badge colors */
+	--color-badge-admin-bg: hsl(270 80% 94%);
+	--color-badge-admin-text: hsl(270 70% 35%);
+	--color-badge-organizer-bg: hsl(200 80% 94%);
+	--color-badge-organizer-text: hsl(200 70% 35%);
+	--color-badge-user-bg: hsl(220 15% 93%);
+	--color-badge-user-text: hsl(220 10% 25%);
+}
+
+/* Dark mode overrides */
+.dark {
+	--color-primary: hsl(32 95% 55%);
+	--color-primary-foreground: hsl(0 0% 100%);
+
+	--color-secondary: hsl(340 40% 20%);
+	--color-secondary-foreground: hsl(340 60% 80%);
+
+	--color-accent: hsl(200 40% 20%);
+	--color-accent-foreground: hsl(200 60% 80%);
+
+	--color-muted: hsl(240 10% 20%);
+	--color-muted-foreground: hsl(240 10% 65%);
+
+	--color-background: hsl(240 10% 10%);
+	--color-foreground: hsl(0 0% 95%);
+
+	--color-card: hsl(240 10% 15%);
+	--color-card-foreground: hsl(0 0% 95%);
+
+	--color-popover: hsl(240 10% 15%);
+	--color-popover-foreground: hsl(0 0% 95%);
+
+	--color-destructive: hsl(0 60% 50%);
+	--color-destructive-foreground: hsl(0 0% 100%);
+
+	--color-border: hsl(240 10% 25%);
+	--color-input: hsl(240 10% 25%);
+	--color-ring: hsl(32 95% 55%);
+
+	/* Pastel colors adjusted for dark mode */
+	--color-pastel-pink: hsl(340 40% 25%);
+	--color-pastel-blue: hsl(200 40% 25%);
+	--color-pastel-mint: hsl(160 30% 20%);
+	--color-pastel-peach: hsl(20 40% 25%);
+	--color-pastel-lavender: hsl(270 30% 25%);
+
+	/* Glass card for dark mode */
+	--color-glass: rgba(31, 41, 55, 0.8);
+	--color-glass-border: rgba(55, 65, 81, 0.5);
+
+	/* Page gradient for dark mode */
+	--color-page-from: hsl(240 10% 8%);
+	--color-page-via: hsl(240 10% 12%);
+	--color-page-to: hsl(240 10% 8%);
+
+	/* Decorative blobs for dark mode */
+	--color-blob-yellow: rgba(249, 115, 22, 0.1);
+	--color-blob-orange: rgba(236, 72, 153, 0.1);
+	--color-blob-pink: rgba(168, 85, 247, 0.1);
+	--color-blob-rose: rgba(244, 63, 94, 0.1);
+
+	/* Text colors for dark mode */
+	--color-heading: hsl(0 0% 95%);
+	--color-body: hsl(240 10% 75%);
+	--color-subtle: hsl(240 10% 60%);
+
+	/* Sidebar/tab colors for dark mode */
+	--color-tab-inactive: hsl(240 10% 65%);
+	--color-tab-hover: hsl(240 10% 20%);
+
+	/* Alert colors for dark mode */
+	--color-success-bg: hsl(142 40% 15%);
+	--color-success-border: hsl(142 40% 25%);
+	--color-success-text: hsl(142 60% 70%);
+
+	--color-error-bg: hsl(0 40% 15%);
+	--color-error-border: hsl(0 40% 25%);
+	--color-error-text: hsl(0 60% 70%);
+
+	/* Role badge colors for dark mode */
+	--color-badge-admin-bg: hsl(270 40% 25%);
+	--color-badge-admin-text: hsl(270 60% 80%);
+	--color-badge-organizer-bg: hsl(200 40% 25%);
+	--color-badge-organizer-text: hsl(200 60% 80%);
+	--color-badge-user-bg: hsl(220 15% 30%);
+	--color-badge-user-text: hsl(220 10% 80%);
 }
 
 @layer base {
@@ -76,6 +196,7 @@
 		background-color: var(--color-background);
 		color: var(--color-foreground);
 		font-feature-settings: "rlig" 1, "calt" 1;
+		transition: background-color 0.3s ease, color 0.3s ease;
 	}
 
 	/* Smooth scrolling */
@@ -129,26 +250,43 @@
 		-webkit-text-fill-color: transparent;
 		background-clip: text;
 	}
+}
 
-	/* Parallax utilities */
-	.parallax-container {
-		perspective: 1px;
-		overflow-x: hidden;
-		overflow-y: auto;
-		height: 100vh;
-	}
+/* ============================================
+   Custom Utilities using Tailwind @utility
+   These support all variants (hover, focus, responsive, etc.)
+   ============================================ */
 
-	.parallax-layer {
-		transform-style: preserve-3d;
-	}
+/* Primary gradient text (orange to pink) - commonly used for prices */
+@utility text-gradient-primary {
+	color: transparent;
+	background-clip: text;
+	background-image: linear-gradient(to right, var(--color-orange-500), var(--color-pink-500));
+}
 
-	.parallax-bg {
-		transform: translateZ(-1px) scale(2);
-	}
+/* Baloo 2 font family - the app's signature font */
+@utility font-display {
+	font-family: 'Baloo 2', sans-serif;
+}
 
-	.parallax-fg {
-		transform: translateZ(0);
-	}
+/* Parallax utilities */
+@utility parallax-container {
+	perspective: 1px;
+	overflow-x: hidden;
+	overflow-y: auto;
+	height: 100vh;
+}
+
+@utility parallax-layer {
+	transform-style: preserve-3d;
+}
+
+@utility parallax-bg {
+	transform: translateZ(-1px) scale(2);
+}
+
+@utility parallax-fg {
+	transform: translateZ(0);
 }
 
 /* Entry Animations */

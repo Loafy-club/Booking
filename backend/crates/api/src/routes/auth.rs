@@ -1,18 +1,14 @@
-use axum::{
-    extract::State,
-    http::StatusCode,
-    Json,
-    response::IntoResponse,
-};
+use axum::{extract::State, http::StatusCode, response::IntoResponse, Json};
 use axum_extra::{
     headers::{authorization::Bearer, Authorization},
     TypedHeader,
 };
-use loafy_db::{queries::users, PgPool};
-use loafy_integrations::supabase::{SupabaseAuth, SupabaseUser};
+use loafy_db::queries::users;
 use loafy_types::api::AuthUser;
 use serde::{Deserialize, Serialize};
+
 use crate::middleware::AppState;
+use crate::response::{self, ApiError};
 
 #[derive(Debug, Deserialize)]
 pub struct AuthCallbackRequest {
@@ -30,28 +26,18 @@ pub struct AuthResponse {
 pub async fn handle_callback(
     State(state): State<AppState>,
     Json(payload): Json<AuthCallbackRequest>,
-) -> Result<Json<AuthResponse>, (StatusCode, String)> {
+) -> Result<Json<AuthResponse>, ApiError> {
     // Verify token and get user from Supabase
     let supabase_user = state
         .supabase
         .get_user_from_token(&payload.token)
         .await
-        .map_err(|e| {
-            (
-                StatusCode::UNAUTHORIZED,
-                format!("Failed to verify token: {}", e),
-            )
-        })?;
+        .map_err(|e| response::unauthorized(format!("Failed to verify token: {}", e)))?;
 
     // Check if user exists in database
     let db_user = users::find_with_role_by_email(&state.db, &supabase_user.email)
         .await
-        .map_err(|e| {
-            (
-                StatusCode::INTERNAL_SERVER_ERROR,
-                format!("Database error: {}", e),
-            )
-        })?;
+        .map_err(response::db_error)?;
 
     // Create user if doesn't exist
     let user = match db_user {
@@ -68,47 +54,18 @@ pub async fn handle_callback(
                 "user", // Default role
             )
             .await
-            .map_err(|e| {
-                (
-                    StatusCode::INTERNAL_SERVER_ERROR,
-                    format!("Failed to create user: {}", e),
-                )
-            })?;
+            .map_err(|e| response::internal_error_msg("Failed to create user", e))?;
 
             // Fetch user with role
             users::find_with_role_by_id(&state.db, new_user.id)
                 .await
-                .map_err(|e| {
-                    (
-                        StatusCode::INTERNAL_SERVER_ERROR,
-                        format!("Database error: {}", e),
-                    )
-                })?
-                .ok_or_else(|| {
-                    (
-                        StatusCode::INTERNAL_SERVER_ERROR,
-                        "Failed to fetch created user".to_string(),
-                    )
-                })?
+                .map_err(response::db_error)?
+                .ok_or_else(|| response::internal_error("Failed to fetch created user"))?
         }
     };
 
-    // Convert to API response type
-    let auth_user = AuthUser {
-        id: user.id,
-        email: user.email.clone(),
-        name: user.name.clone(),
-        avatar_url: user.avatar_url.clone(),
-        role: match user.role_name.as_str() {
-            "admin" => loafy_types::enums::UserRole::Admin,
-            "organizer" => loafy_types::enums::UserRole::Organizer,
-            "moderator" => loafy_types::enums::UserRole::Moderator,
-            _ => loafy_types::enums::UserRole::User,
-        },
-    };
-
     Ok(Json(AuthResponse {
-        user: auth_user,
+        user: user.into(),
         token: payload.token,
     }))
 }
@@ -116,40 +73,22 @@ pub async fn handle_callback(
 /// Get current authenticated user
 pub async fn get_current_user(
     crate::middleware::AuthUser(user): crate::middleware::AuthUser,
-) -> Result<Json<AuthUser>, (StatusCode, String)> {
-    let auth_user = AuthUser {
-        id: user.id,
-        email: user.email.clone(),
-        name: user.name.clone(),
-        avatar_url: user.avatar_url.clone(),
-        role: match user.role_name.as_str() {
-            "admin" => loafy_types::enums::UserRole::Admin,
-            "organizer" => loafy_types::enums::UserRole::Organizer,
-            "moderator" => loafy_types::enums::UserRole::Moderator,
-            _ => loafy_types::enums::UserRole::User,
-        },
-    };
-
-    Ok(Json(auth_user))
+) -> Result<Json<AuthUser>, ApiError> {
+    Ok(Json(user.into()))
 }
 
 /// Logout user (signs out from Supabase)
 pub async fn logout(
     State(state): State<AppState>,
     TypedHeader(Authorization(bearer)): TypedHeader<Authorization<Bearer>>,
-) -> Result<impl IntoResponse, (StatusCode, String)> {
+) -> Result<impl IntoResponse, ApiError> {
     let token = bearer.token();
 
     state
         .supabase
         .sign_out(token)
         .await
-        .map_err(|e| {
-            (
-                StatusCode::INTERNAL_SERVER_ERROR,
-                format!("Failed to sign out: {}", e),
-            )
-        })?;
+        .map_err(|e| response::internal_error_msg("Failed to sign out", e))?;
 
     Ok(StatusCode::NO_CONTENT)
 }

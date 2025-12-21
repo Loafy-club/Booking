@@ -1,4 +1,4 @@
-import { createClient, type SupabaseClient } from '@supabase/supabase-js';
+import { createClient } from '@supabase/supabase-js';
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || '';
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
@@ -10,26 +10,20 @@ const hasValidCredentials =
 	!supabaseUrl.includes('your-project') &&
 	!supabaseAnonKey.includes('your-');
 
-let supabase: SupabaseClient;
+// Create standard Supabase client with localStorage for PKCE storage
+// This works better for client-side OAuth than cookie-based SSR storage
+export const supabase = hasValidCredentials
+	? createClient(supabaseUrl, supabaseAnonKey, {
+			auth: {
+				flowType: 'implicit',
+				persistSession: true,
+				autoRefreshToken: true,
+				detectSessionInUrl: true
+			}
+		})
+	: createClient('https://placeholder.supabase.co', 'placeholder-key');
 
-if (hasValidCredentials) {
-	supabase = createClient(supabaseUrl, supabaseAnonKey, {
-		auth: {
-			autoRefreshToken: true,
-			persistSession: true,
-			detectSessionInUrl: true
-		}
-	});
-} else {
-	// Create a mock client for development without Supabase
+// Log warning if using placeholder credentials
+if (!hasValidCredentials) {
 	console.warn('Supabase credentials not configured. Auth features will be disabled.');
-	supabase = createClient('https://placeholder.supabase.co', 'placeholder-key', {
-		auth: {
-			autoRefreshToken: false,
-			persistSession: false,
-			detectSessionInUrl: false
-		}
-	});
 }
-
-export { supabase };

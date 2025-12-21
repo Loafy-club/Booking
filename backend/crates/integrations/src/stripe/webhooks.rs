@@ -1,8 +1,12 @@
 use anyhow::{anyhow, Result};
 use loafy_db::{queries::bookings, PgPool};
+use std::collections::HashMap;
 use uuid::Uuid;
 
-// Temporary stub for webhook handling - will implement proper Stripe webhooks later
+// ============================================================================
+// Stub Types (will be replaced with real Stripe types when integrating)
+// ============================================================================
+
 #[allow(dead_code)]
 #[derive(Debug)]
 pub enum EventType {
@@ -35,8 +39,28 @@ pub enum EventObject {
 #[derive(Debug)]
 pub struct PaymentIntentStub {
     pub id: String,
-    pub metadata: Option<std::collections::HashMap<String, String>>,
+    pub metadata: Option<HashMap<String, String>>,
 }
+
+// ============================================================================
+// Helper Functions
+// ============================================================================
+
+/// Extract booking UUID from payment intent metadata.
+/// This is a common operation across all webhook handlers.
+#[allow(dead_code)]
+fn extract_booking_id(metadata: &Option<HashMap<String, String>>) -> Result<Uuid> {
+    let booking_id = metadata
+        .as_ref()
+        .and_then(|m| m.get("booking_id"))
+        .ok_or_else(|| anyhow!("No booking_id in payment intent metadata"))?;
+
+    Uuid::parse_str(booking_id).map_err(|e| anyhow!("Invalid booking UUID: {}", e))
+}
+
+// ============================================================================
+// Public Webhook Handler
+// ============================================================================
 
 /// Handle Stripe webhook event
 pub async fn handle_stripe_webhook(
@@ -46,156 +70,59 @@ pub async fn handle_stripe_webhook(
     _pool: &PgPool,
 ) -> Result<()> {
     // TODO: Implement proper Stripe webhook verification and handling
+    // 1. Verify webhook signature using webhook_secret
+    // 2. Parse event from payload
+    // 3. Route to appropriate handler based on event type
     tracing::warn!("Using stub Stripe webhook handler - no actual processing");
     Ok(())
 }
 
-// Stub implementations - will be replaced with real Stripe integration
-#[allow(dead_code)]
-async fn handle_payment_succeeded_stub(event: Event, pool: &PgPool) -> Result<()> {
-    if let EventObject::PaymentIntent(payment_intent) = event.data.object {
-        // Get booking ID from metadata
-        let booking_id = payment_intent
-            .metadata
-            .as_ref()
-            .and_then(|m: &std::collections::HashMap<String, String>| m.get("booking_id"))
-            .ok_or_else(|| anyhow!("No booking_id in payment intent metadata"))?;
-
-        let booking_uuid = Uuid::parse_str(booking_id)
-            .map_err(|e| anyhow!("Invalid booking UUID: {}", e))?;
-
-        // Update booking status to confirmed
-        bookings::update_payment_status(pool, booking_uuid, "confirmed", Some(&payment_intent.id)).await?;
-
-        tracing::info!(
-            "Payment succeeded for booking {} (intent: {})",
-            booking_id,
-            payment_intent.id
-        );
-    }
-
-    Ok(())
-}
+// ============================================================================
+// Internal Webhook Handlers (will be called from handle_stripe_webhook)
+// ============================================================================
 
 #[allow(dead_code)]
-async fn handle_payment_failed_stub(event: Event, pool: &PgPool) -> Result<()> {
-    if let EventObject::PaymentIntent(payment_intent) = event.data.object {
-        let booking_id = payment_intent
-            .metadata
-            .as_ref()
-            .and_then(|m: &std::collections::HashMap<String, String>| m.get("booking_id"))
-            .ok_or_else(|| anyhow!("No booking_id in payment intent metadata"))?;
+async fn handle_payment_succeeded(payment_intent: PaymentIntentStub, pool: &PgPool) -> Result<()> {
+    let booking_uuid = extract_booking_id(&payment_intent.metadata)?;
 
-        let booking_uuid = Uuid::parse_str(booking_id)?;
-
-        // Update booking status to failed
-        bookings::update_payment_status(pool, booking_uuid, "failed", Some(&payment_intent.id)).await?;
-
-        tracing::warn!(
-            "Payment failed for booking {} (intent: {})",
-            booking_id,
-            payment_intent.id
-        );
-    }
-
-    Ok(())
-}
-
-#[allow(dead_code)]
-async fn handle_payment_canceled_stub(event: Event, pool: &PgPool) -> Result<()> {
-    if let EventObject::PaymentIntent(payment_intent) = event.data.object {
-        let booking_id = payment_intent
-            .metadata
-            .as_ref()
-            .and_then(|m: &std::collections::HashMap<String, String>| m.get("booking_id"))
-            .ok_or_else(|| anyhow!("No booking_id in payment intent metadata"))?;
-
-        let booking_uuid = Uuid::parse_str(booking_id)?;
-
-        // Update booking status to failed (canceled = failed)
-        bookings::update_payment_status(pool, booking_uuid, "failed", Some(&payment_intent.id)).await?;
-
-        tracing::info!(
-            "Payment canceled for booking {} (intent: {})",
-            booking_id,
-            payment_intent.id
-        );
-    }
-
-    Ok(())
-}
-
-async fn handle_payment_succeeded(event: Event, pool: &PgPool) -> Result<()> {
-    if let EventObject::PaymentIntent(payment_intent) = event.data.object {
-        // Get booking ID from metadata
-        let booking_id = payment_intent
-            .metadata
-            .as_ref()
-            .and_then(|m: &std::collections::HashMap<String, String>| m.get("booking_id"))
-            .ok_or_else(|| anyhow!("No booking_id in payment intent metadata"))?;
-
-        let booking_uuid = Uuid::parse_str(booking_id)
-            .map_err(|e| anyhow!("Invalid booking ID: {}", e))?;
-
-        // Update booking payment status
-        bookings::update_payment_status(
-            pool,
-            booking_uuid,
-            "confirmed",
-            Some(&payment_intent.id.to_string()),
-        )
+    bookings::update_payment_status(pool, booking_uuid, "confirmed", Some(&payment_intent.id))
         .await?;
 
-        tracing::info!(
-            "Payment succeeded for booking {}: {}",
-            booking_id,
-            payment_intent.id
-        );
-    }
+    tracing::info!(
+        "Payment succeeded for booking {} (intent: {})",
+        booking_uuid,
+        payment_intent.id
+    );
 
     Ok(())
 }
 
-async fn handle_payment_failed(event: Event, pool: &PgPool) -> Result<()> {
-    if let EventObject::PaymentIntent(payment_intent) = event.data.object {
-        // Get booking ID from metadata
-        let booking_id = payment_intent
-            .metadata
-            .as_ref()
-            .and_then(|m: &std::collections::HashMap<String, String>| m.get("booking_id"))
-            .ok_or_else(|| anyhow!("No booking_id in payment intent metadata"))?;
+#[allow(dead_code)]
+async fn handle_payment_failed(payment_intent: PaymentIntentStub, _pool: &PgPool) -> Result<()> {
+    let booking_uuid = extract_booking_id(&payment_intent.metadata)?;
 
-        tracing::warn!(
-            "Payment failed for booking {}: {}",
-            booking_id,
-            payment_intent.id
-        );
-
-        // Note: We don't update booking status here
-        // Let the background job handle timeout and cancellation
-    }
+    // Note: We don't update booking status on failure
+    // Let the background job handle timeout and cancellation
+    tracing::warn!(
+        "Payment failed for booking {} (intent: {})",
+        booking_uuid,
+        payment_intent.id
+    );
 
     Ok(())
 }
 
-async fn handle_payment_canceled(event: Event, pool: &PgPool) -> Result<()> {
-    if let EventObject::PaymentIntent(payment_intent) = event.data.object {
-        // Get booking ID from metadata
-        let booking_id = payment_intent
-            .metadata
-            .as_ref()
-            .and_then(|m: &std::collections::HashMap<String, String>| m.get("booking_id"))
-            .ok_or_else(|| anyhow!("No booking_id in payment intent metadata"))?;
+#[allow(dead_code)]
+async fn handle_payment_canceled(payment_intent: PaymentIntentStub, _pool: &PgPool) -> Result<()> {
+    let booking_uuid = extract_booking_id(&payment_intent.metadata)?;
 
-        tracing::info!(
-            "Payment canceled for booking {}: {}",
-            booking_id,
-            payment_intent.id
-        );
-
-        // Note: We don't update booking status here
-        // Let the background job handle timeout and cancellation
-    }
+    // Note: We don't update booking status on cancellation
+    // Let the background job handle timeout and cancellation
+    tracing::info!(
+        "Payment canceled for booking {} (intent: {})",
+        booking_uuid,
+        payment_intent.id
+    );
 
     Ok(())
 }

@@ -1,31 +1,55 @@
+<script lang="ts" module>
+	import { type VariantProps, tv } from "tailwind-variants";
+
+	export const pageBackgroundVariants = tv({
+		base: "relative min-h-screen overflow-hidden flex flex-col",
+		variants: {
+			variant: {
+				default: "",
+				hero: "",
+				subtle: "",
+			},
+		},
+		defaultVariants: {
+			variant: "default",
+		},
+	});
+
+	export type PageBackgroundVariant = VariantProps<typeof pageBackgroundVariants>["variant"];
+</script>
+
 <script lang="ts">
 	import type { Snippet } from 'svelte';
+	import Footer from '$lib/components/Footer.svelte';
+	import { cn } from "$lib/utils";
 
 	interface Props {
 		children: Snippet;
-		variant?: 'default' | 'hero' | 'subtle';
+		variant?: PageBackgroundVariant;
 		class?: string;
+		noFooter?: boolean;
 	}
 
-	let { children, variant = 'default', class: className = '' }: Props = $props();
-
-	const gradients = {
-		default: 'from-sky-100 via-orange-50 to-rose-100',
-		hero: 'from-sky-100 via-orange-50 to-amber-50',
-		subtle: 'from-amber-50 via-orange-50/50 to-rose-50/50'
-	};
+	let { children, variant = 'default', class: className = '', noFooter = false }: Props = $props();
 </script>
 
-<div class="relative min-h-screen overflow-hidden bg-gradient-to-br {gradients[variant]} {className}">
+<div
+	class={cn(pageBackgroundVariants({ variant }), className)}
+	style="background: linear-gradient(to bottom right, var(--color-page-from), var(--color-page-via), var(--color-page-to));"
+>
 	<!-- Floating decorative blobs -->
-	<div class="absolute top-10 left-10 w-64 h-64 bg-yellow-200/40 rounded-full blur-3xl animate-float-slow pointer-events-none"></div>
-	<div class="absolute bottom-20 right-10 w-80 h-80 bg-orange-200/40 rounded-full blur-3xl animate-float-slower pointer-events-none"></div>
-	<div class="absolute top-1/3 right-1/4 w-48 h-48 bg-pink-200/40 rounded-full blur-3xl animate-float pointer-events-none"></div>
-	<div class="absolute bottom-1/3 left-1/4 w-56 h-56 bg-rose-200/30 rounded-full blur-3xl animate-float-slow pointer-events-none"></div>
+	<div class="absolute top-10 left-10 w-64 h-64 rounded-full blur-3xl animate-float-slow pointer-events-none" style="background-color: var(--color-blob-yellow);"></div>
+	<div class="absolute bottom-20 right-10 w-80 h-80 rounded-full blur-3xl animate-float-slower pointer-events-none" style="background-color: var(--color-blob-orange);"></div>
+	<div class="absolute top-1/3 right-1/4 w-48 h-48 rounded-full blur-3xl animate-float pointer-events-none" style="background-color: var(--color-blob-pink);"></div>
+	<div class="absolute bottom-1/3 left-1/4 w-56 h-56 rounded-full blur-3xl animate-float-slow pointer-events-none" style="background-color: var(--color-blob-rose);"></div>
 
-	<div class="relative">
+	<div class="relative flex-1">
 		{@render children()}
 	</div>
+
+	{#if !noFooter}
+		<Footer />
+	{/if}
 </div>
 
 <style>

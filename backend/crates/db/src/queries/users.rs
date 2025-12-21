@@ -3,82 +3,79 @@ use anyhow::Result;
 use sqlx::PgPool;
 use uuid::Uuid;
 
+/// Base SQL query for selecting user with role.
+/// Reused across multiple query functions to avoid duplication.
+const USER_WITH_ROLE_SELECT: &str = r#"
+    SELECT
+        u.id,
+        u.email,
+        u.name,
+        u.avatar_url,
+        u.phone,
+        u.role_id,
+        u.auth_provider,
+        u.auth_provider_id,
+        u.created_at as user_created_at,
+        u.updated_at as user_updated_at,
+        u.deleted_at as user_deleted_at,
+        r.name as role_name
+    FROM users u
+    JOIN roles r ON u.role_id = r.id
+"#;
+
 /// Find user by email
 pub async fn find_by_email(pool: &PgPool, email: &str) -> Result<Option<User>> {
-    let user = sqlx::query_as::<_, User>(
-        "SELECT * FROM users WHERE email = $1"
-    )
-    .bind(email)
-    .fetch_optional(pool)
-    .await?;
+    let user = sqlx::query_as::<_, User>("SELECT * FROM users WHERE email = $1")
+        .bind(email)
+        .fetch_optional(pool)
+        .await?;
 
     Ok(user)
 }
 
 /// Find user by ID
 pub async fn find_by_id(pool: &PgPool, id: Uuid) -> Result<Option<User>> {
-    let user = sqlx::query_as::<_, User>(
-        "SELECT * FROM users WHERE id = $1"
-    )
-    .bind(id)
-    .fetch_optional(pool)
-    .await?;
+    let user = sqlx::query_as::<_, User>("SELECT * FROM users WHERE id = $1")
+        .bind(id)
+        .fetch_optional(pool)
+        .await?;
 
     Ok(user)
 }
 
 /// Find user with role by ID
 pub async fn find_with_role_by_id(pool: &PgPool, id: Uuid) -> Result<Option<UserWithRole>> {
-    let user = sqlx::query_as::<_, UserWithRole>(
-        r#"
-        SELECT
-            u.id,
-            u.email,
-            u.name,
-            u.avatar_url,
-            u.phone,
-            u.role_id,
-            u.auth_provider,
-            u.auth_provider_id,
-            u.created_at as user_created_at,
-            u.updated_at as user_updated_at,
-            r.name as role_name
-        FROM users u
-        JOIN roles r ON u.role_id = r.id
-        WHERE u.id = $1
-        "#
-    )
-    .bind(id)
-    .fetch_optional(pool)
-    .await?;
+    let query = format!("{} WHERE u.id = $1", USER_WITH_ROLE_SELECT);
+    let user = sqlx::query_as::<_, UserWithRole>(&query)
+        .bind(id)
+        .fetch_optional(pool)
+        .await?;
+
+    Ok(user)
+}
+
+/// Find user with role by auth provider ID (Supabase user ID)
+/// Excludes soft-deleted users
+pub async fn find_with_role_by_auth_provider_id(
+    pool: &PgPool,
+    auth_provider_id: &str,
+) -> Result<Option<UserWithRole>> {
+    let query = format!("{} WHERE u.auth_provider_id = $1 AND u.deleted_at IS NULL", USER_WITH_ROLE_SELECT);
+    let user = sqlx::query_as::<_, UserWithRole>(&query)
+        .bind(auth_provider_id)
+        .fetch_optional(pool)
+        .await?;
 
     Ok(user)
 }
 
 /// Find user with role by email
 pub async fn find_with_role_by_email(pool: &PgPool, email: &str) -> Result<Option<UserWithRole>> {
-    let user = sqlx::query_as::<_, UserWithRole>(
-        r#"
-        SELECT
-            u.id,
-            u.email,
-            u.name,
-            u.avatar_url,
-            u.phone,
-            u.role_id,
-            u.auth_provider,
-            u.auth_provider_id,
-            u.created_at as user_created_at,
-            u.updated_at as user_updated_at,
-            r.name as role_name
-        FROM users u
-        JOIN roles r ON u.role_id = r.id
-        WHERE u.email = $1
-        "#
-    )
-    .bind(email)
-    .fetch_optional(pool)
-    .await?;
+    let query = format!("{} WHERE u.email = $1", USER_WITH_ROLE_SELECT);
+    let user = sqlx::query_as::<_, UserWithRole>(&query)
+        .bind(email)
+        .fetch_optional(pool)
+        .await?;
 
     Ok(user)
 }
@@ -184,4 +181,79 @@ pub async fn update_user_role(
     .await?;
 
     Ok(user)
+}
+
+/// Soft delete user - marks as deleted and clears PII while preserving records.
+/// Returns an error if user is an organizer with active sessions.
+pub async fn delete_user(pool: &PgPool, user_id: Uuid) -> Result<()> {
+    let mut tx = pool.begin().await?;
+
+    // Check if user has any sessions as organizer
+    let session_count: (i64,) = sqlx::query_as(
+        "SELECT COUNT(*) FROM sessions WHERE organizer_id = $1 AND cancelled = false"
+    )
+    .bind(user_id)
+    .fetch_one(&mut *tx)
+    .await?;
+
+    if session_count.0 > 0 {
+        return Err(anyhow::anyhow!(
+            "Cannot delete account with active sessions. Please cancel or transfer your sessions first."
+        ));
+    }
+
+    // Cancel pending bookings and release slots back to sessions
+    let pending_bookings: Vec<(Uuid, i32, Uuid)> = sqlx::query_as(
+        r#"
+        SELECT id, guest_count, session_id
+        FROM bookings
+        WHERE user_id = $1 AND payment_status = 'pending'
+        "#
+    )
+    .bind(user_id)
+    .fetch_all(&mut *tx)
+    .await?;
+
+    for (_, guest_count, session_id) in &pending_bookings {
+        let slots_to_release = 1 + guest_count; // User + guests
+        sqlx::query(
+            "UPDATE sessions SET available_slots = available_slots + $1 WHERE id = $2"
+        )
+        .bind(slots_to_release)
+        .bind(session_id)
+        .execute(&mut *tx)
+        .await?;
+    }
+
+    // Cancel pending bookings (keep records but mark as cancelled)
+    sqlx::query(
+        r#"
+        UPDATE bookings
+        SET payment_status = 'cancelled', cancelled_at = NOW()
+        WHERE user_id = $1 AND payment_status = 'pending'
+        "#
+    )
+    .bind(user_id)
+    .execute(&mut *tx)
+    .await?;
+
+    // Soft delete the user: set deleted_at and clear PII for privacy
+    sqlx::query(
+        r#"
+        UPDATE users
+        SET deleted_at = NOW(),
+            name = NULL,
+            avatar_url = NULL,
+            phone = NULL,
+            updated_at = NOW()
+        WHERE id = $1
+        "#
+    )
+    .bind(user_id)
+    .execute(&mut *tx)
+    .await?;
+
+    tx.commit().await?;
+
+    Ok(())
 }

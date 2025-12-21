@@ -1,7 +1,7 @@
 use crate::models::Session;
 use anyhow::Result;
 use chrono::{NaiveDate, NaiveTime};
-use sqlx::PgPool;
+use sqlx::{PgPool, QueryBuilder, Postgres};
 use uuid::Uuid;
 
 /// List upcoming sessions with optional filters
@@ -11,31 +11,34 @@ pub async fn list_sessions(
     organizer_id: Option<Uuid>,
     only_available: bool,
 ) -> Result<Vec<Session>> {
-    let mut query = String::from(
+    let mut query_builder: QueryBuilder<Postgres> = QueryBuilder::new(
         "SELECT * FROM sessions WHERE cancelled = false"
     );
 
-    // Add date filter
+    // Add date filter with parameterized query
     if let Some(date) = from_date {
-        query.push_str(&format!(" AND date >= '{}'", date));
+        query_builder.push(" AND date >= ");
+        query_builder.push_bind(date);
     } else {
         // Default: only future sessions
-        query.push_str(" AND date >= CURRENT_DATE");
+        query_builder.push(" AND date >= CURRENT_DATE");
     }
 
-    // Add organizer filter
+    // Add organizer filter with parameterized query
     if let Some(org_id) = organizer_id {
-        query.push_str(&format!(" AND organizer_id = '{}'", org_id));
+        query_builder.push(" AND organizer_id = ");
+        query_builder.push_bind(org_id);
     }
 
     // Add availability filter
     if only_available {
-        query.push_str(" AND available_slots > 0");
+        query_builder.push(" AND available_slots > 0");
     }
 
-    query.push_str(" ORDER BY date ASC, time ASC");
+    query_builder.push(" ORDER BY date ASC, time ASC");
 
-    let sessions = sqlx::query_as::<_, Session>(&query)
+    let sessions = query_builder
+        .build_query_as::<Session>()
         .fetch_all(pool)
         .await?;
 

@@ -1,51 +1,76 @@
 import { supabase } from '$lib/auth/supabase';
 import { api } from '$lib/api/client';
-import type { User as SupabaseUser } from '@supabase/supabase-js';
+import type { User as SupabaseUser, Session, Subscription } from '@supabase/supabase-js';
 
 export interface User {
 	id: string;
 	email: string;
-	full_name?: string;
-	phone_number?: string;
+	name?: string;
+	phone?: string;
+	avatar_url?: string;
 	role: 'user' | 'organizer' | 'admin';
-	created_at: string;
 }
+
+// Module-level tracking to survive HMR
+let authSubscription: Subscription | null = null;
+let cachedSupabaseUser: SupabaseUser | null = null;
 
 class AuthStore {
 	user = $state<User | null>(null);
-	supabaseUser = $state<SupabaseUser | null>(null);
+	supabaseUser = $state<SupabaseUser | null>(cachedSupabaseUser);
 	loading = $state(true);
 	initialized = $state(false);
 
-	async initialize() {
-		if (this.initialized) return;
+	async initialize(session?: Session | null) {
+		// If we have cached user from previous HMR cycle, restore it
+		if (cachedSupabaseUser && !this.supabaseUser) {
+			this.supabaseUser = cachedSupabaseUser;
+		}
+
+		// Skip if already initialized this instance
+		if (this.initialized) {
+			this.loading = false;
+			return;
+		}
 
 		try {
-			// Get current Supabase session
-			const {
-				data: { session }
-			} = await supabase.auth.getSession();
-
-			if (session?.user) {
-				this.supabaseUser = session.user;
-				await this.fetchUser();
+			// Use provided session or get from Supabase
+			let currentSession = session;
+			if (!currentSession) {
+				const { data } = await supabase.auth.getSession();
+				currentSession = data.session;
 			}
 
-			// Listen to auth changes
-			supabase.auth.onAuthStateChange(async (event, session) => {
-				console.log('Auth state changed:', event);
+			if (currentSession?.user) {
+				this.supabaseUser = currentSession.user as SupabaseUser;
+				cachedSupabaseUser = currentSession.user as SupabaseUser;
+				// Don't await fetchUser - let it complete in background
+				this.fetchUser();
+			}
 
+			// Clean up any existing subscription before creating a new one
+			if (authSubscription) {
+				authSubscription.unsubscribe();
+				authSubscription = null;
+			}
+
+			// Set up the auth state change listener
+			const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
 				if (event === 'SIGNED_IN' && session?.user) {
 					this.supabaseUser = session.user;
-					await this.fetchUser();
+					cachedSupabaseUser = session.user;
+					this.fetchUser();
 				} else if (event === 'SIGNED_OUT') {
 					this.user = null;
 					this.supabaseUser = null;
+					cachedSupabaseUser = null;
 				} else if (event === 'TOKEN_REFRESHED' && session?.user) {
 					this.supabaseUser = session.user;
+					cachedSupabaseUser = session.user;
 				}
 			});
 
+			authSubscription = subscription;
 			this.initialized = true;
 		} catch (error) {
 			console.error('Failed to initialize auth:', error);
@@ -64,46 +89,39 @@ class AuthStore {
 		}
 	}
 
-	async signInWithGoogle() {
-		const { error } = await supabase.auth.signInWithOAuth({
-			provider: 'google',
+	/**
+	 * Generic OAuth sign-in method that works with any provider.
+	 * Redirects to the provider's OAuth flow.
+	 */
+	private async signInWithOAuth(provider: 'google' | 'facebook' | 'apple') {
+		const { data, error } = await supabase.auth.signInWithOAuth({
+			provider,
 			options: {
 				redirectTo: `${window.location.origin}/auth/callback`
 			}
 		});
 
 		if (error) {
-			console.error('Google sign in error:', error);
+			console.error(`${provider} sign in error:`, error);
 			throw error;
 		}
+
+		// Redirect to the OAuth URL
+		if (data?.url) {
+			window.location.href = data.url;
+		}
+	}
+
+	async signInWithGoogle() {
+		return this.signInWithOAuth('google');
 	}
 
 	async signInWithFacebook() {
-		const { error } = await supabase.auth.signInWithOAuth({
-			provider: 'facebook',
-			options: {
-				redirectTo: `${window.location.origin}/auth/callback`
-			}
-		});
-
-		if (error) {
-			console.error('Facebook sign in error:', error);
-			throw error;
-		}
+		return this.signInWithOAuth('facebook');
 	}
 
 	async signInWithApple() {
-		const { error } = await supabase.auth.signInWithOAuth({
-			provider: 'apple',
-			options: {
-				redirectTo: `${window.location.origin}/auth/callback`
-			}
-		});
-
-		if (error) {
-			console.error('Apple sign in error:', error);
-			throw error;
-		}
+		return this.signInWithOAuth('apple');
 	}
 
 	async signOut() {
@@ -120,8 +138,92 @@ class AuthStore {
 		}
 	}
 
+	/**
+	 * Permanently delete the user's account and all associated data.
+	 * This action cannot be undone.
+	 */
+	async deleteAccount() {
+		try {
+			// Call backend to delete user data
+			await api.users.deleteAccount();
+		} catch (error) {
+			console.error('Failed to delete account from backend:', error);
+			throw error;
+		}
+
+		// Sign out from Supabase (this will also invalidate the session)
+		await supabase.auth.signOut();
+		this.user = null;
+		this.supabaseUser = null;
+		cachedSupabaseUser = null;
+	}
+
+	/**
+	 * Link a new OAuth provider to the current account.
+	 * This allows users to sign in with multiple providers.
+	 */
+	async linkIdentity(provider: 'google' | 'facebook' | 'apple') {
+		const { data, error } = await supabase.auth.linkIdentity({
+			provider,
+			options: {
+				redirectTo: `${window.location.origin}/account?tab=account&linked=${provider}`
+			}
+		});
+
+		if (error) {
+			console.error(`Failed to link ${provider}:`, error);
+			throw error;
+		}
+
+		// Redirect to the OAuth URL
+		if (data?.url) {
+			window.location.href = data.url;
+		}
+	}
+
+	/**
+	 * Unlink an OAuth provider from the current account.
+	 * User must have at least one identity remaining.
+	 */
+	async unlinkIdentity(provider: string) {
+		const identity = this.identities.find(id => id.provider === provider);
+		if (!identity) {
+			throw new Error(`No identity found for provider: ${provider}`);
+		}
+
+		const { error } = await supabase.auth.unlinkIdentity(identity);
+
+		if (error) {
+			console.error('Failed to unlink identity:', error);
+			throw error;
+		}
+
+		// Refresh user data
+		const { data } = await supabase.auth.getUser();
+		if (data?.user) {
+			this.supabaseUser = data.user;
+			cachedSupabaseUser = data.user;
+		}
+	}
+
+	/**
+	 * Get the list of connected identities for the current user.
+	 */
+	get identities() {
+		return this.supabaseUser?.identities || [];
+	}
+
+	/**
+	 * Check if a specific provider is connected.
+	 */
+	isProviderConnected(provider: string): boolean {
+		return this.identities.some(id => id.provider === provider);
+	}
+
 	get isAuthenticated(): boolean {
-		return this.user !== null && this.supabaseUser !== null;
+		// User is authenticated if we have a Supabase session
+		// this.user is optional (backend profile, may fail if backend is down)
+		return this.supabaseUser !== null;
 	}
 
 	get isAdmin(): boolean {

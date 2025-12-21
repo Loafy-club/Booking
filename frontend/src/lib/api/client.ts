@@ -42,10 +42,11 @@ class ApiClient {
 		this.client.interceptors.response.use(
 			(response) => response,
 			async (error) => {
+				// Don't auto-signout on 401 - let components handle auth state
+				// This prevents logout loops during OAuth callback or when backend is unavailable
+				// The auth store will naturally show unauthenticated state if session is invalid
 				if (error.response?.status === 401) {
-					// Token expired or invalid, sign out
-					await supabase.auth.signOut();
-					window.location.href = '/auth/login';
+					console.warn('API returned 401 - authentication may be required');
 				}
 				return Promise.reject(error);
 			}
@@ -65,7 +66,14 @@ export const api = {
 	auth: {
 		me: () => apiClient.get('/api/auth/me'),
 		logout: () => apiClient.post('/api/auth/logout'),
-		callback: (code: string) => apiClient.post('/api/auth/callback', { code })
+		callback: (token: string) => apiClient.post('/api/auth/callback', { token })
+	},
+
+	// Users
+	users: {
+		updateProfile: (data: { name?: string; phone?: string; avatar_url?: string }) =>
+			apiClient.put('/api/users/me', data),
+		deleteAccount: () => apiClient.delete('/api/users/me')
 	},
 
 	// Sessions

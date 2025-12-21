@@ -31,3 +31,6 @@ yup-oauth2 = "11.0"
 
 # Base64 decoding
 base64 = "0.22"
+
+# JWT verification with JWKS
+jsonwebtoken = "9"

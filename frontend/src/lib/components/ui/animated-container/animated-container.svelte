@@ -1,10 +1,47 @@
+<script lang="ts" module>
+	import { type VariantProps, tv } from "tailwind-variants";
+
+	export const animatedContainerVariants = tv({
+		base: "transition-all ease-out",
+		variants: {
+			animation: {
+				"fade-up": "",
+				"fade-left": "",
+				"fade-right": "",
+				"scale": "",
+			},
+			visible: {
+				true: "",
+				false: "",
+			},
+		},
+		compoundVariants: [
+			{ animation: "fade-up", visible: false, class: "opacity-0 translate-y-8" },
+			{ animation: "fade-up", visible: true, class: "opacity-100 translate-y-0" },
+			{ animation: "fade-left", visible: false, class: "opacity-0 -translate-x-8" },
+			{ animation: "fade-left", visible: true, class: "opacity-100 translate-x-0" },
+			{ animation: "fade-right", visible: false, class: "opacity-0 translate-x-8" },
+			{ animation: "fade-right", visible: true, class: "opacity-100 translate-x-0" },
+			{ animation: "scale", visible: false, class: "opacity-0 scale-95" },
+			{ animation: "scale", visible: true, class: "opacity-100 scale-100" },
+		],
+		defaultVariants: {
+			animation: "fade-up",
+			visible: false,
+		},
+	});
+
+	export type AnimatedContainerAnimation = VariantProps<typeof animatedContainerVariants>["animation"];
+</script>
+
 <script lang="ts">
 	import type { Snippet } from 'svelte';
 	import { onMount } from 'svelte';
+	import { cn } from "$lib/utils";
 
 	interface Props {
 		children: Snippet;
-		animation?: 'fade-up' | 'fade-left' | 'fade-right' | 'scale';
+		animation?: AnimatedContainerAnimation;
 		delay?: number;
 		duration?: number;
 		trigger?: 'load' | 'scroll';
@@ -46,30 +83,11 @@
 			return () => observer.disconnect();
 		}
 	});
-
-	const animations = {
-		'fade-up': {
-			initial: 'opacity-0 translate-y-8',
-			visible: 'opacity-100 translate-y-0'
-		},
-		'fade-left': {
-			initial: 'opacity-0 -translate-x-8',
-			visible: 'opacity-100 translate-x-0'
-		},
-		'fade-right': {
-			initial: 'opacity-0 translate-x-8',
-			visible: 'opacity-100 translate-x-0'
-		},
-		'scale': {
-			initial: 'opacity-0 scale-95',
-			visible: 'opacity-100 scale-100'
-		}
-	};
 </script>
 
 <div
 	bind:this={element}
-	class="transition-all ease-out {visible ? animations[animation].visible : animations[animation].initial} {className}"
+	class={cn(animatedContainerVariants({ animation, visible }), className)}
 	style="transition-duration: {duration}ms;"
 >
 	{@render children()}
