@@ -13,6 +13,12 @@
 				link: "text-primary underline-offset-4 hover:underline",
 				gradient: "bg-gradient-to-r from-orange-500 to-pink-500 text-white border-0 hover:from-orange-600 hover:to-pink-600",
 				social: "w-full rounded-xl border-2 border-gray-200 bg-white hover:bg-gray-50 hover:border-gray-300 hover:shadow-md transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed",
+				// Primary: Bold solid button - main CTA
+				primary: "bg-card text-card-foreground shadow-lg hover:bg-muted border-0",
+				// Secondary: Outlined button with border
+				"secondary-outline": "bg-transparent border-2 border-current text-current hover:bg-white/10",
+				// Tertiary: Subtle text-style button
+				tertiary: "bg-white/20 text-current border border-white/30 hover:bg-white/30 backdrop-blur-sm",
 			},
 			size: {
 				default: "h-9 px-4 py-2",

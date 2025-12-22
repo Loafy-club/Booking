@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { authStore } from '$lib/stores/auth.svelte';
+	import { themeStore } from '$lib/stores/theme.svelte';
 	import { goto } from '$app/navigation';
 	import Navigation from '$lib/components/Navigation.svelte';
 	import { Button } from '$lib/components/ui/button';
@@ -13,6 +14,7 @@
 	let scrollY = $state(0);
 	let loaded = $state(false);
 	let innerHeight = $state(800);
+
 
 	onMount(() => {
 		innerHeight = window.innerHeight;
@@ -54,7 +56,7 @@
 	<title>Loafy Club - Pickleball in Hanoi</title>
 </svelte:head>
 
-<div class="relative bg-gradient-to-b from-sky-100 via-orange-50 to-amber-50">
+<div class="landing-page relative">
 	<Navigation hidden={scrollY < 400} noSpacer />
 
 	<!-- ===== PARALLAX HERO ===== -->
@@ -98,12 +100,12 @@
 			<div
 				class="absolute left-[3%] top-[28%] z-20 opacity-0 {loaded ? 'animate-bubble-in' : ''}"
 			>
-				<div class="relative bg-white rounded-2xl px-5 py-3 shadow-lg animate-bubble">
-					<p class="text-base text-gray-800 font-semibold whitespace-nowrap font-display">
+				<div class="bubble relative bg-card rounded-2xl px-5 py-3 shadow-lg animate-bubble">
+					<p class="text-base text-card-foreground font-semibold whitespace-nowrap font-display">
 						{t('home.bubbles.allLevels')}
 					</p>
 					<div class="absolute -bottom-2 right-4">
-						<div class="w-0 h-0 border-l-8 border-l-transparent border-r-8 border-r-transparent border-t-10 border-t-white"></div>
+						<div class="bubble-tail-down"></div>
 					</div>
 				</div>
 			</div>
@@ -120,13 +122,13 @@
 			<div
 				class="absolute left-[28%] top-[51%] z-20 opacity-0 {loaded ? 'animate-bubble-in-delay-1' : ''}"
 			>
-				<div class="relative bg-white rounded-2xl px-5 py-3 shadow-lg animate-bubble-delay-1">
-					<p class="text-base text-gray-800 font-semibold whitespace-nowrap font-display">
+				<div class="bubble relative bg-card rounded-2xl px-5 py-3 shadow-lg animate-bubble-delay-1">
+					<p class="text-base text-card-foreground font-semibold whitespace-nowrap font-display">
 						{t('home.bubbles.indoor')}
 					</p>
 					<!-- Tail pointing left toward player 2 -->
 					<div class="absolute -left-2 top-1/2 -translate-y-1/2">
-						<div class="w-0 h-0 border-t-8 border-t-transparent border-b-8 border-b-transparent border-r-10 border-r-white"></div>
+						<div class="bubble-tail-left"></div>
 					</div>
 				</div>
 			</div>
@@ -143,12 +145,12 @@
 			<div
 				class="absolute right-[7%] top-[32%] z-20 opacity-0 {loaded ? 'animate-bubble-in-delay-2' : ''}"
 			>
-				<div class="relative bg-white rounded-2xl px-5 py-3 shadow-lg animate-bubble-delay-2">
-					<p class="text-base text-gray-800 font-semibold whitespace-nowrap font-display">
+				<div class="bubble relative bg-card rounded-2xl px-5 py-3 shadow-lg animate-bubble-delay-2">
+					<p class="text-base text-card-foreground font-semibold whitespace-nowrap font-display">
 						{t('home.bubbles.solo')}
 					</p>
 					<div class="absolute -bottom-2 left-1/2 -translate-x-1/2">
-						<div class="w-0 h-0 border-l-8 border-l-transparent border-r-8 border-r-transparent border-t-10 border-t-white"></div>
+						<div class="bubble-tail-down"></div>
 					</div>
 				</div>
 			</div>
@@ -165,13 +167,13 @@
 			<div
 				class="absolute right-[28%] top-[49%] z-20 opacity-0 {loaded ? 'animate-bubble-in-delay-3' : ''}"
 			>
-				<div class="relative bg-white rounded-2xl px-5 py-3 shadow-lg animate-bubble-delay-3">
-					<p class="text-base text-gray-800 font-semibold whitespace-nowrap font-display">
+				<div class="bubble relative bg-card rounded-2xl px-5 py-3 shadow-lg animate-bubble-delay-3">
+					<p class="text-base text-card-foreground font-semibold whitespace-nowrap font-display">
 						{t('home.bubbles.international')}
 					</p>
 					<!-- Tail pointing right toward player 4 -->
 					<div class="absolute -right-2 top-1/2 -translate-y-1/2">
-						<div class="w-0 h-0 border-t-8 border-t-transparent border-b-8 border-b-transparent border-l-10 border-l-white"></div>
+						<div class="bubble-tail-right"></div>
 					</div>
 				</div>
 			</div>
@@ -214,7 +216,7 @@
 				{#if !authStore.isAuthenticated}
 					<Button
 						size="lg"
-						class="text-lg px-8 py-6 bg-white text-gray-800 hover:bg-gray-100 shadow-xl hover:shadow-2xl hover:scale-105 transition-all duration-300 border-0"
+						class="text-lg px-8 py-6 bg-card text-card-foreground hover:bg-muted shadow-xl hover:shadow-2xl hover:scale-105 transition-all duration-300 border-0"
 						onclick={() => goto('/auth/login')}
 					>
 						{t('home.cta.signIn')}
@@ -250,24 +252,24 @@
 			         L1440 120 L0 120 Z" fill="url(#wave-gradient-1)"/>
 			<defs>
 				<linearGradient id="wave-gradient-1" x1="0" y1="0" x2="1440" y2="0">
-					<stop offset="0%" stop-color="#fef3c7"/>
-					<stop offset="50%" stop-color="#fed7aa"/>
-					<stop offset="100%" stop-color="#fecaca"/>
+					<stop class="wave1-stop-0" offset="0%"/>
+					<stop class="wave1-stop-50" offset="50%"/>
+					<stop class="wave1-stop-100" offset="100%"/>
 				</linearGradient>
 			</defs>
 		</svg>
 	</div>
 
 	<!-- ===== FEATURES SECTION (Organic Blobs) ===== -->
-	<section class="relative py-20 overflow-hidden bg-gradient-to-b from-amber-100/50 via-orange-50 to-rose-50 -mt-4">
+	<section class="features-section relative py-20 overflow-hidden -mt-4">
 		<!-- Floating decorative elements -->
-		<div class="absolute top-10 left-10 w-64 h-64 bg-yellow-200/40 rounded-full blur-3xl animate-float-slow"></div>
-		<div class="absolute bottom-20 right-10 w-80 h-80 bg-orange-200/40 rounded-full blur-3xl animate-float-slower"></div>
-		<div class="absolute top-1/2 left-1/3 w-40 h-40 bg-pink-200/30 rounded-full blur-2xl animate-float"></div>
+		<div class="absolute top-10 left-10 w-64 h-64 bg-blob-yellow rounded-full blur-3xl animate-float-slow"></div>
+		<div class="absolute bottom-20 right-10 w-80 h-80 bg-blob-orange rounded-full blur-3xl animate-float-slower"></div>
+		<div class="absolute top-1/2 left-1/3 w-40 h-40 bg-blob-pink rounded-full blur-2xl animate-float"></div>
 
 		<div class="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
 			<div class="text-center mb-16 scroll-reveal">
-				<h2 class="text-4xl sm:text-5xl font-bold text-gray-800 font-display">
+				<h2 class="text-4xl sm:text-5xl font-bold text-heading font-display">
 					{t('home.features.tagline')}
 				</h2>
 			</div>
@@ -278,12 +280,12 @@
 				<div class="scroll-reveal" style="transition-delay: 100ms;">
 					<div class="relative group">
 						<div class="absolute inset-0 bg-gradient-to-br from-yellow-300 to-orange-400 rounded-[2rem] blur-xl opacity-40 group-hover:opacity-60 transition-opacity duration-500 group-hover:scale-105"></div>
-						<div class="relative bg-white/80 backdrop-blur-sm rounded-[2rem] p-8 shadow-lg hover:shadow-2xl transition-all duration-500 hover:-translate-y-2">
+						<div class="feature-card relative backdrop-blur-sm rounded-[2rem] p-8 shadow-lg hover:shadow-2xl transition-all duration-500 hover:-translate-y-2">
 							<div class="w-16 h-16 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-2xl flex items-center justify-center mb-6 shadow-lg group-hover:scale-110 transition-transform duration-300">
 								<Calendar class="w-8 h-8 text-white" />
 							</div>
-							<h3 class="text-2xl font-bold text-gray-800 mb-3 font-display">{t('home.features.findSessions.title')}</h3>
-							<p class="text-gray-600 leading-relaxed">{t('home.features.findSessions.description')}</p>
+							<h3 class="text-2xl font-bold text-heading mb-3 font-display">{t('home.features.findSessions.title')}</h3>
+							<p class="text-body leading-relaxed">{t('home.features.findSessions.description')}</p>
 						</div>
 					</div>
 				</div>
@@ -292,12 +294,12 @@
 				<div class="scroll-reveal" style="transition-delay: 200ms;">
 					<div class="relative group md:mt-8">
 						<div class="absolute inset-0 bg-gradient-to-br from-orange-300 to-pink-400 rounded-[2rem] blur-xl opacity-40 group-hover:opacity-60 transition-opacity duration-500 group-hover:scale-105"></div>
-						<div class="relative bg-white/80 backdrop-blur-sm rounded-[2rem] p-8 shadow-lg hover:shadow-2xl transition-all duration-500 hover:-translate-y-2">
+						<div class="feature-card relative backdrop-blur-sm rounded-[2rem] p-8 shadow-lg hover:shadow-2xl transition-all duration-500 hover:-translate-y-2">
 							<div class="w-16 h-16 bg-gradient-to-br from-orange-400 to-pink-500 rounded-2xl flex items-center justify-center mb-6 shadow-lg group-hover:scale-110 transition-transform duration-300">
 								<Zap class="w-8 h-8 text-white" />
 							</div>
-							<h3 class="text-2xl font-bold text-gray-800 mb-3 font-display">{t('home.features.bookInstantly.title')}</h3>
-							<p class="text-gray-600 leading-relaxed">{t('home.features.bookInstantly.description')}</p>
+							<h3 class="text-2xl font-bold text-heading mb-3 font-display">{t('home.features.bookInstantly.title')}</h3>
+							<p class="text-body leading-relaxed">{t('home.features.bookInstantly.description')}</p>
 						</div>
 					</div>
 				</div>
@@ -306,12 +308,12 @@
 				<div class="scroll-reveal" style="transition-delay: 300ms;">
 					<div class="relative group">
 						<div class="absolute inset-0 bg-gradient-to-br from-pink-300 to-rose-400 rounded-[2rem] blur-xl opacity-40 group-hover:opacity-60 transition-opacity duration-500 group-hover:scale-105"></div>
-						<div class="relative bg-white/80 backdrop-blur-sm rounded-[2rem] p-8 shadow-lg hover:shadow-2xl transition-all duration-500 hover:-translate-y-2">
+						<div class="feature-card relative backdrop-blur-sm rounded-[2rem] p-8 shadow-lg hover:shadow-2xl transition-all duration-500 hover:-translate-y-2">
 							<div class="w-16 h-16 bg-gradient-to-br from-pink-400 to-rose-500 rounded-2xl flex items-center justify-center mb-6 shadow-lg group-hover:scale-110 transition-transform duration-300">
 								<Users class="w-8 h-8 text-white" />
 							</div>
-							<h3 class="text-2xl font-bold text-gray-800 mb-3 font-display">{t('home.features.beyondCourt.title')}</h3>
-							<p class="text-gray-600 leading-relaxed">{t('home.features.beyondCourt.description')}</p>
+							<h3 class="text-2xl font-bold text-heading mb-3 font-display">{t('home.features.beyondCourt.title')}</h3>
+							<p class="text-body leading-relaxed">{t('home.features.beyondCourt.description')}</p>
 						</div>
 					</div>
 				</div>
@@ -327,19 +329,19 @@
 			         L1440 100 C1200 90 900 95 600 92 C300 89 100 85 0 95 Z" fill="url(#curve-gradient)"/>
 			<defs>
 				<linearGradient id="curve-gradient" x1="0" y1="0" x2="1440" y2="0">
-					<stop offset="0%" stop-color="#fef3c7"/>
-					<stop offset="50%" stop-color="#ffedd5"/>
-					<stop offset="100%" stop-color="#fff1f2"/>
+					<stop class="curve-stop-0" offset="0%"/>
+					<stop class="curve-stop-50" offset="50%"/>
+					<stop class="curve-stop-100" offset="100%"/>
 				</linearGradient>
 			</defs>
 		</svg>
 	</div>
 
 	<!-- ===== MASCOT + COMMUNITY SECTION ===== -->
-	<section class="relative py-24 overflow-hidden bg-gradient-to-b from-amber-50 via-orange-50/50 to-rose-50/50 -mt-2">
+	<section class="mascot-section relative py-24 overflow-hidden -mt-2">
 		<!-- Organic blob shapes -->
-		<div class="absolute -left-40 top-0 w-[500px] h-[500px] bg-gradient-to-br from-yellow-200/50 to-orange-200/50 rounded-full blur-3xl"></div>
-		<div class="absolute -right-40 bottom-0 w-[400px] h-[400px] bg-gradient-to-br from-pink-200/50 to-rose-200/50 rounded-full blur-3xl"></div>
+		<div class="absolute -left-40 top-0 w-[500px] h-[500px] bg-blob-yellow rounded-full blur-3xl"></div>
+		<div class="absolute -right-40 bottom-0 w-[400px] h-[400px] bg-blob-rose rounded-full blur-3xl"></div>
 
 		<div class="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
 			<div class="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
@@ -348,10 +350,10 @@
 					<div class="relative">
 						<!-- Decorative ring -->
 						<div class="absolute inset-0 flex items-center justify-center">
-							<div class="w-72 h-72 sm:w-80 sm:h-80 rounded-full border-4 border-dashed border-orange-200/60 animate-spin-very-slow"></div>
+							<div class="decorative-ring-outer w-72 h-72 sm:w-80 sm:h-80 rounded-full border-4 border-dashed animate-spin-very-slow"></div>
 						</div>
 						<div class="absolute inset-0 flex items-center justify-center">
-							<div class="w-56 h-56 sm:w-64 sm:h-64 rounded-full border-2 border-dotted border-pink-200/60 animate-spin-reverse-slow"></div>
+							<div class="decorative-ring-inner w-56 h-56 sm:w-64 sm:h-64 rounded-full border-2 border-dotted animate-spin-reverse-slow"></div>
 						</div>
 						<img
 							src="/mascot.png"
@@ -363,26 +365,26 @@
 
 				<!-- Content -->
 				<div class="scroll-reveal from-right order-1 lg:order-2" style="transition-delay: 200ms;">
-					<h2 class="text-4xl sm:text-5xl font-bold text-gray-800 mb-6 font-display">
+					<h2 class="text-4xl sm:text-5xl font-bold text-heading mb-6 font-display">
 						{t('home.mascot.title')}
 					</h2>
-					<p class="text-xl text-gray-600 mb-8 leading-relaxed">
+					<p class="text-xl text-body mb-8 leading-relaxed">
 						{t('home.mascot.description')}
 					</p>
 
 					<!-- Stats -->
 					<div class="grid grid-cols-3 gap-4 mb-8">
-						<div class="text-center p-4 bg-white/60 backdrop-blur-sm rounded-2xl shadow-sm">
-							<div class="text-3xl sm:text-4xl font-bold text-orange-500 font-display">50+</div>
-							<div class="text-sm text-gray-500">{t('home.mascot.stats.players')}</div>
+						<div class="stat-card text-center p-4 backdrop-blur-sm rounded-2xl shadow-sm">
+							<div class="text-3xl sm:text-4xl font-bold text-primary font-display">50+</div>
+							<div class="text-sm text-subtle">{t('home.mascot.stats.players')}</div>
 						</div>
-						<div class="text-center p-4 bg-white/60 backdrop-blur-sm rounded-2xl shadow-sm">
+						<div class="stat-card text-center p-4 backdrop-blur-sm rounded-2xl shadow-sm">
 							<div class="text-3xl sm:text-4xl font-bold text-pink-500 font-display">100+</div>
-							<div class="text-sm text-gray-500">{t('home.mascot.stats.sessions')}</div>
+							<div class="text-sm text-subtle">{t('home.mascot.stats.sessions')}</div>
 						</div>
-						<div class="text-center p-4 bg-white/60 backdrop-blur-sm rounded-2xl shadow-sm">
+						<div class="stat-card text-center p-4 backdrop-blur-sm rounded-2xl shadow-sm">
 							<div class="text-3xl sm:text-4xl font-bold text-rose-500 font-display">∞</div>
-							<div class="text-sm text-gray-500">{t('home.mascot.stats.fun')}</div>
+							<div class="text-sm text-subtle">{t('home.mascot.stats.fun')}</div>
 						</div>
 					</div>
 
@@ -407,16 +409,16 @@
 			         L1440 100 C1150 92 850 98 550 95 C250 92 50 88 0 95 Z" fill="url(#cta-wave-gradient)"/>
 			<defs>
 				<linearGradient id="cta-wave-gradient" x1="0" y1="0" x2="1440" y2="0">
-					<stop offset="0%" stop-color="#fdba74"/>
-					<stop offset="50%" stop-color="#fb923c"/>
-					<stop offset="100%" stop-color="#f472b6"/>
+					<stop class="cta-wave-stop-0" offset="0%"/>
+					<stop class="cta-wave-stop-50" offset="50%"/>
+					<stop class="cta-wave-stop-100" offset="100%"/>
 				</linearGradient>
 			</defs>
 		</svg>
 	</div>
 
 	<!-- ===== CTA SECTION ===== -->
-	<section class="relative pt-20 pb-28 sm:pt-24 sm:pb-32 overflow-hidden bg-gradient-to-r from-orange-400 via-orange-500 to-pink-500 -mt-2">
+	<section class="cta-section relative pt-20 pb-28 sm:pt-24 sm:pb-32 overflow-hidden -mt-2">
 		<!-- Decorative circles -->
 		<div class="absolute top-0 left-1/4 w-64 h-64 bg-white/10 rounded-full blur-2xl"></div>
 		<div class="absolute bottom-0 right-1/4 w-80 h-80 bg-white/10 rounded-full blur-2xl"></div>
@@ -431,16 +433,18 @@
 				</p>
 				<div class="flex flex-col sm:flex-row items-center justify-center gap-4">
 					<Button
+						variant="primary"
 						size="lg"
-						class="text-lg px-10 py-7 bg-white text-orange-600 hover:bg-white/90 shadow-2xl hover:shadow-3xl hover:scale-105 transition-all duration-300"
+						class="text-lg px-10 py-7 shadow-2xl hover:shadow-3xl hover:scale-105 transition-all duration-300"
 						onclick={() => goto('/sessions')}
 					>
 						{t('home.ctaSection.browseSessions')}
 					</Button>
 					{#if !authStore.isAuthenticated}
 						<Button
+							variant="secondary-outline"
 							size="lg"
-							class="text-lg px-10 py-7 bg-transparent border-2 border-white text-white hover:bg-white/20 hover:text-white shadow-xl hover:shadow-2xl hover:scale-105 transition-all duration-300"
+							class="text-lg px-10 py-7 text-white shadow-xl hover:shadow-2xl hover:scale-105 transition-all duration-300"
 							onclick={() => goto('/auth/login')}
 						>
 							{t('home.ctaSection.createAccount')}
@@ -455,13 +459,13 @@
 	<div class="relative -mt-10 sm:-mt-12 z-10">
 		<svg viewBox="0 -25 1440 120" fill="none" xmlns="http://www.w3.org/2000/svg" class="w-full h-20 sm:h-24" preserveAspectRatio="none">
 			<!-- Thicker wave: unique asymmetric pattern, bottom extends down to cover line -->
-			<path d="M0 10 C120 -15 320 25 520 -10 C720 -20 920 20 1120 0 C1320 -15 1400 10 1440 15
-			         L1440 95 C1200 88 900 92 600 90 C300 88 100 85 0 90 Z" fill="#1f2937"/>
+			<path class="footer-wave-path" d="M0 10 C120 -15 320 25 520 -10 C720 -20 920 20 1120 0 C1320 -15 1400 10 1440 15
+			         L1440 95 C1200 88 900 92 600 90 C300 88 100 85 0 90 Z"/>
 		</svg>
 	</div>
 
 	<!-- ===== FOOTER ===== -->
-	<footer class="bg-gray-800 py-12 -mt-2">
+	<footer class="landing-footer py-12 -mt-2">
 		<div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
 			<FooterContent />
 		</div>
@@ -469,6 +473,174 @@
 </div>
 
 <style>
+	/* ===== THEME-AWARE LANDING PAGE STYLES ===== */
+
+	/* Main landing page container */
+	.landing-page {
+		background: linear-gradient(to bottom,
+			hsl(200 80% 96%),
+			hsl(32 95% 97%),
+			hsl(45 90% 97%)
+		);
+	}
+	:global(.dark) .landing-page {
+		background: linear-gradient(to bottom,
+			hsl(240 10% 10%),
+			hsl(240 10% 12%),
+			hsl(240 10% 10%)
+		);
+	}
+
+	/* ===== SVG WAVE GRADIENT COLORS ===== */
+
+	/* Wave 1 - Hero to Features transition */
+	:global(.wave1-stop-0) { stop-color: #fef3c7; }
+	:global(.wave1-stop-50) { stop-color: #fed7aa; }
+	:global(.wave1-stop-100) { stop-color: #fecaca; }
+	:global(.dark .wave1-stop-0) { stop-color: #1a1a2e; }
+	:global(.dark .wave1-stop-50) { stop-color: #16213e; }
+	:global(.dark .wave1-stop-100) { stop-color: #1a1a2e; }
+
+	/* Curve - Features to Mascot transition */
+	:global(.curve-stop-0) { stop-color: #fef3c7; }
+	:global(.curve-stop-50) { stop-color: #ffedd5; }
+	:global(.curve-stop-100) { stop-color: #fff1f2; }
+	:global(.dark .curve-stop-0) { stop-color: #1a1a2e; }
+	:global(.dark .curve-stop-50) { stop-color: #1e1e3f; }
+	:global(.dark .curve-stop-100) { stop-color: #1a1a2e; }
+
+	/* CTA Wave - Mascot to CTA transition */
+	:global(.cta-wave-stop-0) { stop-color: #fdba74; }
+	:global(.cta-wave-stop-50) { stop-color: #fb923c; }
+	:global(.cta-wave-stop-100) { stop-color: #f472b6; }
+	:global(.dark .cta-wave-stop-0) { stop-color: #78350f; }
+	:global(.dark .cta-wave-stop-50) { stop-color: #7c2d12; }
+	:global(.dark .cta-wave-stop-100) { stop-color: #831843; }
+
+	/* Footer Wave */
+	:global(.footer-wave-path) { fill: #1f2937; }
+	:global(.dark .footer-wave-path) { fill: #0a0a0f; }
+
+	/* Bubble tail styles using CSS variables */
+	.bubble-tail-down {
+		width: 0;
+		height: 0;
+		border-left: 8px solid transparent;
+		border-right: 8px solid transparent;
+		border-top: 10px solid var(--color-card);
+	}
+	.bubble-tail-left {
+		width: 0;
+		height: 0;
+		border-top: 8px solid transparent;
+		border-bottom: 8px solid transparent;
+		border-right: 10px solid var(--color-card);
+	}
+	.bubble-tail-right {
+		width: 0;
+		height: 0;
+		border-top: 8px solid transparent;
+		border-bottom: 8px solid transparent;
+		border-left: 10px solid var(--color-card);
+	}
+
+	/* Features section */
+	.features-section {
+		background: linear-gradient(to bottom,
+			hsl(45 80% 95% / 0.5),
+			hsl(32 70% 97%),
+			hsl(340 70% 97%)
+		);
+	}
+	:global(.dark) .features-section {
+		background: linear-gradient(to bottom,
+			hsl(240 10% 12%),
+			hsl(240 10% 14%),
+			hsl(240 10% 12%)
+		);
+	}
+
+	/* Feature cards */
+	.feature-card {
+		background: var(--color-glass);
+	}
+
+	/* Mascot section */
+	.mascot-section {
+		background: linear-gradient(to bottom,
+			hsl(45 60% 97%),
+			hsl(32 60% 98% / 0.5),
+			hsl(340 60% 98% / 0.5)
+		);
+	}
+	:global(.dark) .mascot-section {
+		background: linear-gradient(to bottom,
+			hsl(240 10% 12%),
+			hsl(240 10% 14%),
+			hsl(240 10% 12%)
+		);
+	}
+
+	/* Decorative rings around mascot */
+	.decorative-ring-outer {
+		border-color: hsl(32 60% 85% / 0.6);
+	}
+	:global(.dark) .decorative-ring-outer {
+		border-color: hsl(32 40% 35% / 0.4);
+	}
+	.decorative-ring-inner {
+		border-color: hsl(340 60% 85% / 0.6);
+	}
+	:global(.dark) .decorative-ring-inner {
+		border-color: hsl(340 40% 35% / 0.4);
+	}
+
+	/* Stat cards in mascot section */
+	.stat-card {
+		background: var(--color-glass);
+	}
+
+	/* CTA section */
+	.cta-section {
+		background: linear-gradient(to right,
+			hsl(32 90% 55%),
+			hsl(32 95% 50%),
+			hsl(340 70% 60%)
+		);
+	}
+	:global(.dark) .cta-section {
+		background: linear-gradient(to right,
+			hsl(32 70% 35%),
+			hsl(32 75% 30%),
+			hsl(340 50% 35%)
+		);
+	}
+
+	/* Footer */
+	.landing-footer {
+		background-color: hsl(220 15% 20%);
+	}
+	:global(.dark) .landing-footer {
+		background-color: hsl(240 10% 8%);
+	}
+
+	/* Wave SVG gradients - override fills based on theme */
+	.landing-page :global(svg path[fill="url(#wave-gradient-1)"]) {
+		fill: url(#wave-gradient-1);
+	}
+	.landing-page :global(svg path[fill="url(#curve-gradient)"]) {
+		fill: url(#curve-gradient);
+	}
+	.landing-page :global(svg path[fill="url(#cta-wave-gradient)"]) {
+		fill: url(#cta-wave-gradient);
+	}
+	.landing-page :global(svg path[fill="#1f2937"]) {
+		fill: hsl(220 15% 20%);
+	}
+	:global(.dark) .landing-page :global(svg path[fill="#1f2937"]) {
+		fill: hsl(240 10% 8%);
+	}
+
 	/* Scroll reveal animations */
 	:global(.scroll-reveal) {
 		opacity: 0;
