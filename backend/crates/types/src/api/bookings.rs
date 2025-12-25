@@ -6,8 +6,9 @@ use uuid::Uuid;
 use validator::Validate;
 
 use crate::enums::{DiscountType, PaymentMethod, PaymentStatus, VerificationStatus};
+use super::admin::PageInfo;
 
-#[derive(Debug, Serialize, Deserialize, TS, ToSchema)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS, ToSchema)]
 #[ts(export, export_to = "../../../../frontend/src/lib/types/")]
 pub struct BookingResponse {
     pub id: Uuid,
@@ -33,4 +34,12 @@ pub struct CreateBookingRequest {
     #[validate(range(min = 0, max = 10))]
     pub guest_count: i32,
     pub payment_method: PaymentMethod,
+}
+
+/// Paginated response for user bookings
+#[derive(Debug, Clone, Serialize, Deserialize, TS, ToSchema)]
+#[ts(export, export_to = "../../../../frontend/src/lib/types/")]
+pub struct UserBookingsResponse {
+    pub data: Vec<BookingResponse>,
+    pub page_info: PageInfo,
 }
