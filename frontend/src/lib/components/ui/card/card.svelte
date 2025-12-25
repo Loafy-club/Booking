@@ -2,32 +2,81 @@
 	import { type VariantProps, tv } from "tailwind-variants";
 
 	export const cardVariants = tv({
-		base: "rounded-xl text-card-foreground",
+		slots: {
+			wrapper: "relative",
+			glow: "absolute inset-0 rounded-[2rem] blur-xl transition-all duration-500 pointer-events-none",
+			card: "rounded-xl text-card-foreground overflow-visible",
+		},
 		variants: {
 			variant: {
-				default: "border bg-card shadow",
-				info: "p-4 bg-gray-50",
-				infoSm: "p-3 bg-gray-50",
-				ghost: "bg-transparent",
-				outline: "border-2 border-gray-200",
+				default: {
+					wrapper: "",
+					glow: "hidden",
+					card: "border bg-card shadow",
+				},
+				glass: {
+					wrapper: "group",
+					glow: "bg-gradient-to-br from-orange-300/40 to-pink-300/40 opacity-40",
+					card: "relative rounded-[2rem] shadow-md backdrop-blur-sm bg-card/85 p-8",
+				},
+				glassYellow: {
+					wrapper: "group",
+					glow: "bg-gradient-to-br from-pink-300 to-rose-400 opacity-40",
+					card: "relative rounded-[2rem] shadow-md backdrop-blur-sm bg-card/85 p-8",
+				},
+				glassOrange: {
+					wrapper: "group",
+					glow: "bg-gradient-to-br from-yellow-300 to-orange-400 opacity-40",
+					card: "relative rounded-[2rem] shadow-md backdrop-blur-sm bg-card/85 p-8",
+				},
+				glassPink: {
+					wrapper: "group",
+					glow: "bg-gradient-to-br from-orange-300 to-pink-400 opacity-40",
+					card: "relative rounded-[2rem] shadow-md backdrop-blur-sm bg-card/85 p-8",
+				},
+				info: {
+					wrapper: "",
+					glow: "hidden",
+					card: "p-4 bg-muted rounded-xl",
+				},
+				infoSm: {
+					wrapper: "",
+					glow: "hidden",
+					card: "p-3 bg-muted rounded-xl",
+				},
+				ghost: {
+					wrapper: "",
+					glow: "hidden",
+					card: "bg-transparent",
+				},
+				outline: {
+					wrapper: "",
+					glow: "hidden",
+					card: "border-2 border-border",
+				},
 			},
-			padding: {
-				default: "",
-				none: "p-0",
-				sm: "p-3",
-				md: "p-4",
-				lg: "p-6",
-				xl: "p-8",
+			hover: {
+				true: {},
+				false: {},
 			},
 		},
+		compoundVariants: [
+			{
+				variant: ["glass", "glassYellow", "glassOrange", "glassPink"],
+				hover: true,
+				class: {
+					glow: "group-hover:opacity-60 group-hover:scale-105",
+					card: "transition-all duration-500 hover:shadow-2xl hover:-translate-y-2",
+				},
+			},
+		],
 		defaultVariants: {
 			variant: "default",
-			padding: "default",
+			hover: false,
 		},
 	});
 
 	export type CardVariant = VariantProps<typeof cardVariants>["variant"];
-	export type CardPadding = VariantProps<typeof cardVariants>["padding"];
 </script>
 
 <script lang="ts">
@@ -36,15 +85,24 @@
 
 	type Props = HTMLAttributes<HTMLDivElement> & {
 		variant?: CardVariant;
-		padding?: CardPadding;
+		hover?: boolean;
 	};
 
-	let { class: className, variant = "default", padding = "default", children, ...restProps }: Props = $props();
+	let { class: className, variant = "default", hover = false, children, ...restProps }: Props = $props();
+
+	const styles = $derived(cardVariants({ variant, hover }));
+	const isGlass = $derived(variant?.startsWith('glass'));
 </script>
 
-<div
-	class={cn(cardVariants({ variant, padding }), className)}
-	{...restProps}
->
-	{@render children?.()}
-</div>
+{#if isGlass}
+	<div class={cn(styles.wrapper(), className)}>
+		<div class={styles.glow()}></div>
+		<div class={cn(styles.card())} {...restProps}>
+			{@render children?.()}
+		</div>
+	</div>
+{:else}
+	<div class={cn(styles.card(), className)} {...restProps}>
+		{@render children?.()}
+	</div>
+{/if}

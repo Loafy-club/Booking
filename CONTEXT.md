@@ -139,9 +139,6 @@ When session is full:
 - View global stats and OCR usage
 - Edit global configuration
 
-### moderator
-- Reserved for future use (TBD)
-
 ---
 
 ## Database Schema (Complete)
@@ -151,7 +148,7 @@ When session is full:
 ```sql
 -- Roles
 roles: id (UUID), name (VARCHAR), created_at (TIMESTAMPTZ)
-Default roles: 'user', 'organizer', 'admin', 'moderator'
+Default roles: 'user', 'organizer', 'admin'
 
 -- Users
 users: id (UUID), email (VARCHAR UNIQUE), name (VARCHAR), avatar_url (TEXT),

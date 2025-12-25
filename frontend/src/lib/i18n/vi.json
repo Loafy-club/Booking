@@ -1,6 +1,7 @@
 {
 	"common": {
 		"save": "Luu",
+		"saving": "Dang luu...",
 		"cancel": "Huy",
 		"delete": "Xoa",
 		"edit": "Sua",
@@ -18,7 +19,14 @@
 		"next": "Tiep",
 		"submit": "Gui",
 		"confirm": "Xac nhan",
-		"close": "Dong"
+		"close": "Dong",
+		"viewAll": "Xem tat ca",
+		"all": "Tat ca",
+		"search": "Tim kiem",
+		"filter": "Loc",
+		"sort": "Sap xep",
+		"select": "Chon",
+		"noResults": "Khong tim thay ket qua"
 	},
 	"nav": {
 		"sessions": "Buoi choi",
@@ -73,10 +81,25 @@
 			"description": "Tran dau tiep theo chi cach mot cu nhan chuot. Tham gia cong dong va bat dau dat buoi choi ngay.",
 			"browseSessions": "Xem buoi choi",
 			"createAccount": "Tao tai khoan"
-		},
-		"footer": {
-			"tagline": "Pickleball o Ha Noi, don gian hon."
 		}
+	},
+	"footer": {
+		"tagline": "Pickleball o Ha Noi, don gian hon.",
+		"description": "Tham gia cong dong pickleball than thien nhat Ha Noi. Dat buoi choi, gap go nguoi choi, va tan huong tro choi.",
+		"quickLinks": "Lien ket nhanh",
+		"sessions": "Buoi choi",
+		"myBookings": "Dat cho cua toi",
+		"account": "Tai khoan",
+		"connect": "Ket noi",
+		"contact": "Lien he",
+		"facebook": "Facebook",
+		"instagram": "Instagram",
+		"zalo": "Nhom Zalo",
+		"legal": "Phap ly",
+		"terms": "Dieu khoan dich vu",
+		"privacy": "Chinh sach bao mat",
+		"copyright": "© {year} Loafy Club. Ban quyen thuoc ve Loafy Club.",
+		"madeWith": "Duoc tao voi tinh yeu tai Ha Noi"
 	},
 	"account": {
 		"title": "Cai dat tai khoan",
@@ -153,10 +176,12 @@
 		"loadingText": "Dang tai cac buoi choi...",
 		"book": "Dat ngay",
 		"fullyBooked": "Da het cho",
+		"alreadyBooked": "Ban da dat",
 		"sessionEnded": "Da ket thuc",
 		"cancelled": "Da huy",
 		"spotsLeft": "Con {count} cho",
 		"spotsAvailable": "cho con trong",
+		"booked": "da dat",
 		"full": "Het cho",
 		"upcoming": "Sap toi",
 		"completed": "Da xong",
@@ -167,6 +192,9 @@
 		"courts": "san",
 		"perCourt": "moi san",
 		"at": "luc",
+		"players": "Nguoi choi",
+		"noParticipants": "Chua co nguoi tham gia",
+		"participants": "Nguoi tham gia",
 		"status": {
 			"cancelled": "Da huy",
 			"full": "Het cho",
@@ -188,6 +216,8 @@
 		"cancel": "Huy",
 		"cancelBooking": "Huy dat cho",
 		"cancelling": "Dang huy...",
+		"cancelDialogTitle": "Huy dat cho",
+		"confirmCancelButton": "Xac nhan huy",
 		"viewDetails": "Xem chi tiet",
 		"bookingCode": "Dat cho",
 		"bookedOn": "Ngay dat",
@@ -219,7 +249,8 @@
 			"confirmed": "Da xac nhan",
 			"pending": "Cho thanh toan",
 			"cancelled": "Da huy"
-		}
+		},
+		"totalCount": "Hien thi {count} dat cho"
 	},
 	"auth": {
 		"login": {
@@ -247,6 +278,7 @@
 		"backToSessions": "Quay lai danh sach",
 		"location": "Dia diem",
 		"dateTime": "Ngay & Gio",
+		"participants": "Nguoi choi",
 		"availability": "Con trong",
 		"spotsOf": "{available} / {total} cho con trong",
 		"price": "Gia",
@@ -255,7 +287,10 @@
 		"sessionCancelled": "Buoi choi nay da bi huy",
 		"sessionFull": "Buoi choi nay da het cho",
 		"sessionStarted": "Buoi choi nay da bat dau",
+		"alreadyBooked": "Ban da co dat cho cho buoi choi nay",
+		"viewMyBookings": "Xem dat cho cua toi",
 		"numberOfGuests": "So khach di cung",
+		"selectGuests": "Chon so khach",
 		"justMe": "Chi minh toi",
 		"guest": "{count} khach",
 		"guests": "{count} khach",
@@ -271,6 +306,27 @@
 		"onlySpotsAvailable": "Chi con {count} cho trong"
 	},
 	"organizer": {
+		"sessions": {
+			"pageTitle": "Buoi choi cua toi",
+			"title": "Buoi choi cua toi",
+			"subtitle": "Quan ly buoi choi pickleball cua ban",
+			"createSession": "Tao buoi choi",
+			"noSessions": "Chua co buoi choi nao",
+			"noSessionsDesc": "Tao buoi choi dau tien de bat dau nhan dat cho",
+			"loadError": "Khong the tai buoi choi",
+			"updateFailed": "Khong the cap nhat buoi choi",
+			"deleteFailed": "Khong the xoa buoi choi",
+			"deleteDialogTitle": "Xoa buoi choi",
+			"confirmDelete": "Ban co chac muon xoa \"{title}\"? Hanh dong nay khong the hoan tac.",
+			"deleting": "Dang xoa...",
+			"spotsAvailable": "cho trong",
+			"free": "Mien phi",
+			"viewDetails": "Xem chi tiet",
+			"edit": {
+				"title": "Sua buoi choi",
+				"description": "Dang sua: {title}"
+			}
+		},
 		"createSession": {
 			"pageTitle": "Tao buoi choi",
 			"title": "Tao buoi choi moi",
@@ -284,17 +340,42 @@
 				"location": "Dia diem",
 				"locationPlaceholder": "Trung tam The thao Ha Noi",
 				"startTime": "Thoi gian bat dau",
+				"selectStartTime": "Chon ngay va gio bat dau",
 				"endTime": "Thoi gian ket thuc",
+				"selectEndTime": "Chon ngay va gio ket thuc",
 				"maxSlots": "So cho toi da",
 				"priceVnd": "Gia (VND)",
 				"earlyAccess": "Truy cap som ket thuc luc (Tuy chon)",
+				"selectEarlyAccess": "Chon ngay ket thuc truy cap som",
 				"earlyAccessNote": "Thanh vien duoc truy cap som den thoi gian nay (Tinh nang giai doan 2)",
 				"required": "*"
+			},
+			"expenses": {
+				"title": "Chi phi buoi choi",
+				"optional": "Tuy chon",
+				"description": "Theo doi chi phi cho buoi choi nay de tinh loi nhuan trong trang quan tri.",
+				"addExpense": "Them chi phi",
+				"category": "Loai",
+				"selectCategory": "Chon loai",
+				"courtRental": "Thue san",
+				"equipment": "Thiet bi",
+				"instructor": "Phi huan luyen vien",
+				"custom": "Tuy chinh",
+				"descriptionLabel": "Mo ta",
+				"descriptionPlaceholder": "VD: Bong them",
+				"costType": "Loai chi phi",
+				"perCourt": "Moi san",
+				"total": "Tong",
+				"amount": "So tien (VND)",
+				"estimatedTotal": "Tong uoc tinh",
+				"expensesAdded": "chi phi da them"
 			},
 			"errors": {
 				"endTimeAfterStart": "Thoi gian ket thuc phai sau thoi gian bat dau",
 				"startTimeInFuture": "Thoi gian bat dau phai trong tuong lai",
-				"createFailed": "Khong the tao buoi choi"
+				"createFailed": "Khong the tao buoi choi",
+				"customExpenseDescription": "Chi phi tuy chinh can co mo ta",
+				"expenseAmountPositive": "So tien chi phi phai lon hon 0"
 			},
 			"buttons": {
 				"creating": "Dang tao...",
@@ -304,6 +385,153 @@
 		}
 	},
 	"admin": {
+		"title": "Trang quan tri",
+		"nav": {
+			"dashboard": "Tong quan",
+			"users": "Nguoi dung",
+			"sessions": "Buoi choi",
+			"bookings": "Dat cho",
+			"backToSite": "Quay lai trang web"
+		},
+		"period": {
+			"7d": "7 ngay qua",
+			"30d": "30 ngay qua",
+			"90d": "90 ngay qua",
+			"365d": "1 nam qua",
+			"all": "Tat ca"
+		},
+		"dashboard": {
+			"pageTitle": "Quan tri - Tong quan",
+			"title": "Tong quan",
+			"subtitle": "Tong quan ve nen tang cua ban",
+			"loadError": "Khong the tai thong ke",
+			"stats": {
+				"totalUsers": "Tong nguoi dung",
+				"newUsers": "Nguoi dung moi",
+				"upcomingSessions": "Buoi choi sap toi",
+				"totalBookings": "Tong dat cho",
+				"bookings": "Dat cho",
+				"totalRevenue": "Tong doanh thu",
+				"revenue": "Doanh thu"
+			},
+			"bookingBreakdown": "Phan loai trang thai dat cho",
+			"bookings": {
+				"pending": "Cho thanh toan",
+				"confirmed": "Da xac nhan",
+				"cancelled": "Da huy"
+			},
+			"quickActions": "Hanh dong nhanh",
+			"actions": {
+				"manageUsers": "Quan ly nguoi dung",
+				"manageSessions": "Quan ly buoi choi",
+				"createSession": "Tao buoi choi"
+			},
+			"recentBookings": "Dat cho gan day",
+			"noRecentBookings": "Chua co dat cho nao",
+			"upcomingSessions": "Buoi choi sap toi",
+			"noUpcomingSessions": "Khong co buoi choi sap toi"
+		},
+		"users": {
+			"pageTitle": "Quan tri - Nguoi dung",
+			"title": "Quan ly nguoi dung",
+			"subtitle": "Xem va quan ly tai khoan va vai tro nguoi dung",
+			"loadError": "Khong the tai danh sach nguoi dung",
+			"updateError": "Khong the cap nhat vai tro nguoi dung",
+			"noUsers": "Khong co nguoi dung",
+			"noUsersDesc": "Chua co nguoi dung nao dang ky",
+			"totalCount": "Tong {count} nguoi dung",
+			"searchPlaceholder": "Tim theo ten hoac email...",
+			"roleFilter": "Vai tro",
+			"statusFilter": "Trang thai",
+			"table": {
+				"user": "Nguoi dung",
+				"email": "Email",
+				"provider": "Nha cung cap",
+				"joined": "Ngay tham gia",
+				"status": "Trang thai",
+				"role": "Vai tro"
+			},
+			"active": "Hoat dong",
+			"suspended": "Bi dinh chi",
+			"indefinite": "Dinh chi vo thoi han",
+			"suspend": "Dinh chi nguoi dung",
+			"unsuspend": "Bo dinh chi",
+			"suspendDialogTitle": "Dinh chi nguoi dung",
+			"suspendDialogDesc": "Thao tac nay se ngan {name} dang nhap hoac thuc hien bat ky hanh dong nao cho den khi duoc bo dinh chi.",
+			"suspendReason": "Ly do dinh chi",
+			"suspendReasonPlaceholder": "Nhap ly do dinh chi nguoi dung nay...",
+			"suspendUntil": "Ngay ket thuc dinh chi (tuy chon)",
+			"suspendUntilPlaceholder": "Chon ngay ket thuc dinh chi",
+			"suspendUntilNote": "De trong neu dinh chi vo thoi han",
+			"confirmSuspend": "Dinh chi nguoi dung",
+			"unsuspendDialogTitle": "Bo dinh chi nguoi dung",
+			"unsuspendDialogDesc": "Thao tac nay se khoi phuc quyen truy cap cua {name} vao nen tang.",
+			"confirmUnsuspend": "Bo dinh chi",
+			"suspendError": "Khong the dinh chi nguoi dung",
+			"unsuspendError": "Khong the bo dinh chi nguoi dung",
+			"editDialogTitle": "Sua nguoi dung",
+			"editDialogDesc": "Sua thong tin ho so cho {email}",
+			"editName": "Ten",
+			"editNamePlaceholder": "Nhap ten nguoi dung",
+			"editPhone": "So dien thoai",
+			"editPhonePlaceholder": "Nhap so dien thoai",
+			"editError": "Khong the cap nhat nguoi dung",
+			"deleteDialogTitle": "Xoa nguoi dung",
+			"deleteDialogDesc": "Ban co chac muon xoa {name}? Thao tac nay se huy cac buoi choi va dat cho cua ho. Hanh dong nay khong the hoan tac.",
+			"deleteError": "Khong the xoa nguoi dung",
+			"deleting": "Dang xoa..."
+		},
+		"bookings": {
+			"pageTitle": "Quan tri - Dat cho",
+			"title": "Quan ly dat cho",
+			"subtitle": "Xem va quan ly tat ca dat cho",
+			"loadError": "Khong the tai danh sach dat cho",
+			"noBookings": "Khong co dat cho",
+			"noBookingsDesc": "Chua co dat cho nao duoc tao",
+			"deadline": "Han chot",
+			"totalCount": "Tong {count} dat cho",
+			"searchPlaceholder": "Tim theo ma, nguoi dung, hoac buoi choi...",
+			"statusFilter": "Trang thai",
+			"sessionFilter": "Buoi choi",
+			"tabs": {
+				"all": "Tat ca",
+				"pending": "Cho xu ly",
+				"confirmed": "Da xac nhan",
+				"cancelled": "Da huy"
+			},
+			"table": {
+				"code": "Ma",
+				"user": "Nguoi dung",
+				"session": "Buoi choi",
+				"guests": "So nguoi",
+				"amount": "So tien",
+				"status": "Trang thai",
+				"created": "Ngay tao",
+				"actions": "Hanh dong"
+			},
+			"status": {
+				"pending": "Cho xu ly",
+				"confirmed": "Da xac nhan",
+				"cancelled": "Da huy"
+			},
+			"actions": {
+				"viewSession": "Xem buoi choi",
+				"edit": "Sua"
+			},
+			"edit": {
+				"title": "Sua dat cho",
+				"description": "Dang sua dat cho {code}",
+				"guestCount": "So khach",
+				"pricePaid": "Tong gia (VND)",
+				"paymentMethod": "Phuong thuc thanh toan",
+				"paymentStatus": "Trang thai thanh toan",
+				"adminNotes": "Ghi chu",
+				"adminNotesPlaceholder": "Ly do chinh sua (de kiem tra)",
+				"saveError": "Khong the luu thay doi",
+				"statusFailed": "That bai",
+				"statusRefunded": "Da hoan tien"
+			}
+		},
 		"sessions": {
 			"pageTitle": "Quan tri - Buoi choi",
 			"title": "Quan ly buoi choi",
@@ -312,9 +540,14 @@
 			"loadingText": "Dang tai buoi choi...",
 			"noSessions": "Khong co buoi choi",
 			"noSessionsDesc": "Tao buoi choi pickleball dau tien",
+			"totalCount": "Tong {count} buoi choi",
+			"searchPlaceholder": "Tim theo tieu de hoac dia diem...",
+			"statusFilter": "Trang thai",
+			"organizerFilter": "Nguoi to chuc",
 			"table": {
 				"session": "Buoi choi",
 				"dateTime": "Ngay/Gio",
+				"participants": "Nguoi choi",
 				"slots": "Cho",
 				"price": "Gia",
 				"status": "Trang thai",
@@ -326,11 +559,64 @@
 			},
 			"actions": {
 				"view": "Xem",
+				"edit": "Sua",
 				"delete": "Xoa"
 			},
+			"edit": {
+				"title": "Sua buoi choi",
+				"description": "Dang sua buoi choi: {title}"
+			},
 			"confirmDelete": "Ban co chac muon xoa \"{title}\"?",
+			"deleteDialogTitle": "Xoa buoi choi",
+			"confirmDeleteButton": "Xoa",
+			"deleting": "Dang xoa...",
 			"updateFailed": "Khong the cap nhat buoi choi",
 			"deleteFailed": "Khong the xoa buoi choi"
+		},
+		"charts": {
+			"bookingStatus": "Trang thai dat cho",
+			"sessionCapacity": "Suc chua buoi choi",
+			"keyMetrics": "Chi so chinh",
+			"confirmed": "Da xac nhan",
+			"pending": "Cho xu ly",
+			"cancelled": "Da huy",
+			"total": "tong",
+			"noData": "Khong co du lieu",
+			"noSessions": "Khong co buoi choi sap toi",
+			"available": "Con cho",
+			"booked": "Da dat",
+			"filled": "da lap day",
+			"sessions": "Buoi choi",
+			"almostFull": "Sap day",
+			"full": "Het cho",
+			"conversionRate": "Ty le chuyen doi",
+			"conversionRateTooltip": "Phan tram dat cho da thanh toan va xac nhan thanh cong",
+			"avgBookingValue": "Gia tri dat cho TB",
+			"avgBookingValueTooltip": "So tien trung binh moi dat cho da xac nhan",
+			"fillRate": "Ty le lap day",
+			"fillRateTooltip": "Muc do day trung binh cua cac buoi choi sap toi",
+			"successRate": "Ty le thanh cong",
+			"successRateTooltip": "Trong so dat cho da hoan tat (khong cho xu ly), phan tram da xac nhan so voi da huy"
+		},
+		"profit": {
+			"title": "Loi nhuan & Chi phi",
+			"totalExpenses": "Tong chi phi",
+			"netProfit": "Loi nhuan rong",
+			"profitMargin": "Ty suat loi nhuan",
+			"revenueVsExpenses": "Doanh thu vs Chi phi",
+			"expenseBreakdown": "Phan loai chi phi",
+			"sessionProfit": "Loi nhuan buoi choi",
+			"revenue": "Doanh thu",
+			"expenses": "Chi phi",
+			"profit": "Loi nhuan",
+			"loss": "Lo",
+			"noExpenses": "Chua co chi phi nao",
+			"categories": {
+				"court_rental": "Thue san",
+				"equipment": "Thiet bi",
+				"instructor": "Huan luyen vien",
+				"custom": "Tuy chinh"
+			}
 		}
 	},
 	"payment": {
@@ -354,8 +640,125 @@
 		"securePayment": "Thanh toan an toan",
 		"securePaymentDesc": "Thong tin thanh toan cua ban duoc ma hoa va xu ly an toan boi Stripe. Chung toi khong luu thong tin the cua ban."
 	},
+	"suspended": {
+		"title": "Tai khoan bi dinh chi",
+		"description": "Tai khoan cua ban da bi dinh chi boi quan tri vien.",
+		"reason": "Ly do",
+		"until": "Dinh chi den",
+		"indefinite": "Viec dinh chi nay khong co ngay ket thuc.",
+		"defaultReason": "Khong co ly do duoc cung cap",
+		"contactSupportPrefix": "Neu ban cho rang day la nham lan, vui long",
+		"contactSupportLink": "lien he voi chung toi"
+	},
+	"contact": {
+		"title": "Lien he",
+		"description": "Ban co cau hoi hoac can ho tro? Hay lien he voi chung toi.",
+		"emailLabel": "Email",
+		"socialsLabel": "Theo doi chung toi",
+		"facebook": "Facebook",
+		"instagram": "Instagram",
+		"zalo": "Nhom Zalo",
+		"responseTimeLabel": "Thoi gian phan hoi",
+		"responseTime": "Chung toi thuong phan hoi trong vong 24 gio."
+	},
 	"languages": {
 		"en": "English",
 		"vi": "Tieng Viet"
+	},
+	"terms": {
+		"title": "Dieu khoan dich vu",
+		"lastUpdated": "Cap nhat lan cuoi: {date}",
+		"sections": {
+			"acceptance": {
+				"title": "1. Chap nhan dieu khoan",
+				"content": "Khi truy cap hoac su dung nen tang dat cho cua Loafy Club, ban dong y rang minh se tuan thu cac Dieu khoan dich vu nay. Neu ban khong dong y voi cac dieu khoan nay, vui long khong su dung dich vu cua chung toi."
+			},
+			"accounts": {
+				"title": "2. Tai khoan nguoi dung",
+				"content": "De dat buoi choi, ban phai tao tai khoan bang xac thuc Google hoac Facebook. Ban chiu trach nhiem duy tri bao mat tai khoan va moi hoat dong xay ra duoi tai khoan cua minh. Tai khoan vi pham quy dinh co the bi dinh chi hoac cham dut."
+			},
+			"bookings": {
+				"title": "3. Dat cho & Thanh toan",
+				"content": "Ban co the dat cho ban than cong voi toi da 3 khach moi lan dat. Khach di cung se duoc tinh gia tuong tu. Thanh toan duoc xu ly qua Stripe (the tin dung/ghi no) hoac chuyen khoan ngan hang Viet Nam voi xac minh ma QR. Tat ca gia duoc hien thi bang Dong Viet Nam (VND). Thanh toan phai hoan tat trong vong 30 phut sau khi dat, neu khong dat cho se tu dong bi huy va cho cua ban se duoc tra lai cho nguoi choi khac."
+			},
+			"cancellation": {
+				"title": "4. Chinh sach huy & Hoan tien",
+				"content": "Thoi han huy khac nhau theo loai thanh vien: Nguoi choi le phai huy truoc it nhat 48 gio truoc buoi choi de duoc hoan tien day du. Thanh vien phai huy truoc it nhat 24 gio de duoc hoan ve. Huy sau thoi han nay se khong duoc hoan tien, nhung ban co the chuyen cho cho nguoi choi khac. Cac buoi choi bi huy boi nguoi to chuc (vi du: thoi tiet hoac dia diem) se duoc hoan tien day du hoac tra lai ve."
+			},
+			"waitlist": {
+				"title": "5. Danh sach cho & Thanh vien",
+				"content": "Khi buoi choi da day, ban co the dang ky vao danh sach cho. Thu tu uu tien: thanh vien truoc, sau do nguoi choi le theo thu tu dang ky. Thanh vien duoc quyen dat truoc truoc khi mo cho nguoi choi le. Ve thanh vien co hieu luc 3 thang voi tu dong gia han mac dinh (co the huy bat ky luc nao). Chuong trinh gioi thieu: ca ban va ban be deu nhan ve thuong khi ho mua lan dau."
+			},
+			"conduct": {
+				"title": "6. Quy tac ung xu",
+				"content": "Ban dong y su dung nen tang mot cach ton trong va hop phap. Cac hanh vi bi cam bao gom: quay roi nguoi choi khac, dat roi huy lien tuc (bo buoi), cung cap thong tin thanh toan sai, co gang vong qua he thong thanh toan, va bat ky hanh vi nao lam gian doan buoi choi hoac trai nghiem cua nguoi dung khac. Vi pham nhieu lan se dan den dinh chi tai khoan."
+			},
+			"liability": {
+				"title": "7. Trach nhiem & An toan",
+				"content": "Loafy Club cung cap nen tang dat cho va khong chiu trach nhiem ve thuong tich co the xay ra trong cac buoi choi pickleball. Nguoi tham gia choi tu chiu rui ro. Chung toi khuyen nghi mang giay phu hop va khoi dong truoc khi choi. Khi dat cho, ban xac nhan rang pickleball la hoat dong the chat va chap nhan trach nhiem ve su an toan cua ban than."
+			},
+			"changes": {
+				"title": "8. Thay doi dieu khoan",
+				"content": "Chung toi co the cap nhat cac dieu khoan nay theo thoi gian. Viec tiep tuc su dung nen tang sau khi thay doi dong nghia voi viec chap nhan cac dieu khoan moi. Cac thay doi quan trong se duoc thong bao qua email hoac thong bao tren nen tang."
+			},
+			"contact": {
+				"title": "9. Lien he",
+				"content": "Neu ban co cau hoi ve Dieu khoan dich vu nay, vui long lien he voi chung toi tai support@loafy.club hoac qua trang Lien he."
+			}
+		}
+	},
+	"privacy": {
+		"title": "Chinh sach bao mat",
+		"lastUpdated": "Cap nhat lan cuoi: {date}",
+		"intro": "Tai Loafy Club, chung toi cam ket bao ve quyen rieng tu cua ban. Chinh sach nay giai thich cach chung toi thu thap, su dung va bao ve thong tin ca nhan cua ban.",
+		"sections": {
+			"collection": {
+				"title": "1. Thong tin chung toi thu thap",
+				"content": "Chung toi thu thap thong tin ban cung cap khi tao tai khoan (ten, email, anh dai dien tu nha cung cap OAuth), thong tin dat cho (lich su buoi choi, ho so thanh toan), va du lieu ky thuat (thong tin thiet bi, dia chi IP, loai trinh duyet) de dam bao chuc nang va bao mat nen tang."
+			},
+			"usage": {
+				"title": "2. Cach chung toi su dung thong tin",
+				"content": "Chung toi su dung thong tin cua ban de: xu ly dat cho va thanh toan, gui xac nhan va nhac nho dat cho, cai thien nen tang va dich vu, truyen dat cac cap nhat quan trong, va dam bao bao mat nen tang. Chung toi khong ban thong tin ca nhan cua ban cho ben thu ba."
+			},
+			"sharing": {
+				"title": "3. Chia se thong tin",
+				"content": "Chung toi chi chia se thong tin cua ban voi: nguoi to chuc buoi choi (ten va lien lac de phoi hop), nha xu ly thanh toan (Stripe de xu ly thanh toan an toan), va nha cung cap dich vu (hosting, dich vu email) giup chung toi van hanh nen tang. Tat ca cac ben thu ba deu bi rang buoc boi cac thoa thuan bao mat."
+			},
+			"security": {
+				"title": "4. Bao mat du lieu",
+				"content": "Chung toi thuc hien cac bien phap bao mat tieu chuan nganh bao gom truyen du lieu duoc ma hoa (HTTPS), xac thuc an toan qua cac nha cung cap OAuth, va kiem toan bao mat thuong xuyen. Thong tin the thanh toan duoc xu ly truc tiep boi Stripe va khong bao gio duoc luu tren may chu cua chung toi."
+			},
+			"thirdParty": {
+				"title": "5. Dich vu ben thu ba",
+				"content": "Nen tang cua chung toi su dung: Supabase de xac thuc va luu tru du lieu, Stripe de xu ly thanh toan, Google Cloud de xac minh hinh anh, va Resend de lien lac qua email. Moi dich vu co chinh sach bao mat rieng dieu chinh viec xu ly du lieu."
+			},
+			"rights": {
+				"title": "6. Quyen cua ban",
+				"content": "Ban co quyen: truy cap du lieu ca nhan cua minh, sua thong tin khong chinh xac, xoa tai khoan va du lieu (co san trong Cai dat tai khoan), va tu choi nhan thong bao tiep thi. Ban co the quan ly hau het cac cai dat nay truc tiep trong trang Tai khoan. De yeu cau xuat du lieu, vui long lien he support@loafy.club."
+			},
+			"cookies": {
+				"title": "7. Cookie & Theo doi",
+				"content": "Chung toi su dung cookie thiet yeu cho xac thuc va quan ly phien. Chung toi khong su dung cookie quang cao hoac ban du lieu cho nha quang cao. Ban co the quan ly tuy chon cookie trong cai dat trinh duyet."
+			},
+			"changes": {
+				"title": "8. Thay doi chinh sach",
+				"content": "Chung toi co the cap nhat chinh sach bao mat nay dinh ky. Chung toi se thong bao cho ban ve cac thay doi quan trong qua email hoac thong bao tren nen tang. Viec tiep tuc su dung sau khi thay doi dong nghia voi viec chap nhan."
+			},
+			"contact": {
+				"title": "9. Lien he",
+				"content": "Doi voi cac cau hoi hoac thac mac lien quan den quyen rieng tu, vui long lien he voi chung toi tai support@loafy.club."
+			}
+		}
+	},
+	"error": {
+		"pageNotFound": "Khong tim thay trang",
+		"pageNotFoundTitle": "Oi! Khong tim thay trang",
+		"pageNotFoundDesc": "Trang ban dang tim khong ton tai hoac da bi chuyen di. Hay de chung toi dua ban tro lai!",
+		"somethingWentWrong": "Xay ra loi",
+		"somethingWentWrongTitle": "Oi! Co loi xay ra",
+		"somethingWentWrongDesc": "Chung toi gap loi khong mong muon. Vui long thu lai hoac quay ve trang chu.",
+		"goHome": "Ve trang chu",
+		"browseSessions": "Xem buoi choi",
+		"goBack": "Quay lai trang truoc"
 	}
 }

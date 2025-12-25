@@ -1,31 +1,32 @@
 <script lang="ts" module>
+	import { cn, type WithElementRef } from "$lib/utils.js";
+	import type { HTMLAnchorAttributes, HTMLButtonAttributes } from "svelte/elements";
 	import { type VariantProps, tv } from "tailwind-variants";
 
 	export const buttonVariants = tv({
-		base: "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
+		base: "focus-visible:border-ring focus-visible:ring-ring/50 aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive inline-flex shrink-0 items-center justify-center gap-2 rounded-md text-sm font-medium whitespace-nowrap transition-all outline-none focus-visible:ring-[3px] disabled:pointer-events-none disabled:opacity-50 aria-disabled:pointer-events-none aria-disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
 		variants: {
 			variant: {
-				default: "bg-primary text-primary-foreground shadow hover:bg-primary/90",
-				destructive: "bg-destructive text-destructive-foreground shadow-sm hover:bg-destructive/90",
-				outline: "border border-input bg-background shadow-sm hover:bg-accent hover:text-accent-foreground",
-				secondary: "bg-secondary text-secondary-foreground shadow-sm hover:bg-secondary/80",
-				ghost: "hover:bg-accent hover:text-accent-foreground",
+				default: "bg-primary text-primary-foreground hover:bg-primary/90 shadow-xs",
+				destructive:
+					"bg-destructive hover:bg-destructive/90 focus-visible:ring-destructive/20 dark:focus-visible:ring-destructive/40 text-white shadow-xs",
+				outline:
+					"bg-background hover:bg-accent hover:text-accent-foreground dark:bg-input/30 dark:border-input dark:hover:bg-input/50 border shadow-xs",
+				secondary: "bg-secondary text-secondary-foreground hover:bg-secondary/80 shadow-xs",
+				ghost: "hover:bg-accent hover:text-accent-foreground dark:hover:bg-accent/50",
 				link: "text-primary underline-offset-4 hover:underline",
-				gradient: "bg-gradient-to-r from-orange-500 to-pink-500 text-white border-0 hover:from-orange-600 hover:to-pink-600",
-				social: "w-full rounded-xl border-2 border-gray-200 bg-white hover:bg-gray-50 hover:border-gray-300 hover:shadow-md transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed",
-				// Primary: Bold solid button - main CTA
-				primary: "bg-card text-card-foreground shadow-lg hover:bg-muted border-0",
-				// Secondary: Outlined button with border
-				"secondary-outline": "bg-transparent border-2 border-current text-current hover:bg-white/10",
-				// Tertiary: Subtle text-style button
-				tertiary: "bg-white/20 text-current border border-white/30 hover:bg-white/30 backdrop-blur-sm",
+				gradient: "bg-gradient-to-r from-primary to-primary/80 text-primary-foreground hover:from-primary/90 hover:to-primary/70 shadow-md hover:shadow-lg transition-all",
+				social: "bg-card text-card-foreground hover:bg-accent border border-border shadow-sm",
+				"secondary-outline": "border-2 border-primary text-primary hover:bg-primary/10",
 			},
 			size: {
-				default: "h-9 px-4 py-2",
-				sm: "h-8 rounded-md px-3 text-xs",
-				lg: "h-10 rounded-md px-8",
-				xl: "h-auto px-6 py-4",
-				icon: "h-9 w-9",
+				default: "h-9 px-4 py-2 has-[>svg]:px-3",
+				sm: "h-8 gap-1.5 rounded-md px-3 has-[>svg]:px-2.5",
+				lg: "h-10 rounded-md px-6 has-[>svg]:px-4",
+				xl: "h-12 rounded-lg px-8 text-lg has-[>svg]:px-6",
+				icon: "size-9",
+				"icon-sm": "size-8",
+				"icon-lg": "size-10",
 			},
 		},
 		defaultVariants: {
@@ -36,29 +37,50 @@
 
 	export type ButtonVariant = VariantProps<typeof buttonVariants>["variant"];
 	export type ButtonSize = VariantProps<typeof buttonVariants>["size"];
+
+	export type ButtonProps = WithElementRef<HTMLButtonAttributes> &
+		WithElementRef<HTMLAnchorAttributes> & {
+			variant?: ButtonVariant;
+			size?: ButtonSize;
+		};
 </script>
 
 <script lang="ts">
-	import { cn } from "$lib/utils";
-	import type { HTMLButtonAttributes } from "svelte/elements";
-
-	type Props = HTMLButtonAttributes & {
-		variant?: ButtonVariant;
-		size?: ButtonSize;
-	};
-
 	let {
 		class: className,
 		variant = "default",
 		size = "default",
+		ref = $bindable(null),
+		href = undefined,
+		type = "button",
+		disabled,
 		children,
 		...restProps
-	}: Props = $props();
+	}: ButtonProps = $props();
 </script>
 
-<button
-	class={cn(buttonVariants({ variant, size }), className)}
-	{...restProps}
->
-	{@render children?.()}
-</button>
+{#if href}
+	<a
+		bind:this={ref}
+		data-slot="button"
+		class={cn(buttonVariants({ variant, size }), className)}
+		href={disabled ? undefined : href}
+		aria-disabled={disabled}
+		role={disabled ? "link" : undefined}
+		tabindex={disabled ? -1 : undefined}
+		{...restProps}
+	>
+		{@render children?.()}
+	</a>
+{:else}
+	<button
+		bind:this={ref}
+		data-slot="button"
+		class={cn(buttonVariants({ variant, size }), className)}
+		{type}
+		{disabled}
+		{...restProps}
+	>
+		{@render children?.()}
+	</button>
+{/if}

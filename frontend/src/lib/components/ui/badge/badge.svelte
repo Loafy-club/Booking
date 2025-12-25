@@ -12,6 +12,18 @@
 				success: "border-transparent bg-green-500 text-white shadow hover:bg-green-500/80",
 				warning: "border-transparent bg-yellow-500 text-white shadow hover:bg-yellow-500/80",
 				gradient: "border-transparent bg-gradient-to-r from-orange-500 to-pink-500 text-white shadow",
+				admin: "border-transparent bg-badge-admin-bg text-badge-admin-text",
+				organizer: "border-transparent bg-badge-organizer-bg text-badge-organizer-text",
+				muted: "border-transparent bg-muted text-muted-foreground",
+				// Status variants
+				pending: "border-transparent bg-badge-pending-bg text-badge-pending-text",
+				confirmed: "border-transparent bg-badge-confirmed-bg text-badge-confirmed-text",
+				failed: "border-transparent bg-badge-failed-bg text-badge-failed-text",
+				cancelled: "border-transparent bg-badge-failed-bg text-badge-failed-text",
+				upcoming: "border-transparent bg-badge-confirmed-bg text-badge-confirmed-text",
+				"in-progress": "border-transparent bg-badge-progress-bg text-badge-progress-text",
+				completed: "border-transparent bg-badge-completed-bg text-badge-completed-text",
+				full: "border-transparent bg-badge-full-bg text-badge-full-text",
 			},
 			size: {
 				default: "px-2.5 py-0.5 text-xs",

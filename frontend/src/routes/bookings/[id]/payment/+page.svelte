@@ -9,15 +9,13 @@
 	import { useTranslation } from '$lib/i18n/index.svelte';
 	import Navigation from '$lib/components/Navigation.svelte';
 	import { Button } from '$lib/components/ui/button';
-	import { GlassCard } from '$lib/components/ui/glass-card';
 	import { PageBackground } from '$lib/components/ui/page-background';
-	import { BackButton } from '$lib/components/ui/back-button';
-	import { LoadingSpinner } from '$lib/components/ui/loading-spinner';
-	import { ErrorState } from '$lib/components/ui/error-state';
+	import { BookingDetailSkeleton } from '$lib/components/ui/skeleton';
+	import * as Empty from '$lib/components/ui/empty';
 	import { AnimatedContainer } from '$lib/components/ui/animated-container';
 	import { Alert, AlertDescription } from '$lib/components/ui/alert';
 	import { Card } from '$lib/components/ui/card';
-	import { ShieldCheck } from 'lucide-svelte';
+	import { ShieldCheck, ArrowLeft, AlertCircle } from 'lucide-svelte';
 	import type { Booking } from '$lib/types';
 
 	const t = useTranslation();
@@ -25,6 +23,7 @@
 	let bookingId = $derived($page.params.id);
 	let booking = $state<Booking | null>(null);
 	let loading = $state(true);
+	let showSkeleton = $state(false);
 	let error = $state<string | null>(null);
 	let paymentLoading = $state(false);
 	let paymentError = $state<string | null>(null);
@@ -36,8 +35,14 @@
 	const stripePublishableKey = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || '';
 
 	onMount(async () => {
-		if (!requireAuth()) return;
+		if (!(await requireAuth())) return;
+
+		const skeletonTimer = setTimeout(() => {
+			if (loading) showSkeleton = true;
+		}, 200);
+
 		await loadBooking();
+		clearTimeout(skeletonTimer);
 	});
 
 	async function loadBooking() {
@@ -130,52 +135,84 @@
 <PageBackground variant="subtle">
 	<Navigation />
 
-	<div class="mx-auto max-w-4xl px-4 py-8 sm:px-6 lg:px-8">
-		{#if loading}
-			<LoadingSpinner text={t('payment.loadingPayment')} />
+	<main class="mx-auto max-w-4xl px-4 py-8 sm:px-6 lg:px-8">
+		{#if loading && showSkeleton}
+			<BookingDetailSkeleton />
+		{:else if loading}
+			<!-- Brief loading -->
 		{:else if error && !booking}
-			<ErrorState
-				message={error}
-				onRetry={() => goto('/bookings')}
-				retryText={t('bookings.backToBookings')}
-			/>
+			<AnimatedContainer animation="fade-up" delay={100}>
+				<Card variant="glass" class="mx-auto max-w-md">
+					<Empty.Root>
+						<Empty.Header>
+							<Empty.Media variant="icon">
+								<AlertCircle class="size-5" />
+							</Empty.Media>
+							<Empty.Title>{t('common.error')}</Empty.Title>
+							<Empty.Description>{error}</Empty.Description>
+						</Empty.Header>
+						<Empty.Content>
+							<Button onclick={() => goto('/bookings')}>{t('bookings.backToBookings')}</Button>
+						</Empty.Content>
+					</Empty.Root>
+				</Card>
+			</AnimatedContainer>
 		{:else if error}
 			<AnimatedContainer animation="fade-up">
-				<BackButton href="/bookings" label={t('bookings.backToBookings')} />
+				<div class="mb-6">
+					<Button variant="ghost" onclick={() => goto('/bookings')}>
+						<ArrowLeft class="size-4 mr-2" />
+						{t('bookings.backToBookings')}
+					</Button>
+				</div>
 			</AnimatedContainer>
 			<AnimatedContainer animation="fade-up" delay={100}>
-				<ErrorState
-					message={error}
-					onRetry={() => goto(`/bookings/${bookingId}`)}
-					retryText={t('payment.viewBooking')}
-				/>
+				<Card variant="glass" class="mx-auto max-w-md">
+					<Empty.Root>
+						<Empty.Header>
+							<Empty.Media variant="icon">
+								<AlertCircle class="size-5" />
+							</Empty.Media>
+							<Empty.Title>{t('common.error')}</Empty.Title>
+							<Empty.Description>{error}</Empty.Description>
+						</Empty.Header>
+						<Empty.Content>
+							<Button onclick={() => goto(`/bookings/${bookingId}`)}>{t('payment.viewBooking')}</Button>
+						</Empty.Content>
+					</Empty.Root>
+				</Card>
 			</AnimatedContainer>
 		{:else if booking}
 			<AnimatedContainer animation="fade-up">
-				<BackButton href={`/bookings/${bookingId}`} label={t('bookings.backToBooking')} />
+				<div class="mb-6">
+					<Button variant="ghost" onclick={() => goto(`/bookings/${bookingId}`)}>
+						<ArrowLeft class="size-4 mr-2" />
+						{t('bookings.backToBooking')}
+					</Button>
+				</div>
 			</AnimatedContainer>
 
 			<div class="grid gap-6 lg:grid-cols-3">
 				<div class="lg:col-span-2">
 					<AnimatedContainer animation="fade-up" delay={100}>
-						<GlassCard>
-							<h1 class="text-2xl font-bold text-gray-800 font-display">
+						<Card variant="glass">
+							<h1 class="text-2xl font-bold text-foreground font-display">
 								{t('payment.completePayment')}
 							</h1>
-							<p class="mt-2 text-sm text-gray-600">
+							<p class="mt-2 text-sm text-muted-foreground">
 								{t('bookings.bookingCode')} {booking.booking_code}
 							</p>
 
 							{#if booking.payment_deadline}
-								<Alert class="mt-4 bg-yellow-50 border-yellow-200">
-									<AlertDescription class="text-yellow-800">
+								<Alert class="mt-4" variant="warning">
+									<AlertDescription>
 										{t('payment.completeBy', { date: formatDate(booking.payment_deadline) })}
 									</AlertDescription>
 								</Alert>
 							{/if}
 
 							<form onsubmit={handleSubmit} class="mt-8">
-								<div bind:this={paymentElement} class="rounded-xl border-2 border-gray-200 p-4 bg-white"></div>
+								<div bind:this={paymentElement} class="rounded-xl border-2 border-border p-4 bg-card"></div>
 
 								{#if paymentError}
 									<Alert class="mt-4" variant="destructive">
@@ -193,50 +230,50 @@
 									{paymentLoading ? t('payment.processing') : t('payment.pay', { amount: formatCurrency(getBookingTotal(booking)) })}
 								</Button>
 
-								<p class="mt-4 text-center text-xs text-gray-500">
+								<p class="mt-4 text-center text-xs text-muted-foreground">
 									{t('payment.securedByStripe')}
 								</p>
 							</form>
-						</GlassCard>
+						</Card>
 					</AnimatedContainer>
 				</div>
 
 				<div class="lg:col-span-1">
 					<AnimatedContainer animation="fade-up" delay={200}>
-						<GlassCard class="sticky top-20">
-							<h2 class="text-lg font-bold text-gray-800 font-display">
+						<Card variant="glass" class="sticky top-20">
+							<h2 class="text-lg font-bold text-foreground font-display">
 								{t('payment.orderSummary')}
 							</h2>
 
 							<div class="mt-4 space-y-3">
 								<Card variant="infoSm">
-									<p class="text-xs text-gray-500">{t('bookings.bookingCode')}</p>
-									<p class="text-sm font-medium text-gray-800">{booking.booking_code}</p>
+									<p class="text-xs text-muted-foreground">{t('bookings.bookingCode')}</p>
+									<p class="text-sm font-medium text-foreground">{booking.booking_code}</p>
 								</Card>
 
 								<Card variant="infoSm">
-									<p class="text-xs text-gray-500">{t('bookings.numberOfPeople')}</p>
-									<p class="text-sm font-medium text-gray-800">
+									<p class="text-xs text-muted-foreground">{t('bookings.numberOfPeople')}</p>
+									<p class="text-sm font-medium text-foreground">
 										{1 + booking.guest_count}
 									</p>
 								</Card>
 
-								<div class="border-t border-gray-200 pt-3">
+								<div class="border-t border-border pt-3">
 									<div class="flex justify-between text-sm">
-										<span class="text-gray-600">{t('bookings.yourSlot')}</span>
-										<span class="font-medium text-gray-800">{formatCurrency(booking.price_paid_vnd)}</span>
+										<span class="text-muted-foreground">{t('bookings.yourSlot')}</span>
+										<span class="font-medium text-foreground">{formatCurrency(booking.price_paid_vnd)}</span>
 									</div>
 									{#if booking.guest_count > 0}
 										<div class="mt-2 flex justify-between text-sm">
-											<span class="text-gray-600">{t('bookings.guestSlots', { count: booking.guest_count })}</span>
-											<span class="font-medium text-gray-800">{formatCurrency(booking.guest_price_paid_vnd)}</span>
+											<span class="text-muted-foreground">{t('bookings.guestSlots', { count: booking.guest_count })}</span>
+											<span class="font-medium text-foreground">{formatCurrency(booking.guest_price_paid_vnd)}</span>
 										</div>
 									{/if}
 								</div>
 
-								<div class="border-t border-gray-200 pt-3">
+								<div class="border-t border-border pt-3">
 									<div class="flex justify-between">
-										<span class="text-base font-semibold text-gray-800">{t('payment.total')}</span>
+										<span class="text-base font-semibold text-foreground">{t('payment.total')}</span>
 										<span class="text-xl font-bold text-gradient-primary">
 											{formatCurrency(getBookingTotal(booking))}
 										</span>
@@ -246,17 +283,17 @@
 
 							<Card variant="info" class="mt-6">
 								<div class="flex items-center gap-2 mb-2">
-									<ShieldCheck class="h-4 w-4 text-green-600" />
-									<h3 class="text-xs font-medium text-gray-700">{t('payment.securePayment')}</h3>
+									<ShieldCheck class="h-4 w-4 text-success-text" />
+									<h3 class="text-xs font-medium text-foreground">{t('payment.securePayment')}</h3>
 								</div>
-								<p class="text-xs text-gray-600">
+								<p class="text-xs text-muted-foreground">
 									{t('payment.securePaymentDesc')}
 								</p>
 							</Card>
-						</GlassCard>
+						</Card>
 					</AnimatedContainer>
 				</div>
 			</div>
 		{/if}
-	</div>
+	</main>
 </PageBackground>

@@ -10,9 +10,9 @@
 	--color-secondary: hsl(340 80% 94%);
 	--color-secondary-foreground: hsl(340 60% 40%);
 
-	/* Accent - Soft Sky Blue */
-	--color-accent: hsl(200 80% 92%);
-	--color-accent-foreground: hsl(200 60% 35%);
+	/* Accent - Warm Peach (matches Loafy theme) */
+	--color-accent: hsl(32 80% 94%);
+	--color-accent-foreground: hsl(32 70% 35%);
 
 	/* Muted - Light lavender gray */
 	--color-muted: hsl(240 20% 96%);
@@ -30,8 +30,8 @@
 	--color-popover: hsl(0 0% 100%);
 	--color-popover-foreground: hsl(240 20% 20%);
 
-	/* Destructive - Soft coral red */
-	--color-destructive: hsl(0 70% 60%);
+	/* Destructive - Red */
+	--color-destructive: hsl(0 84% 50%);
 	--color-destructive-foreground: hsl(0 0% 100%);
 
 	/* Border & Input */
@@ -106,6 +106,32 @@
 	--color-badge-organizer-text: hsl(200 70% 35%);
 	--color-badge-user-bg: hsl(220 15% 93%);
 	--color-badge-user-text: hsl(220 10% 25%);
+
+	/* Status badge colors */
+	--color-badge-pending-bg: hsl(45 93% 94%);
+	--color-badge-pending-text: hsl(45 80% 30%);
+	--color-badge-confirmed-bg: hsl(142 76% 94%);
+	--color-badge-confirmed-text: hsl(142 70% 30%);
+	--color-badge-failed-bg: hsl(0 84% 94%);
+	--color-badge-failed-text: hsl(0 70% 35%);
+	--color-badge-progress-bg: hsl(200 80% 94%);
+	--color-badge-progress-text: hsl(200 70% 35%);
+	--color-badge-completed-bg: hsl(270 80% 94%);
+	--color-badge-completed-text: hsl(270 70% 35%);
+	--color-badge-full-bg: hsl(220 15% 93%);
+	--color-badge-full-text: hsl(220 15% 35%);
+
+	/* Warning/caution colors */
+	--color-warning-bg: hsl(45 93% 94%);
+	--color-warning-border: hsl(45 80% 80%);
+	--color-warning-text: hsl(45 80% 30%);
+
+	/* Chart colors - warm Loafy palette */
+	--color-chart-1: hsl(32 95% 55%);
+	--color-chart-2: hsl(340 70% 60%);
+	--color-chart-3: hsl(200 70% 50%);
+	--color-chart-4: hsl(142 60% 45%);
+	--color-chart-5: hsl(270 60% 55%);
 }
 
 /* Dark mode overrides */
@@ -116,8 +142,8 @@
 	--color-secondary: hsl(340 40% 20%);
 	--color-secondary-foreground: hsl(340 60% 80%);
 
-	--color-accent: hsl(200 40% 20%);
-	--color-accent-foreground: hsl(200 60% 80%);
+	--color-accent: hsl(32 40% 20%);
+	--color-accent-foreground: hsl(32 60% 80%);
 
 	--color-muted: hsl(240 10% 20%);
 	--color-muted-foreground: hsl(240 10% 65%);
@@ -185,6 +211,32 @@
 	--color-badge-organizer-text: hsl(200 60% 80%);
 	--color-badge-user-bg: hsl(220 15% 30%);
 	--color-badge-user-text: hsl(220 10% 80%);
+
+	/* Status badge colors for dark mode */
+	--color-badge-pending-bg: hsl(45 50% 20%);
+	--color-badge-pending-text: hsl(45 70% 75%);
+	--color-badge-confirmed-bg: hsl(142 40% 20%);
+	--color-badge-confirmed-text: hsl(142 60% 70%);
+	--color-badge-failed-bg: hsl(0 40% 20%);
+	--color-badge-failed-text: hsl(0 60% 70%);
+	--color-badge-progress-bg: hsl(200 40% 25%);
+	--color-badge-progress-text: hsl(200 60% 80%);
+	--color-badge-completed-bg: hsl(270 40% 25%);
+	--color-badge-completed-text: hsl(270 60% 80%);
+	--color-badge-full-bg: hsl(220 15% 30%);
+	--color-badge-full-text: hsl(220 15% 75%);
+
+	/* Warning/caution colors for dark mode */
+	--color-warning-bg: hsl(45 50% 15%);
+	--color-warning-border: hsl(45 50% 30%);
+	--color-warning-text: hsl(45 70% 75%);
+
+	/* Chart colors for dark mode */
+	--color-chart-1: hsl(32 90% 60%);
+	--color-chart-2: hsl(340 65% 65%);
+	--color-chart-3: hsl(200 65% 55%);
+	--color-chart-4: hsl(142 55% 50%);
+	--color-chart-5: hsl(270 55% 60%);
 }
 
 @layer base {

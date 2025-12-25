@@ -7,16 +7,40 @@ type TranslationValue = string | { [key: string]: TranslationValue };
 type Translations = { [key: string]: TranslationValue };
 
 const translations: Record<Locale, Translations> = { en, vi };
+const supportedLocales: Locale[] = ['en', 'vi'];
+
+/**
+ * Detect the best locale based on browser language settings
+ */
+function detectBrowserLocale(): Locale {
+	if (typeof navigator === 'undefined') return 'en';
+
+	// Get browser languages (ordered by preference)
+	const browserLanguages = navigator.languages ?? [navigator.language];
+
+	for (const lang of browserLanguages) {
+		// Extract language code (e.g., 'vi-VN' → 'vi', 'en-US' → 'en')
+		const langCode = lang.split('-')[0].toLowerCase();
+		if (supportedLocales.includes(langCode as Locale)) {
+			return langCode as Locale;
+		}
+	}
+
+	return 'en';
+}
 
 class I18nStore {
 	locale = $state<Locale>('en');
 
 	constructor() {
-		// Load saved locale from localStorage on init
+		// Load saved locale from localStorage, or detect from browser
 		if (typeof window !== 'undefined') {
 			const saved = localStorage.getItem('loafy_language') as Locale | null;
-			if (saved && (saved === 'en' || saved === 'vi')) {
+			if (saved && supportedLocales.includes(saved)) {
 				this.locale = saved;
+			} else {
+				// No saved preference - detect from browser language
+				this.locale = detectBrowserLocale();
 			}
 		}
 	}

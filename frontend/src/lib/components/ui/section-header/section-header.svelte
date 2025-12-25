@@ -58,7 +58,7 @@
 
 <div class={cn(styles.wrapper(), className)}>
 	<div>
-		<h1 class={styles.title()} style="color: var(--color-heading);">
+		<h1 class={cn(styles.title(), "text-foreground")}>
 			{#if gradient}
 				<GradientText>{title}</GradientText>
 			{:else}
@@ -66,7 +66,7 @@
 			{/if}
 		</h1>
 		{#if subtitle}
-			<p class={styles.subtitle()} style="color: var(--color-body);">{subtitle}</p>
+			<p class={cn(styles.subtitle(), "text-muted-foreground")}>{subtitle}</p>
 		{/if}
 	</div>
 	{#if actions && !centered}

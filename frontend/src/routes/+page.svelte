@@ -63,11 +63,11 @@
 	<!-- Extra height (calc(100vh + 115px)) pushes wave below viewport initially -->
 	<section class="relative h-[calc(100vh+90px)] min-h-[800px] overflow-hidden">
 		<!-- Layer 1: Sky (slowest) -->
-		<div class="absolute" style="transform: translateY({scrollY * 0.1}px)">
+		<div class="absolute inset-0" style="transform: translateY({scrollY * 0.1}px)">
 			<img
 				src="/parallax-layers/sky.png"
 				alt=""
-				class="w-full h-full object-cover object-center opacity-0 transition-opacity duration-1000 {loaded ? 'opacity-100' : ''}"
+				class="w-full h-full object-cover object-top opacity-0 transition-opacity duration-1000 {loaded ? 'opacity-100' : ''}"
 			/>
 		</div>
 
@@ -81,11 +81,11 @@
 		</div>
 
 		<!-- Layer 3: Court -->
-		<div class="absolute" style="transform: translateY({scrollY * 0.35}px)">
+		<div class="absolute inset-0 -translate-y-10" style="transform: translateY({scrollY * 0.35 - 48}px)">
 			<img
 				src="/parallax-layers/court.png"
 				alt=""
-				class="w-full h-full object-cover object-top opacity-0 transition-opacity duration-1000 delay-300 {loaded ? 'opacity-100' : ''}"
+				class="w-full h-full object-cover object-bottom opacity-0 transition-opacity duration-1000 delay-300 {loaded ? 'opacity-100' : ''}"
 			/>
 		</div>
 
@@ -433,7 +433,7 @@
 				</p>
 				<div class="flex flex-col sm:flex-row items-center justify-center gap-4">
 					<Button
-						variant="primary"
+						variant="social"
 						size="lg"
 						class="text-lg px-10 py-7 shadow-2xl hover:shadow-3xl hover:scale-105 transition-all duration-300"
 						onclick={() => goto('/sessions')}
@@ -465,7 +465,7 @@
 	</div>
 
 	<!-- ===== FOOTER ===== -->
-	<footer class="landing-footer py-12 -mt-2">
+	<footer class="landing-footer border-t border-border bg-card py-12 -mt-2">
 		<div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
 			<FooterContent />
 		</div>
@@ -517,9 +517,8 @@
 	:global(.dark .cta-wave-stop-50) { stop-color: #7c2d12; }
 	:global(.dark .cta-wave-stop-100) { stop-color: #831843; }
 
-	/* Footer Wave */
-	:global(.footer-wave-path) { fill: #1f2937; }
-	:global(.dark .footer-wave-path) { fill: #0a0a0f; }
+	/* Footer Wave - must match .landing-footer background (bg-card) */
+	:global(.footer-wave-path) { fill: var(--color-card); }
 
 	/* Bubble tail styles using CSS variables */
 	.bubble-tail-down {
@@ -616,14 +615,6 @@
 		);
 	}
 
-	/* Footer */
-	.landing-footer {
-		background-color: hsl(220 15% 20%);
-	}
-	:global(.dark) .landing-footer {
-		background-color: hsl(240 10% 8%);
-	}
-
 	/* Wave SVG gradients - override fills based on theme */
 	.landing-page :global(svg path[fill="url(#wave-gradient-1)"]) {
 		fill: url(#wave-gradient-1);
@@ -633,12 +624,6 @@
 	}
 	.landing-page :global(svg path[fill="url(#cta-wave-gradient)"]) {
 		fill: url(#cta-wave-gradient);
-	}
-	.landing-page :global(svg path[fill="#1f2937"]) {
-		fill: hsl(220 15% 20%);
-	}
-	:global(.dark) .landing-page :global(svg path[fill="#1f2937"]) {
-		fill: hsl(240 10% 8%);
 	}
 
 	/* Scroll reveal animations */

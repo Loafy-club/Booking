@@ -15,29 +15,39 @@
 	import { useTranslation } from '$lib/i18n/index.svelte';
 	import Navigation from '$lib/components/Navigation.svelte';
 	import { Button } from '$lib/components/ui/button';
-	import { GlassCard } from '$lib/components/ui/glass-card';
+	import { Card } from '$lib/components/ui/card';
 	import { PageBackground } from '$lib/components/ui/page-background';
-	import { BackButton } from '$lib/components/ui/back-button';
-	import { LoadingSpinner } from '$lib/components/ui/loading-spinner';
-	import { ErrorState } from '$lib/components/ui/error-state';
-	import { StatusBadge } from '$lib/components/ui/status-badge';
+	import { BookingDetailSkeleton } from '$lib/components/ui/skeleton';
+	import * as Empty from '$lib/components/ui/empty';
+	import { Badge } from '$lib/components/ui/badge';
 	import { AnimatedContainer } from '$lib/components/ui/animated-container';
 	import { Alert, AlertDescription, AlertTitle } from '$lib/components/ui/alert';
-	import { Card } from '$lib/components/ui/card';
-	import { AlertTriangle, XCircle } from 'lucide-svelte';
+	import * as AlertDialog from '$lib/components/ui/alert-dialog';
+	import { AlertTriangle, XCircle, ArrowLeft, AlertCircle } from 'lucide-svelte';
 	import type { Booking } from '$lib/types';
+
+	// Cancel dialog state
+	let cancelDialogOpen = $state(false);
+	let cancelError = $state<string | null>(null);
 
 	const t = useTranslation();
 
 	let bookingId = $derived($page.params.id);
 	let booking = $state<Booking | null>(null);
 	let loading = $state(true);
+	let showSkeleton = $state(false);
 	let error = $state<string | null>(null);
 	let cancelLoading = $state(false);
 
 	onMount(async () => {
-		if (!requireAuth()) return;
+		if (!(await requireAuth())) return;
+
+		const skeletonTimer = setTimeout(() => {
+			if (loading) showSkeleton = true;
+		}, 200);
+
 		await loadBooking();
+		clearTimeout(skeletonTimer);
 	});
 
 	async function loadBooking() {
@@ -54,20 +64,23 @@
 		}
 	}
 
-	async function handleCancel() {
+	function openCancelDialog() {
+		cancelError = null;
+		cancelDialogOpen = true;
+	}
+
+	async function confirmCancel() {
 		if (!booking) return;
 
-		if (!confirm(t('bookings.confirmCancel', { code: booking.booking_code }))) {
-			return;
-		}
-
 		cancelLoading = true;
+		cancelError = null;
 
 		try {
 			await api.bookings.cancel(bookingId!);
+			cancelDialogOpen = false;
 			await loadBooking();
 		} catch (err: unknown) {
-			alert(extractErrorMessage(err, t('bookings.cancelError')));
+			cancelError = extractErrorMessage(err, t('bookings.cancelError'));
 		} finally {
 			cancelLoading = false;
 		}
@@ -81,34 +94,52 @@
 <PageBackground variant="subtle">
 	<Navigation />
 
-	<div class="mx-auto max-w-4xl px-4 py-8 sm:px-6 lg:px-8">
-		{#if loading}
-			<LoadingSpinner text={t('bookings.loadingBooking')} />
+	<main class="mx-auto max-w-4xl px-4 py-8 sm:px-6 lg:px-8">
+		{#if loading && showSkeleton}
+			<BookingDetailSkeleton />
+		{:else if loading}
+			<!-- Brief loading -->
 		{:else if error && !booking}
-			<ErrorState
-				message={error}
-				onRetry={() => goto('/bookings')}
-				retryText={t('bookings.backToBookings')}
-			/>
+			<AnimatedContainer animation="fade-up" delay={100}>
+				<Card variant="glass" class="mx-auto max-w-md">
+					<Empty.Root>
+						<Empty.Header>
+							<Empty.Media variant="icon">
+								<AlertCircle class="size-5" />
+							</Empty.Media>
+							<Empty.Title>{t('common.error')}</Empty.Title>
+							<Empty.Description>{error}</Empty.Description>
+						</Empty.Header>
+						<Empty.Content>
+							<Button onclick={() => goto('/bookings')}>{t('bookings.backToBookings')}</Button>
+						</Empty.Content>
+					</Empty.Root>
+				</Card>
+			</AnimatedContainer>
 		{:else if booking}
 			<AnimatedContainer animation="fade-up">
-				<BackButton href="/bookings" label={t('bookings.backToBookings')} />
+				<div class="mb-6">
+					<Button variant="ghost" onclick={() => goto('/bookings')}>
+						<ArrowLeft class="size-4 mr-2" />
+						{t('bookings.backToBookings')}
+					</Button>
+				</div>
 			</AnimatedContainer>
 
 			<AnimatedContainer animation="fade-up" delay={100}>
-				<GlassCard>
+				<Card variant="glass">
 					<div class="mb-6 flex items-center justify-between flex-wrap gap-4">
 						<div>
-						<h1 class="text-3xl font-bold text-gray-800 font-display">
+						<h1 class="text-3xl font-bold font-display text-foreground">
 							{t('bookings.bookingCode')} {booking.booking_code}
 						</h1>
-							<p class="mt-1 text-sm text-gray-500">{t('bookings.createdOn', { date: formatDate(booking.created_at) })}</p>
+							<p class="mt-1 text-sm text-muted-foreground">{t('bookings.createdOn', { date: formatDate(booking.created_at) })}</p>
 						</div>
 
 						<div class="flex gap-2">
-							<StatusBadge status={t(`bookings.status.${booking.payment_status}`)} statusKey={booking.payment_status} variant="booking" />
+							<Badge variant={booking.payment_status as any}>{t(`bookings.status.${booking.payment_status}`)}</Badge>
 							{#if booking.cancelled_at}
-								<StatusBadge status={t('bookings.status.cancelled')} statusKey="cancelled" variant="booking" />
+								<Badge variant="cancelled">{t('bookings.status.cancelled')}</Badge>
 							{/if}
 						</div>
 					</div>
@@ -116,31 +147,31 @@
 					<div class="space-y-6">
 						<div class="grid gap-6 md:grid-cols-2">
 							<Card variant="info">
-								<h3 class="text-sm font-medium text-gray-500">{t('bookings.paymentStatus')}</h3>
-								<p class="mt-1 text-lg font-semibold text-gray-800">
+								<h3 class="text-sm font-medium text-muted-foreground">{t('bookings.paymentStatus')}</h3>
+								<p class="mt-1 text-lg font-semibold text-foreground">
 									{t(`bookings.status.${booking.payment_status}`)}
 								</p>
 							</Card>
 
 							<Card variant="info">
-								<h3 class="text-sm font-medium text-gray-500">{t('bookings.paymentMethod')}</h3>
-								<p class="mt-1 text-lg font-semibold text-gray-800">
+								<h3 class="text-sm font-medium text-muted-foreground">{t('bookings.paymentMethod')}</h3>
+								<p class="mt-1 text-lg font-semibold text-foreground">
 									{booking.payment_method === 'stripe' ? t('bookings.cardPayment') : t('bookings.qrPayment')}
 								</p>
 							</Card>
 
 							<Card variant="info">
-								<h3 class="text-sm font-medium text-gray-500">{t('bookings.numberOfPeople')}</h3>
-								<p class="mt-1 text-lg font-semibold text-gray-800">
+								<h3 class="text-sm font-medium text-muted-foreground">{t('bookings.numberOfPeople')}</h3>
+								<p class="mt-1 text-lg font-semibold text-foreground">
 									{1 + booking.guest_count}
-									<span class="text-sm font-normal text-gray-600">
+									<span class="text-sm font-normal text-muted-foreground">
 										({booking.guest_count !== 1 ? t('bookings.youPlusGuestsPlural', { count: booking.guest_count }) : t('bookings.youPlusGuests', { count: booking.guest_count })})
 									</span>
 								</p>
 							</Card>
 
 							<Card variant="info">
-								<h3 class="text-sm font-medium text-gray-500">{t('bookings.totalAmount')}</h3>
+								<h3 class="text-sm font-medium text-muted-foreground">{t('bookings.totalAmount')}</h3>
 							<p class="mt-1 text-2xl font-bold text-gradient-primary">
 								{formatCurrency(getBookingTotal(booking))}
 							</p>
@@ -148,17 +179,17 @@
 						</div>
 
 						{#if getBookingTotal(booking) > 0}
-							<div class="border-t border-gray-200 pt-6">
-								<h3 class="text-sm font-medium text-gray-500 mb-3">{t('bookings.priceBreakdown')}</h3>
+							<div class="border-t border-border pt-6">
+								<h3 class="text-sm font-medium text-muted-foreground mb-3">{t('bookings.priceBreakdown')}</h3>
 								<Card variant="info" class="space-y-2">
 									<div class="flex justify-between text-sm">
-										<span class="text-gray-600">{t('bookings.yourSlot')}</span>
-										<span class="font-medium text-gray-800">{formatCurrency(booking.price_paid_vnd)}</span>
+										<span class="text-muted-foreground">{t('bookings.yourSlot')}</span>
+										<span class="font-medium text-foreground">{formatCurrency(booking.price_paid_vnd)}</span>
 									</div>
 									{#if booking.guest_count > 0}
 										<div class="flex justify-between text-sm">
-											<span class="text-gray-600">{t('bookings.guestSlots', { count: booking.guest_count })}</span>
-											<span class="font-medium text-gray-800">{formatCurrency(booking.guest_price_paid_vnd)}</span>
+											<span class="text-muted-foreground">{t('bookings.guestSlots', { count: booking.guest_count })}</span>
+											<span class="font-medium text-foreground">{formatCurrency(booking.guest_price_paid_vnd)}</span>
 										</div>
 									{/if}
 								</Card>
@@ -166,36 +197,36 @@
 						{/if}
 
 						{#if isBookingPending(booking) && booking.payment_deadline}
-							<Alert class="bg-yellow-50 border-yellow-200">
-								<AlertTriangle class="h-5 w-5 text-yellow-600" />
-								<AlertTitle class="text-yellow-800">{t('bookings.paymentRequiredTitle')}</AlertTitle>
-								<AlertDescription class="text-yellow-700">
+							<Alert variant="warning">
+								<AlertTriangle class="h-5 w-5" />
+								<AlertTitle>{t('bookings.paymentRequiredTitle')}</AlertTitle>
+								<AlertDescription>
 									{t('bookings.paymentRequiredDesc', { date: formatDate(booking.payment_deadline) })}
 								</AlertDescription>
 							</Alert>
 						{/if}
 
 						{#if booking.cancelled_at}
-							<Alert class="bg-red-50 border-red-200">
-								<XCircle class="h-5 w-5 text-red-600" />
-								<AlertTitle class="text-red-800">{t('bookings.bookingCancelledTitle')}</AlertTitle>
-								<AlertDescription class="text-red-700">
+							<Alert variant="destructive">
+								<XCircle class="h-5 w-5" />
+								<AlertTitle>{t('bookings.bookingCancelledTitle')}</AlertTitle>
+								<AlertDescription>
 									{t('bookings.bookingCancelledDesc', { date: formatDate(booking.cancelled_at) })}
 								</AlertDescription>
 							</Alert>
 						{/if}
 
 						{#if booking.stripe_payment_intent_id}
-							<div class="border-t border-gray-200 pt-6">
-								<h3 class="text-sm font-medium text-gray-500">{t('bookings.paymentDetails')}</h3>
-								<p class="mt-1 text-sm text-gray-600 font-mono bg-gray-50 p-3 rounded-lg">
+							<div class="border-t border-border pt-6">
+								<h3 class="text-sm font-medium text-muted-foreground">{t('bookings.paymentDetails')}</h3>
+								<p class="mt-1 text-sm text-muted-foreground font-mono bg-muted p-3 rounded-lg">
 									{booking.stripe_payment_intent_id}
 								</p>
 							</div>
 						{/if}
 					</div>
 
-					<div class="mt-8 flex gap-4 flex-wrap border-t border-gray-200 pt-6">
+					<div class="mt-8 flex gap-4 flex-wrap border-t border-border pt-6">
 						{#if isBookingPending(booking)}
 							<Button
 								variant="gradient"
@@ -211,9 +242,9 @@
 								variant="destructive"
 								size="lg"
 								disabled={cancelLoading}
-								onclick={handleCancel}
+								onclick={openCancelDialog}
 							>
-								{cancelLoading ? t('bookings.cancelling') : t('bookings.cancelBooking')}
+								{t('bookings.cancelBooking')}
 							</Button>
 						{/if}
 
@@ -221,8 +252,39 @@
 							{t('bookings.backToBookings')}
 						</Button>
 					</div>
-				</GlassCard>
+				</Card>
 			</AnimatedContainer>
 		{/if}
-	</div>
+	</main>
 </PageBackground>
+
+<!-- Cancel Booking Dialog -->
+<AlertDialog.Root bind:open={cancelDialogOpen}>
+	<AlertDialog.Content>
+		<AlertDialog.Header>
+			<AlertDialog.Title>{t('bookings.cancelDialogTitle')}</AlertDialog.Title>
+			<AlertDialog.Description>
+				{t('bookings.confirmCancel', { code: booking?.booking_code || '' })}
+			</AlertDialog.Description>
+		</AlertDialog.Header>
+
+		{#if cancelError}
+			<Alert variant="destructive">
+				<AlertDescription>{cancelError}</AlertDescription>
+			</Alert>
+		{/if}
+
+		<AlertDialog.Footer>
+			<AlertDialog.Cancel disabled={cancelLoading}>
+				{t('common.cancel')}
+			</AlertDialog.Cancel>
+			<Button
+				variant="destructive"
+				onclick={confirmCancel}
+				disabled={cancelLoading}
+			>
+				{cancelLoading ? t('bookings.cancelling') : t('bookings.confirmCancelButton')}
+			</Button>
+		</AlertDialog.Footer>
+	</AlertDialog.Content>
+</AlertDialog.Root>

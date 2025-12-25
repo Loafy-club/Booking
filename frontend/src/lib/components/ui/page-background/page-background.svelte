@@ -34,14 +34,13 @@
 </script>
 
 <div
-	class={cn(pageBackgroundVariants({ variant }), className)}
-	style="background: linear-gradient(to bottom right, var(--color-page-from), var(--color-page-via), var(--color-page-to));"
+	class={cn(pageBackgroundVariants({ variant }), "bg-gradient-to-br from-page-from via-page-via to-page-to", className)}
 >
 	<!-- Floating decorative blobs -->
-	<div class="absolute top-10 left-10 w-64 h-64 rounded-full blur-3xl animate-float-slow pointer-events-none" style="background-color: var(--color-blob-yellow);"></div>
-	<div class="absolute bottom-20 right-10 w-80 h-80 rounded-full blur-3xl animate-float-slower pointer-events-none" style="background-color: var(--color-blob-orange);"></div>
-	<div class="absolute top-1/3 right-1/4 w-48 h-48 rounded-full blur-3xl animate-float pointer-events-none" style="background-color: var(--color-blob-pink);"></div>
-	<div class="absolute bottom-1/3 left-1/4 w-56 h-56 rounded-full blur-3xl animate-float-slow pointer-events-none" style="background-color: var(--color-blob-rose);"></div>
+	<div class="absolute top-10 left-10 w-64 h-64 rounded-full blur-3xl animate-float-slow pointer-events-none bg-blob-yellow"></div>
+	<div class="absolute bottom-20 right-10 w-80 h-80 rounded-full blur-3xl animate-float-slower pointer-events-none bg-blob-orange"></div>
+	<div class="absolute top-1/3 right-1/4 w-48 h-48 rounded-full blur-3xl animate-float pointer-events-none bg-blob-pink"></div>
+	<div class="absolute bottom-1/3 left-1/4 w-56 h-56 rounded-full blur-3xl animate-float-slow pointer-events-none bg-blob-rose"></div>
 
 	<div class="relative flex-1">
 		{@render children()}

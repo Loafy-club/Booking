@@ -4,6 +4,8 @@
 	import { Button } from '$lib/components/ui/button';
 	import { useTranslation } from '$lib/i18n/index.svelte';
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
+	import * as Avatar from '$lib/components/ui/avatar';
+	import { Calendar, Settings, Plus, Shield, LogOut, ChevronDown } from 'lucide-svelte';
 
 	interface Props {
 		hidden?: boolean;
@@ -40,16 +42,20 @@
 			<div class="flex items-center gap-4">
 				{#if authStore.isAuthenticated}
 					<DropdownMenu.Root>
-						<DropdownMenu.Trigger class="flex items-center gap-2 rounded-full pr-1 pl-1 py-1 hover:bg-muted transition-colors cursor-pointer focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2">
-							<div class="w-8 h-8 rounded-full bg-gradient-to-br from-orange-400 to-pink-500 flex items-center justify-center text-white text-xs font-bold shrink-0">
-								{authStore.user?.name?.[0]?.toUpperCase() || authStore.supabaseUser?.email?.[0]?.toUpperCase() || '?'}
-							</div>
+						<DropdownMenu.Trigger class="group flex items-center gap-2 rounded-full pr-1 pl-1 py-1 hover:bg-muted transition-colors cursor-pointer focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2">
+							<Avatar.Root class="size-8">
+								<Avatar.Image
+									src={authStore.user?.avatar_url || authStore.supabaseUser?.user_metadata?.avatar_url || authStore.supabaseUser?.user_metadata?.picture}
+									alt={authStore.user?.name || authStore.supabaseUser?.email || 'User'}
+								/>
+								<Avatar.Fallback class="bg-gradient-to-br from-orange-400 to-pink-500 text-white text-xs font-bold">
+									{authStore.user?.name?.[0]?.toUpperCase() || authStore.supabaseUser?.email?.[0]?.toUpperCase() || '?'}
+								</Avatar.Fallback>
+							</Avatar.Root>
 							<span class="hidden sm:inline text-sm font-medium text-foreground pr-2">
 								{authStore.user?.name || authStore.supabaseUser?.email?.split('@')[0]}
 							</span>
-							<svg class="w-4 h-4 text-muted-foreground hidden sm:block" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-							</svg>
+							<ChevronDown class="size-4 text-muted-foreground hidden sm:block transition-transform duration-200 group-data-[state=open]:rotate-180" />
 						</DropdownMenu.Trigger>
 						<DropdownMenu.Content class="w-56" align="end">
 							<DropdownMenu.Label class="font-normal">
@@ -61,16 +67,11 @@
 							<DropdownMenu.Separator />
 							<DropdownMenu.Group>
 								<DropdownMenu.Item onclick={() => goto('/bookings')}>
-									<svg class="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-									</svg>
+									<Calendar class="mr-2 size-4" />
 									{t('nav.myBookings')}
 								</DropdownMenu.Item>
 								<DropdownMenu.Item onclick={() => goto('/account')}>
-									<svg class="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-									</svg>
+									<Settings class="mr-2 size-4" />
 									{t('common.settings')}
 								</DropdownMenu.Item>
 							</DropdownMenu.Group>
@@ -79,18 +80,14 @@
 								<DropdownMenu.Separator />
 								<DropdownMenu.Group>
 									{#if authStore.isOrganizer}
-										<DropdownMenu.Item onclick={() => goto('/organizer/sessions/create')}>
-											<svg class="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-												<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-											</svg>
+										<DropdownMenu.Item onclick={() => goto('/admin/sessions?action=create')}>
+											<Plus class="mr-2 size-4" />
 											{t('nav.createSession')}
 										</DropdownMenu.Item>
 									{/if}
 									{#if authStore.isAdmin}
-										<DropdownMenu.Item onclick={() => goto('/admin/sessions')}>
-											<svg class="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-												<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-											</svg>
+										<DropdownMenu.Item onclick={() => goto('/admin')}>
+											<Shield class="mr-2 size-4" />
 											{t('nav.admin')}
 										</DropdownMenu.Item>
 									{/if}
@@ -99,9 +96,7 @@
 
 							<DropdownMenu.Separator />
 							<DropdownMenu.Item onclick={handleSignOut} class="text-destructive focus:text-destructive">
-								<svg class="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-									<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-								</svg>
+								<LogOut class="mr-2 size-4" />
 								{t('common.signOut')}
 							</DropdownMenu.Item>
 						</DropdownMenu.Content>

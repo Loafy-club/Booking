@@ -6,8 +6,9 @@
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { useTranslation } from '$lib/i18n/index.svelte';
 	import { PageBackground } from '$lib/components/ui/page-background';
-	import { GlassCard } from '$lib/components/ui/glass-card';
+	import { Card } from '$lib/components/ui/card';
 	import { Logo } from '$lib/components/ui/logo';
+	import { Spinner } from '$lib/components/ui/spinner';
 	import { X } from 'lucide-svelte';
 
 	const t = useTranslation();
@@ -146,30 +147,30 @@
 				<Logo size="lg" showText={false} />
 			</div>
 
-			<GlassCard>
+			<Card variant="glass">
 				<div class="text-center py-8 px-4">
 					{#if processing}
 						<div class="flex justify-center mb-6">
-							<div class="h-16 w-16 animate-spin rounded-full border-4 border-orange-200 border-t-orange-500"></div>
+							<Spinner class="size-16 text-orange-500" />
 						</div>
-						<h2 class="text-2xl font-bold text-gray-800 font-display">
+						<h2 class="text-2xl font-bold text-foreground font-display">
 							{t('auth.callback.signingIn')}
 						</h2>
-						<p class="mt-3 text-gray-600">{t('auth.callback.pleaseWait')}</p>
+						<p class="mt-3 text-muted-foreground">{t('auth.callback.pleaseWait')}</p>
 					{:else if error}
 						<div class="flex justify-center mb-6">
-							<div class="h-16 w-16 flex items-center justify-center rounded-full bg-red-100">
-								<X class="h-8 w-8 text-red-600" />
+							<div class="h-16 w-16 flex items-center justify-center rounded-full bg-error-bg">
+								<X class="h-8 w-8 text-error-text" />
 							</div>
 						</div>
-						<h2 class="text-2xl font-bold text-gray-800 font-display">
+						<h2 class="text-2xl font-bold text-foreground font-display">
 							{t('auth.callback.failed')}
 						</h2>
-						<p class="mt-3 text-gray-600 text-sm">{error}</p>
-						<p class="mt-4 text-sm text-gray-500">{t('auth.callback.redirecting')}</p>
+						<p class="mt-3 text-muted-foreground text-sm">{error}</p>
+						<p class="mt-4 text-sm text-muted-foreground">{t('auth.callback.redirecting')}</p>
 					{/if}
 				</div>
-			</GlassCard>
+			</Card>
 		</div>
 	</div>
 </PageBackground>

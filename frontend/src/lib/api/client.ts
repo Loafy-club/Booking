@@ -48,6 +48,19 @@ class ApiClient {
 				if (error.response?.status === 401) {
 					console.warn('API returned 401 - authentication may be required');
 				}
+
+				// Handle suspended user error
+				if (
+					error.response?.status === 403 &&
+					error.response?.data?.error === 'account_suspended'
+				) {
+					const { reason, until } = error.response.data;
+					const params = new URLSearchParams();
+					if (reason) params.set('reason', reason);
+					if (until) params.set('until', until);
+					window.location.href = `/suspended?${params.toString()}`;
+				}
+
 				return Promise.reject(error);
 			}
 		);
@@ -81,6 +94,7 @@ export const api = {
 		list: (params?: { from_date?: string; organizer_id?: string; available_only?: boolean }) =>
 			apiClient.get('/api/sessions', { params }),
 		get: (id: string) => apiClient.get(`/api/sessions/${id}`),
+		getParticipants: (id: string) => apiClient.get(`/api/sessions/${id}/participants`),
 		create: (data: {
 			title: string;
 			description?: string;
@@ -90,6 +104,12 @@ export const api = {
 			max_slots: number;
 			price_vnd: number;
 			early_access_ends_at?: string;
+			expenses?: Array<{
+				category: 'court_rental' | 'equipment' | 'instructor' | 'custom';
+				description?: string;
+				cost_type: 'per_court' | 'total';
+				amount_vnd: number;
+			}>;
 		}) => apiClient.post('/api/sessions', data),
 		update: (id: string, data: Partial<{
 			title: string;
@@ -107,7 +127,8 @@ export const api = {
 
 	// Bookings
 	bookings: {
-		list: () => apiClient.get('/api/bookings'),
+		list: (params?: { page?: number; per_page?: number }) =>
+			apiClient.get('/api/bookings', { params }),
 		get: (id: string) => apiClient.get(`/api/bookings/${id}`),
 		create: (data: {
 			session_id: string;
@@ -121,5 +142,64 @@ export const api = {
 	payments: {
 		createIntent: (booking_id: string) =>
 			apiClient.post('/api/payments/stripe/intent', { booking_id })
+	},
+
+	// Admin
+	admin: {
+		getStats: (period: string = '30d') => apiClient.get(`/api/admin/stats?period=${period}`),
+		listUsers: (params?: {
+			page?: number;
+			per_page?: number;
+			search?: string;
+			role?: string;
+			status?: string;
+			sort_by?: string;
+			sort_order?: string;
+		}) => apiClient.get('/api/admin/users', { params }),
+		updateUserRole: (userId: string, role: string) =>
+			apiClient.put(`/api/admin/users/${userId}/role`, { role }),
+		suspendUser: (userId: string, data: { reason: string; until?: string }) =>
+			apiClient.post(`/api/admin/users/${userId}/suspend`, data),
+		unsuspendUser: (userId: string) => apiClient.post(`/api/admin/users/${userId}/unsuspend`),
+		updateUser: (userId: string, data: { name?: string; phone?: string; role?: string }) =>
+			apiClient.put(`/api/admin/users/${userId}`, data),
+		deleteUser: (userId: string) => apiClient.delete(`/api/admin/users/${userId}`),
+		listBookings: (params?: {
+			page?: number;
+			per_page?: number;
+			search?: string;
+			payment_status?: string;
+			session_id?: string;
+			sort_by?: string;
+			sort_order?: string;
+		}) => apiClient.get('/api/admin/bookings', { params }),
+		getBooking: (id: string) => apiClient.get(`/api/admin/bookings/${id}`),
+		updateBooking: (id: string, data: {
+			guest_count?: number | null;
+			price_paid_vnd?: number | null;
+			guest_price_paid_vnd?: number | null;
+			payment_method?: string | null;
+			payment_status?: string | null;
+			admin_notes?: string | null;
+		}) => apiClient.put(`/api/admin/bookings/${id}`, data),
+		listSessions: (params?: {
+			page?: number;
+			per_page?: number;
+			search?: string;
+			status?: string;
+			organizer_id?: string;
+			sort_by?: string;
+			sort_order?: string;
+		}) => apiClient.get('/api/admin/sessions', { params }),
+		listRoles: () => apiClient.get('/api/admin/roles'),
+		// Profit endpoints
+		getProfitStats: (period: string = '30d') =>
+			apiClient.get(`/api/admin/stats/profit?period=${period}`),
+		getSessionsProfit: (period: string = '30d', limit: number = 20) =>
+			apiClient.get(`/api/admin/sessions/profit?period=${period}&limit=${limit}`),
+		getExpensesByCategory: (period: string = '30d') =>
+			apiClient.get(`/api/admin/expenses/by-category?period=${period}`),
+		getDailyProfitData: (period: string = '30d') =>
+			apiClient.get(`/api/admin/profit/daily?period=${period}`)
 	}
 };

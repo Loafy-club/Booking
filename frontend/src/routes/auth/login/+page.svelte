@@ -5,10 +5,11 @@
 	import { extractErrorMessage } from '$lib/utils';
 	import { Button } from '$lib/components/ui/button';
 	import { PageBackground } from '$lib/components/ui/page-background';
-	import { GlassCard } from '$lib/components/ui/glass-card';
+	import { Card } from '$lib/components/ui/card';
 	import { Logo } from '$lib/components/ui/logo';
 	import { AnimatedContainer } from '$lib/components/ui/animated-container';
-	import { ArrowLeft } from 'lucide-svelte';
+	import { ArrowLeft, X } from 'lucide-svelte';
+	import * as Alert from '$lib/components/ui/alert';
 	import { siGoogle, siFacebook } from 'simple-icons';
 	import { onMount } from 'svelte';
 
@@ -76,20 +77,21 @@
 
 			<!-- Card -->
 			<AnimatedContainer animation="fade-up" delay={200}>
-				<GlassCard>
+				<Card variant="glass">
 					<div class="text-center mb-6">
 						<h1
-							class="text-2xl font-bold text-gray-800 mb-2 font-display"
+							class="text-2xl font-bold mb-2 font-display text-foreground"
 						>
 							{t('auth.login.title')}
 						</h1>
-						<p class="text-gray-600">{t('auth.login.subtitle')}</p>
+						<p class="text-muted-foreground">{t('auth.login.subtitle')}</p>
 					</div>
 
 					{#if error}
-						<div class="mb-6 rounded-xl bg-red-50 border border-red-200 p-4">
-							<p class="text-sm text-red-600">{error}</p>
-						</div>
+						<Alert.Root variant="destructive" class="mb-6">
+							<X class="size-4" />
+							<Alert.Description>{error}</Alert.Description>
+						</Alert.Root>
 					{/if}
 
 					<div class="space-y-3">
@@ -98,11 +100,12 @@
 							size="xl"
 							disabled={loading}
 							onclick={handleGoogleSignIn}
+							class="w-full"
 						>
 							<svg class="h-5 w-5" viewBox="0 0 24 24" fill="#{siGoogle.hex}">
 								{@html siGoogle.svg}
 							</svg>
-							<span class="font-medium text-gray-700">{t('auth.login.googleButton')}</span>
+							<span class="font-medium">{t('auth.login.googleButton')}</span>
 						</Button>
 
 						<Button
@@ -110,11 +113,12 @@
 							size="xl"
 							disabled={loading}
 							onclick={handleFacebookSignIn}
+							class="w-full"
 						>
 							<svg class="h-5 w-5" viewBox="0 0 24 24" fill="#{siFacebook.hex}">
 								{@html siFacebook.svg}
 							</svg>
-							<span class="font-medium text-gray-700">{t('auth.login.facebookButton')}</span>
+							<span class="font-medium">{t('auth.login.facebookButton')}</span>
 						</Button>
 
 					</div>
@@ -122,26 +126,26 @@
 					<!-- Divider -->
 					<div class="relative my-6">
 						<div class="absolute inset-0 flex items-center">
-							<span class="w-full border-t border-gray-200"></span>
+							<span class="w-full border-t border-border"></span>
 						</div>
 						<div class="relative flex justify-center text-xs uppercase">
-							<span class="bg-white/80 px-3 text-gray-400">{t('auth.login.or')}</span>
+							<span class="px-3 bg-card text-muted-foreground">{t('auth.login.or')}</span>
 						</div>
 					</div>
 
 					<Button
 						variant="ghost"
-						class="w-full text-gray-600 hover:text-gray-800 hover:bg-gray-100/50"
+						class="w-full"
 						onclick={() => goto('/sessions')}
 					>
 						{t('auth.login.browseWithoutSignIn')}
 					</Button>
-				</GlassCard>
+				</Card>
 			</AnimatedContainer>
 
 			<!-- Footer -->
 			<AnimatedContainer animation="fade-up" delay={400}>
-				<p class="mt-8 text-center text-sm text-gray-500">
+				<p class="mt-8 text-center text-sm text-muted-foreground">
 					{t('auth.login.termsText')}
 					<a href="/terms" class="text-orange-500 hover:text-orange-600 hover:underline transition-colors">{t('auth.login.termsLink')}</a>
 					{t('auth.login.and')}
@@ -151,7 +155,7 @@
 				<div class="mt-4 text-center">
 					<a
 						href="/"
-						class="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-gray-700 transition-colors"
+						class="inline-flex items-center gap-2 text-sm transition-colors text-muted-foreground hover:text-foreground"
 					>
 						<ArrowLeft class="w-4 h-4" />
 						{t('auth.login.backToHome')}

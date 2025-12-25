@@ -24,6 +24,21 @@ export function formatCurrency(amount: number, currency = 'VND'): string {
 	}).format(amount);
 }
 
+export function formatCompactCurrency(amount: number, currency = 'VND'): string {
+	const symbol = currency === 'VND' ? '₫' : '$';
+
+	if (amount >= 1_000_000_000) {
+		return `${(amount / 1_000_000_000).toFixed(1).replace(/\.0$/, '')}B ${symbol}`;
+	}
+	if (amount >= 1_000_000) {
+		return `${(amount / 1_000_000).toFixed(1).replace(/\.0$/, '')}M ${symbol}`;
+	}
+	if (amount >= 1_000) {
+		return `${(amount / 1_000).toFixed(0)}K ${symbol}`;
+	}
+	return `${amount} ${symbol}`;
+}
+
 export function formatDate(date: string | Date, format: 'short' | 'long' = 'short'): string {
 	const d = typeof date === 'string' ? new Date(date) : date;
 
@@ -55,7 +70,7 @@ export function isBookingPending(booking: Booking): boolean {
  * Check if a booking can be cancelled (not already cancelled and payment not confirmed)
  */
 export function canCancelBooking(booking: Booking): boolean {
-	return !booking.cancelled_at && booking.payment_status !== 'confirmed';
+	return !booking.cancelled_at && booking.payment_status !== 'confirmed' && booking.payment_status !== 'cancelled';
 }
 
 /**
@@ -104,13 +119,20 @@ export function extractErrorMessage(error: unknown, fallback = 'An unexpected er
 	if (typeof error === 'object' && error !== null) {
 		const err = error as Record<string, unknown>;
 
-		// Axios error format: err.response?.data?.message
+		// Axios error format: err.response?.data?.message or err.response?.data (plain text)
 		if (err.response && typeof err.response === 'object') {
 			const response = err.response as Record<string, unknown>;
-			if (response.data && typeof response.data === 'object') {
-				const data = response.data as Record<string, unknown>;
-				if (typeof data.message === 'string') {
-					return data.message;
+			if (response.data) {
+				// Plain text error response
+				if (typeof response.data === 'string' && response.data.trim()) {
+					return response.data;
+				}
+				// JSON error response with message field
+				if (typeof response.data === 'object') {
+					const data = response.data as Record<string, unknown>;
+					if (typeof data.message === 'string') {
+						return data.message;
+					}
 				}
 			}
 		}

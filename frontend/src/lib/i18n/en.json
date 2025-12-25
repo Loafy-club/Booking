@@ -1,6 +1,7 @@
 {
 	"common": {
 		"save": "Save",
+		"saving": "Saving...",
 		"cancel": "Cancel",
 		"delete": "Delete",
 		"edit": "Edit",
@@ -18,7 +19,14 @@
 		"next": "Next",
 		"submit": "Submit",
 		"confirm": "Confirm",
-		"close": "Close"
+		"close": "Close",
+		"viewAll": "View all",
+		"all": "All",
+		"search": "Search",
+		"filter": "Filter",
+		"sort": "Sort",
+		"select": "Select",
+		"noResults": "No results found"
 	},
 	"nav": {
 		"sessions": "Sessions",
@@ -73,10 +81,25 @@
 			"description": "Your next game is just a click away. Join our community and start booking sessions today.",
 			"browseSessions": "Browse Sessions",
 			"createAccount": "Create Account"
-		},
-		"footer": {
-			"tagline": "Pickleball in Hanoi, made easy."
 		}
+	},
+	"footer": {
+		"tagline": "Pickleball in Hanoi, made easy.",
+		"description": "Join Hanoi's friendliest pickleball community. Book sessions, meet players, and enjoy the game.",
+		"quickLinks": "Quick Links",
+		"sessions": "Sessions",
+		"myBookings": "My Bookings",
+		"account": "Account",
+		"connect": "Connect",
+		"contact": "Contact Us",
+		"facebook": "Facebook",
+		"instagram": "Instagram",
+		"zalo": "Zalo Group",
+		"legal": "Legal",
+		"terms": "Terms of Service",
+		"privacy": "Privacy Policy",
+		"copyright": "© {year} Loafy Club. All rights reserved.",
+		"madeWith": "Made with love in Hanoi"
 	},
 	"account": {
 		"title": "Account Settings",
@@ -153,10 +176,12 @@
 		"loadingText": "Loading sessions...",
 		"book": "Book Now",
 		"fullyBooked": "Fully Booked",
+		"alreadyBooked": "Already Booked",
 		"sessionEnded": "Session Ended",
 		"cancelled": "Cancelled",
 		"spotsLeft": "{count} spots left",
 		"spotsAvailable": "spots available",
+		"booked": "booked",
 		"full": "Full",
 		"upcoming": "Upcoming",
 		"completed": "Completed",
@@ -167,6 +192,9 @@
 		"courts": "courts",
 		"perCourt": "per court",
 		"at": "at",
+		"players": "Players",
+		"noParticipants": "No participants yet",
+		"participants": "Participants",
 		"status": {
 			"cancelled": "Cancelled",
 			"full": "Full",
@@ -188,6 +216,8 @@
 		"cancel": "Cancel",
 		"cancelBooking": "Cancel Booking",
 		"cancelling": "Cancelling...",
+		"cancelDialogTitle": "Cancel Booking",
+		"confirmCancelButton": "Yes, Cancel Booking",
 		"viewDetails": "View Details",
 		"bookingCode": "Booking",
 		"bookedOn": "Booked On",
@@ -219,7 +249,8 @@
 			"confirmed": "Confirmed",
 			"pending": "Pending Payment",
 			"cancelled": "Cancelled"
-		}
+		},
+		"totalCount": "Showing {count} booking(s)"
 	},
 	"payment": {
 		"pageTitle": "Payment",
@@ -268,6 +299,7 @@
 		"backToSessions": "Back to Sessions",
 		"location": "Location",
 		"dateTime": "Date & Time",
+		"participants": "Participants",
 		"availability": "Availability",
 		"spotsOf": "{available} of {total} spots available",
 		"price": "Price",
@@ -276,7 +308,10 @@
 		"sessionCancelled": "This session has been cancelled",
 		"sessionFull": "This session is fully booked",
 		"sessionStarted": "This session has already started",
+		"alreadyBooked": "You already have a booking for this session",
+		"viewMyBookings": "View My Bookings",
 		"numberOfGuests": "Number of Guests",
+		"selectGuests": "Select number of guests",
 		"justMe": "Just me",
 		"guest": "{count} guest",
 		"guests": "{count} guests",
@@ -292,6 +327,27 @@
 		"onlySpotsAvailable": "Only {count} spots available"
 	},
 	"organizer": {
+		"sessions": {
+			"pageTitle": "My Sessions",
+			"title": "My Sessions",
+			"subtitle": "Manage your pickleball sessions",
+			"createSession": "Create Session",
+			"noSessions": "No Sessions Yet",
+			"noSessionsDesc": "Create your first session to start accepting bookings",
+			"loadError": "Failed to load sessions",
+			"updateFailed": "Failed to update session",
+			"deleteFailed": "Failed to delete session",
+			"deleteDialogTitle": "Delete Session",
+			"confirmDelete": "Are you sure you want to delete \"{title}\"? This action cannot be undone.",
+			"deleting": "Deleting...",
+			"spotsAvailable": "spots available",
+			"free": "Free",
+			"viewDetails": "View Details",
+			"edit": {
+				"title": "Edit Session",
+				"description": "Editing: {title}"
+			}
+		},
 		"createSession": {
 			"pageTitle": "Create Session",
 			"title": "Create New Session",
@@ -305,17 +361,42 @@
 				"location": "Location",
 				"locationPlaceholder": "Hanoi Sports Center",
 				"startTime": "Start Time",
+				"selectStartTime": "Select start date and time",
 				"endTime": "End Time",
+				"selectEndTime": "Select end date and time",
 				"maxSlots": "Maximum Slots",
 				"priceVnd": "Price (VND)",
 				"earlyAccess": "Early Access Ends At (Optional)",
+				"selectEarlyAccess": "Select early access end date",
 				"earlyAccessNote": "Subscribers get early access until this time (Phase 2 feature)",
 				"required": "*"
+			},
+			"expenses": {
+				"title": "Session Expenses",
+				"optional": "Optional",
+				"description": "Track costs for this session to calculate profit in the admin dashboard.",
+				"addExpense": "Add Expense",
+				"category": "Category",
+				"selectCategory": "Select category",
+				"courtRental": "Court Rental",
+				"equipment": "Equipment",
+				"instructor": "Instructor Fee",
+				"custom": "Custom",
+				"descriptionLabel": "Description",
+				"descriptionPlaceholder": "e.g., Extra balls",
+				"costType": "Cost Type",
+				"perCourt": "Per Court",
+				"total": "Total",
+				"amount": "Amount (VND)",
+				"estimatedTotal": "Estimated total",
+				"expensesAdded": "expense(s) added"
 			},
 			"errors": {
 				"endTimeAfterStart": "End time must be after start time",
 				"startTimeInFuture": "Start time must be in the future",
-				"createFailed": "Failed to create session"
+				"createFailed": "Failed to create session",
+				"customExpenseDescription": "Custom expenses require a description",
+				"expenseAmountPositive": "Expense amount must be greater than 0"
 			},
 			"buttons": {
 				"creating": "Creating...",
@@ -325,6 +406,153 @@
 		}
 	},
 	"admin": {
+		"title": "Admin Panel",
+		"nav": {
+			"dashboard": "Dashboard",
+			"users": "Users",
+			"sessions": "Sessions",
+			"bookings": "Bookings",
+			"backToSite": "Back to Site"
+		},
+		"period": {
+			"7d": "Last 7 days",
+			"30d": "Last 30 days",
+			"90d": "Last 90 days",
+			"365d": "Last year",
+			"all": "All time"
+		},
+		"dashboard": {
+			"pageTitle": "Admin Dashboard",
+			"title": "Dashboard",
+			"subtitle": "Overview of your platform",
+			"loadError": "Failed to load statistics",
+			"stats": {
+				"totalUsers": "Total Users",
+				"newUsers": "New Users",
+				"upcomingSessions": "Upcoming Sessions",
+				"totalBookings": "Total Bookings",
+				"bookings": "Bookings",
+				"totalRevenue": "Total Revenue",
+				"revenue": "Revenue"
+			},
+			"bookingBreakdown": "Booking Status Breakdown",
+			"bookings": {
+				"pending": "Pending Payment",
+				"confirmed": "Confirmed",
+				"cancelled": "Cancelled"
+			},
+			"quickActions": "Quick Actions",
+			"actions": {
+				"manageUsers": "Manage Users",
+				"manageSessions": "Manage Sessions",
+				"createSession": "Create Session"
+			},
+			"recentBookings": "Recent Bookings",
+			"noRecentBookings": "No bookings yet",
+			"upcomingSessions": "Upcoming Sessions",
+			"noUpcomingSessions": "No upcoming sessions"
+		},
+		"users": {
+			"pageTitle": "Admin - Users",
+			"title": "Manage Users",
+			"subtitle": "View and manage user accounts and roles",
+			"loadError": "Failed to load users",
+			"updateError": "Failed to update user role",
+			"noUsers": "No Users Found",
+			"noUsersDesc": "No users have registered yet",
+			"totalCount": "{count} users total",
+			"searchPlaceholder": "Search by name or email...",
+			"roleFilter": "Role",
+			"statusFilter": "Status",
+			"table": {
+				"user": "User",
+				"email": "Email",
+				"provider": "Provider",
+				"joined": "Joined",
+				"status": "Status",
+				"role": "Role"
+			},
+			"active": "Active",
+			"suspended": "Suspended",
+			"indefinite": "Indefinite suspension",
+			"suspend": "Suspend User",
+			"unsuspend": "Unsuspend User",
+			"suspendDialogTitle": "Suspend User",
+			"suspendDialogDesc": "This will prevent {name} from logging in or taking any actions until unsuspended.",
+			"suspendReason": "Reason for suspension",
+			"suspendReasonPlaceholder": "Enter the reason for suspending this user...",
+			"suspendUntil": "Suspension end date (optional)",
+			"suspendUntilPlaceholder": "Select suspension end date",
+			"suspendUntilNote": "Leave empty for indefinite suspension",
+			"confirmSuspend": "Suspend User",
+			"unsuspendDialogTitle": "Unsuspend User",
+			"unsuspendDialogDesc": "This will restore {name}'s access to the platform.",
+			"confirmUnsuspend": "Unsuspend User",
+			"suspendError": "Failed to suspend user",
+			"unsuspendError": "Failed to unsuspend user",
+			"editDialogTitle": "Edit User",
+			"editDialogDesc": "Edit profile information for {email}",
+			"editName": "Name",
+			"editNamePlaceholder": "Enter user name",
+			"editPhone": "Phone",
+			"editPhonePlaceholder": "Enter phone number",
+			"editError": "Failed to update user",
+			"deleteDialogTitle": "Delete User",
+			"deleteDialogDesc": "Are you sure you want to delete {name}? This will cancel their sessions and bookings. This action cannot be undone.",
+			"deleteError": "Failed to delete user",
+			"deleting": "Deleting..."
+		},
+		"bookings": {
+			"pageTitle": "Admin - Bookings",
+			"title": "Manage Bookings",
+			"subtitle": "View and manage all bookings",
+			"loadError": "Failed to load bookings",
+			"noBookings": "No Bookings Found",
+			"noBookingsDesc": "No bookings have been made yet",
+			"deadline": "Deadline",
+			"totalCount": "{count} bookings total",
+			"searchPlaceholder": "Search by code, user, or session...",
+			"statusFilter": "Status",
+			"sessionFilter": "Session",
+			"tabs": {
+				"all": "All",
+				"pending": "Pending",
+				"confirmed": "Confirmed",
+				"cancelled": "Cancelled"
+			},
+			"table": {
+				"code": "Code",
+				"user": "User",
+				"session": "Session",
+				"guests": "People",
+				"amount": "Amount",
+				"status": "Status",
+				"created": "Created",
+				"actions": "Actions"
+			},
+			"status": {
+				"pending": "Pending",
+				"confirmed": "Confirmed",
+				"cancelled": "Cancelled"
+			},
+			"actions": {
+				"viewSession": "View Session",
+				"edit": "Edit"
+			},
+			"edit": {
+				"title": "Edit Booking",
+				"description": "Editing booking {code}",
+				"guestCount": "Guests",
+				"pricePaid": "Total Price (VND)",
+				"paymentMethod": "Payment Method",
+				"paymentStatus": "Payment Status",
+				"adminNotes": "Notes",
+				"adminNotesPlaceholder": "Reason for edit (for audit purposes)",
+				"saveError": "Failed to save changes",
+				"statusFailed": "Failed",
+				"statusRefunded": "Refunded"
+			}
+		},
 		"sessions": {
 			"pageTitle": "Admin - Sessions",
 			"title": "Manage Sessions",
@@ -333,9 +561,14 @@
 			"loadingText": "Loading sessions...",
 			"noSessions": "No Sessions Found",
 			"noSessionsDesc": "Create your first pickleball session",
+			"totalCount": "{count} sessions total",
+			"searchPlaceholder": "Search by title or location...",
+			"statusFilter": "Status",
+			"organizerFilter": "Organizer",
 			"table": {
 				"session": "Session",
 				"dateTime": "Date/Time",
+				"participants": "Participants",
 				"slots": "Slots",
 				"price": "Price",
 				"status": "Status",
@@ -347,15 +580,185 @@
 			},
 			"actions": {
 				"view": "View",
+				"edit": "Edit",
 				"delete": "Delete"
 			},
+			"edit": {
+				"title": "Edit Session",
+				"description": "Editing session: {title}"
+			},
 			"confirmDelete": "Are you sure you want to delete \"{title}\"?",
+			"deleteDialogTitle": "Delete Session",
+			"confirmDeleteButton": "Delete",
+			"deleting": "Deleting...",
 			"updateFailed": "Failed to update session",
 			"deleteFailed": "Failed to delete session"
+		},
+		"charts": {
+			"bookingStatus": "Booking Status",
+			"sessionCapacity": "Session Capacity",
+			"keyMetrics": "Key Metrics",
+			"confirmed": "Confirmed",
+			"pending": "Pending",
+			"cancelled": "Cancelled",
+			"total": "total",
+			"noData": "No data available",
+			"noSessions": "No upcoming sessions",
+			"available": "Available",
+			"booked": "Booked",
+			"filled": "filled",
+			"sessions": "Sessions",
+			"almostFull": "Almost Full",
+			"full": "Full",
+			"conversionRate": "Conversion Rate",
+			"conversionRateTooltip": "Percentage of all bookings that were successfully paid and confirmed",
+			"avgBookingValue": "Avg Booking Value",
+			"avgBookingValueTooltip": "Average amount paid per confirmed booking",
+			"fillRate": "Fill Rate",
+			"fillRateTooltip": "How full your upcoming sessions are on average",
+			"successRate": "Success Rate",
+			"successRateTooltip": "Of completed bookings (not pending), percentage that were confirmed vs cancelled"
+		},
+		"profit": {
+			"title": "Profit & Expenses",
+			"totalExpenses": "Total Expenses",
+			"netProfit": "Net Profit",
+			"profitMargin": "Profit Margin",
+			"revenueVsExpenses": "Revenue vs Expenses",
+			"expenseBreakdown": "Expense Breakdown",
+			"sessionProfit": "Session Profit",
+			"revenue": "Revenue",
+			"expenses": "Expenses",
+			"profit": "Profit",
+			"loss": "Loss",
+			"noExpenses": "No expenses recorded",
+			"categories": {
+				"court_rental": "Court Rental",
+				"equipment": "Equipment",
+				"instructor": "Instructor",
+				"custom": "Custom"
+			}
 		}
+	},
+	"suspended": {
+		"title": "Account Suspended",
+		"description": "Your account has been suspended by an administrator.",
+		"reason": "Reason",
+		"until": "Suspended until",
+		"indefinite": "This suspension has no set end date.",
+		"defaultReason": "No reason provided",
+		"contactSupportPrefix": "If you believe this is a mistake, please",
+		"contactSupportLink": "contact us"
+	},
+	"contact": {
+		"title": "Contact Us",
+		"description": "Have a question or need help? Get in touch with us.",
+		"emailLabel": "Email",
+		"socialsLabel": "Follow Us",
+		"facebook": "Facebook",
+		"instagram": "Instagram",
+		"zalo": "Zalo Group",
+		"responseTimeLabel": "Response Time",
+		"responseTime": "We typically respond within 24 hours."
 	},
 	"languages": {
 		"en": "English",
 		"vi": "Tieng Viet"
+	},
+	"terms": {
+		"title": "Terms of Service",
+		"lastUpdated": "Last updated: {date}",
+		"sections": {
+			"acceptance": {
+				"title": "1. Acceptance of Terms",
+				"content": "By accessing or using the Loafy Club booking platform, you agree to be bound by these Terms of Service. If you do not agree to these terms, please do not use our services."
+			},
+			"accounts": {
+				"title": "2. User Accounts",
+				"content": "To book sessions, you must create an account using Google or Facebook authentication. You are responsible for maintaining the confidentiality of your account and for all activities that occur under your account. Accounts found to be violating our guidelines may be suspended or terminated."
+			},
+			"bookings": {
+				"title": "3. Booking & Payment",
+				"content": "You may book for yourself plus up to 3 guests per booking. Guests are charged at the same rate as your booking. Payments are processed through Stripe (credit/debit cards) or Vietnamese bank transfer with QR code verification. All prices are in Vietnamese Dong (VND). Payment must be completed within 30 minutes of booking, or your reservation will be automatically cancelled and your spots released to other players."
+			},
+			"cancellation": {
+				"title": "4. Cancellation & Refund Policy",
+				"content": "Cancellation deadlines differ by membership type: Drop-in players must cancel at least 48 hours before the session for a full refund. Subscribers must cancel at least 24 hours before for a ticket refund. Cancellations after these deadlines are non-refundable, but you may transfer your spot to another player. Sessions cancelled by organizers (e.g., due to weather or venue issues) will be fully refunded or tickets returned."
+			},
+			"waitlist": {
+				"title": "5. Waitlist & Subscriptions",
+				"content": "When a session is full, you may join the waitlist. Waitlist priority: subscribers first, then drop-in players by sign-up time. Subscribers get early access to book sessions before they open to drop-in players. Subscription tickets are valid for 3 months with auto-renewal enabled by default (can be cancelled anytime). Referral program: both you and your referred friend receive bonus tickets when they make their first purchase."
+			},
+			"conduct": {
+				"title": "6. User Conduct",
+				"content": "You agree to use our platform respectfully and lawfully. Prohibited conduct includes: harassment of other players, repeatedly booking and cancelling (no-shows), providing false payment information, attempting to circumvent payment systems, and any behavior that disrupts sessions or other users' experience. Repeated violations will result in account suspension."
+			},
+			"liability": {
+				"title": "7. Liability & Safety",
+				"content": "Loafy Club provides a booking platform and is not responsible for injuries that may occur during pickleball sessions. Participants play at their own risk. We recommend appropriate footwear and warm-up before playing. By booking, you acknowledge that pickleball is a physical activity and accept responsibility for your own safety."
+			},
+			"changes": {
+				"title": "8. Changes to Terms",
+				"content": "We may update these terms from time to time. Continued use of the platform after changes constitutes acceptance of the new terms. Significant changes will be communicated via email or platform notification."
+			},
+			"contact": {
+				"title": "9. Contact Us",
+				"content": "If you have questions about these Terms of Service, please contact us at support@loafy.club or through our Contact page."
+			}
+		}
+	},
+	"privacy": {
+		"title": "Privacy Policy",
+		"lastUpdated": "Last updated: {date}",
+		"intro": "At Loafy Club, we are committed to protecting your privacy. This policy explains how we collect, use, and safeguard your personal information.",
+		"sections": {
+			"collection": {
+				"title": "1. Information We Collect",
+				"content": "We collect information you provide when creating an account (name, email, profile photo from OAuth provider), booking information (session history, payment records), and technical data (device information, IP address, browser type) for platform functionality and security."
+			},
+			"usage": {
+				"title": "2. How We Use Your Information",
+				"content": "We use your information to: process bookings and payments, send booking confirmations and reminders, improve our platform and services, communicate important updates, and ensure platform security. We do not sell your personal information to third parties."
+			},
+			"sharing": {
+				"title": "3. Information Sharing",
+				"content": "We share your information only with: session organizers (name and contact for session coordination), payment processors (Stripe for secure payment processing), and service providers (hosting, email services) who help us operate the platform. All third parties are bound by confidentiality agreements."
+			},
+			"security": {
+				"title": "4. Data Security",
+				"content": "We implement industry-standard security measures including encrypted data transmission (HTTPS), secure authentication via OAuth providers, and regular security audits. Payment card information is processed directly by Stripe and never stored on our servers."
+			},
+			"thirdParty": {
+				"title": "5. Third-Party Services",
+				"content": "Our platform uses: Supabase for authentication and data storage, Stripe for payment processing, Google Cloud for image verification, and Resend for email communications. Each service has its own privacy policy governing data handling."
+			},
+			"rights": {
+				"title": "6. Your Rights",
+				"content": "You have the right to: access your personal data, correct inaccurate information, delete your account and data (available in Account Settings), and opt out of marketing communications. You can manage most of these settings directly in your Account page. For data export requests, contact us at support@loafy.club."
+			},
+			"cookies": {
+				"title": "7. Cookies & Tracking",
+				"content": "We use essential cookies for authentication and session management. We do not use advertising cookies or sell data to advertisers. You can manage cookie preferences in your browser settings."
+			},
+			"changes": {
+				"title": "8. Changes to This Policy",
+				"content": "We may update this privacy policy periodically. We will notify you of significant changes via email or platform notification. Continued use after changes constitutes acceptance."
+			},
+			"contact": {
+				"title": "9. Contact Us",
+				"content": "For privacy-related questions or concerns, please contact us at support@loafy.club."
+			}
+		}
+	},
+	"error": {
+		"pageNotFound": "Page Not Found",
+		"pageNotFoundTitle": "Oops! Page not found",
+		"pageNotFoundDesc": "The page you're looking for doesn't exist or has been moved. Let's get you back on track!",
+		"somethingWentWrong": "Something Went Wrong",
+		"somethingWentWrongTitle": "Oops! Something went wrong",
+		"somethingWentWrongDesc": "We encountered an unexpected error. Please try again or go back to the home page.",
+		"goHome": "Go Home",
+		"browseSessions": "Browse Sessions",
+		"goBack": "Go back to previous page"
 	}
 }

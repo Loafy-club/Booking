@@ -4,8 +4,8 @@
 	export const pageTitleVariants = tv({
 		slots: {
 			wrapper: "",
-			title: "font-bold text-gray-800 font-display",
-			subtitle: "text-gray-600",
+			title: "font-bold text-foreground font-display",
+			subtitle: "text-muted-foreground",
 		},
 		variants: {
 			centered: {

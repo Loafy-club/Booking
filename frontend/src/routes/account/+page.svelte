@@ -3,26 +3,35 @@
 	import { goto } from '$app/navigation';
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { themeStore } from '$lib/stores/theme.svelte';
-	import { i18n, useTranslation, type Locale } from '$lib/i18n/index.svelte';
+	import { useTranslation } from '$lib/i18n/index.svelte';
+	import { LanguageSelector } from '$lib/components/ui/language-selector';
 	import { api } from '$lib/api/client';
 	import { extractErrorMessage } from '$lib/utils';
+	import { getRoleBadgeVariant } from '$lib/utils/status';
 	import Navigation from '$lib/components/Navigation.svelte';
 	import { PageBackground } from '$lib/components/ui/page-background';
-	import { GlassCard } from '$lib/components/ui/glass-card';
+	import { Card } from '$lib/components/ui/card';
 	import { SectionHeader } from '$lib/components/ui/section-header';
 	import { AnimatedContainer } from '$lib/components/ui/animated-container';
 	import { Button } from '$lib/components/ui/button';
 	import { Input } from '$lib/components/ui/input';
 	import { Label } from '$lib/components/ui/label';
-	import { SelectNative } from '$lib/components/ui/select-native';
-	import { LoadingSpinner } from '$lib/components/ui/loading-spinner';
-	import { Check, X, User, Settings, Shield, Link2, Unlink2 } from 'lucide-svelte';
+	import * as Select from '$lib/components/ui/select';
+	import { Switch } from '$lib/components/ui/switch';
+	import * as AlertDialog from '$lib/components/ui/alert-dialog';
+	import { Spinner } from '$lib/components/ui/spinner';
+	import { AccountSkeleton } from '$lib/components/ui/skeleton';
+	import * as Alert from '$lib/components/ui/alert';
+	import * as Avatar from '$lib/components/ui/avatar';
+	import { Badge } from '$lib/components/ui/badge';
+	import * as Tabs from '$lib/components/ui/tabs';
+	import { Check, X, User, Settings, Shield, Link2, Unlink2, Sun, Moon } from 'lucide-svelte';
 	import { siGoogle, siFacebook } from 'simple-icons';
 
 	type TabId = 'profile' | 'preferences' | 'account';
-	type Theme = 'light' | 'dark' | 'system';
+	type Theme = 'light' | 'dark';
 
-	let activeTab = $state<TabId>('profile');
+	let activeTab = $state<TabId | undefined>('profile');
 	let saving = $state(false);
 	let saveSuccess = $state(false);
 	let saveError = $state<string | null>(null);
@@ -47,6 +56,7 @@
 
 	// Theme is managed by themeStore
 	let theme = $derived(themeStore.theme);
+	let showSkeleton = $state(false);
 
 	const t = useTranslation();
 
@@ -66,9 +76,16 @@
 			return;
 		}
 
+		// Show skeleton only if loading takes > 200ms
+		const skeletonTimer = setTimeout(() => {
+			if (authStore.loading) showSkeleton = true;
+		}, 200);
+
 		// Load email notifications preference
 		const savedNotifications = localStorage.getItem('loafy_email_notifications');
 		if (savedNotifications !== null) emailNotifications = savedNotifications === 'true';
+
+		return () => clearTimeout(skeletonTimer);
 	});
 
 	function setTheme(newTheme: Theme) {
@@ -194,18 +211,6 @@
 	function getTabLabel(id: TabId): string {
 		return t(`common.${id}`);
 	}
-
-	function getRoleBadgeStyle(role: string): { bg: string; text: string } {
-		// Returns CSS variable-based colors that adapt to light/dark mode
-		switch (role) {
-			case 'admin':
-				return { bg: 'var(--color-badge-admin-bg)', text: 'var(--color-badge-admin-text)' };
-			case 'organizer':
-				return { bg: 'var(--color-badge-organizer-bg)', text: 'var(--color-badge-organizer-text)' };
-			default:
-				return { bg: 'var(--color-badge-user-bg)', text: 'var(--color-badge-user-text)' };
-		}
-	}
 </script>
 
 <svelte:head>
@@ -220,68 +225,57 @@
 			<SectionHeader title={t('account.title')} subtitle={t('account.subtitle')} />
 		</AnimatedContainer>
 
-		{#if authStore.loading}
-			<div class="flex justify-center py-12">
-				<LoadingSpinner size="lg" text={t('common.loading')} />
-			</div>
+		{#if authStore.loading && showSkeleton}
+			<AccountSkeleton />
+		{:else if authStore.loading}
+			<!-- Brief loading -->
 		{:else if !authStore.isAuthenticated}
 			<AnimatedContainer animation="fade-up" delay={100}>
-				<GlassCard class="p-8 text-center">
-					<p class="mb-4" style="color: var(--color-body);">{t('account.notAuthenticated')}</p>
+				<Card variant="glass" class="p-8 text-center">
+					<p class="mb-4 text-muted-foreground">{t('account.notAuthenticated')}</p>
 					<Button onclick={() => goto('/auth/login')}>{t('common.signIn')}</Button>
-				</GlassCard>
+				</Card>
 			</AnimatedContainer>
 		{:else}
 			<AnimatedContainer animation="fade-up" delay={100}>
-				<div class="grid lg:grid-cols-4 gap-6">
+				<Tabs.Root bind:value={activeTab} class="grid lg:grid-cols-4 gap-6" orientation="vertical">
 					<!-- Sidebar -->
 					<div class="lg:col-span-1">
-						<GlassCard class="p-4">
-							<nav class="space-y-1">
+						<Card variant="glass" class="p-6">
+							<Tabs.List class="flex flex-col w-full h-auto bg-transparent p-0 gap-1">
 								{#each tabIds as tabId}
 									{@const IconComponent = tabIcons[tabId]}
-									<button
-										class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left transition-all duration-200 {activeTab ===
-										tabId
-											? 'bg-gradient-to-r from-orange-500 to-pink-500 text-white shadow-lg'
-											: ''}"
-										style={activeTab !== tabId ? 'color: var(--color-tab-inactive);' : ''}
-										onclick={() => (activeTab = tabId)}
+									<Tabs.Trigger
+										value={tabId}
+										class="w-full justify-start gap-3 px-4 py-3 rounded-xl text-left transition-all duration-200 h-auto data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-500 data-[state=active]:to-pink-500 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=inactive]:text-muted-foreground data-[state=inactive]:hover:text-foreground data-[state=inactive]:bg-transparent data-[state=active]:border-transparent"
 									>
 										<IconComponent class="w-5 h-5" />
 										<span class="font-medium">{getTabLabel(tabId)}</span>
-									</button>
+									</Tabs.Trigger>
 								{/each}
-							</nav>
-						</GlassCard>
+							</Tabs.List>
+						</Card>
 					</div>
 
 					<!-- Content -->
 					<div class="lg:col-span-3">
-						<GlassCard class="p-6 sm:p-8">
+						<Card variant="glass" class="p-6">
 							{#if saveSuccess}
-								<div
-									class="mb-6 p-4 rounded-xl border flex items-center gap-2"
-									style="background-color: var(--color-success-bg); border-color: var(--color-success-border); color: var(--color-success-text);"
-								>
-									<Check class="w-5 h-5" />
-									{t('account.messages.saveSuccess')}
-								</div>
+								<Alert.Root variant="success" class="mb-6">
+									<Check class="size-4" />
+									<Alert.Description>{t('account.messages.saveSuccess')}</Alert.Description>
+								</Alert.Root>
 							{/if}
 
 							{#if saveError}
-								<div
-									class="mb-6 p-4 rounded-xl border flex items-center gap-2"
-									style="background-color: var(--color-error-bg); border-color: var(--color-error-border); color: var(--color-error-text);"
-								>
-									<X class="w-5 h-5" />
-									{saveError}
-								</div>
+								<Alert.Root variant="destructive" class="mb-6">
+									<X class="size-4" />
+									<Alert.Description>{saveError}</Alert.Description>
+								</Alert.Root>
 							{/if}
-							{#if activeTab === 'profile'}
+							<Tabs.Content value="profile">
 								<h2
-									class="text-2xl font-bold mb-6 font-display"
-									style="color: var(--color-heading);"
+									class="text-2xl font-bold mb-6 font-display text-foreground"
 								>
 									{t('account.profile.title')}
 								</h2>
@@ -289,16 +283,20 @@
 								<div class="space-y-6">
 									<!-- Avatar placeholder -->
 									<div class="flex items-center gap-4">
-										<div
-											class="w-20 h-20 rounded-full bg-gradient-to-br from-orange-400 to-pink-500 flex items-center justify-center text-white text-2xl font-bold"
-										>
-											{authStore.user?.name?.[0]?.toUpperCase() ||
-												authStore.supabaseUser?.email?.[0]?.toUpperCase() ||
-												'?'}
-										</div>
+										<Avatar.Root class="size-20">
+											<Avatar.Image
+												src={authStore.user?.avatar_url || authStore.supabaseUser?.user_metadata?.avatar_url || authStore.supabaseUser?.user_metadata?.picture}
+												alt={authStore.user?.name || authStore.supabaseUser?.email || 'User'}
+											/>
+											<Avatar.Fallback class="bg-gradient-to-br from-orange-400 to-pink-500 text-white text-2xl font-bold">
+												{authStore.user?.name?.[0]?.toUpperCase() ||
+													authStore.supabaseUser?.email?.[0]?.toUpperCase() ||
+													'?'}
+											</Avatar.Fallback>
+										</Avatar.Root>
 										<div>
-											<p class="text-sm" style="color: var(--color-body);">{t('account.profile.photo')}</p>
-											<p class="text-xs" style="color: var(--color-subtle);">{t('account.profile.photoComingSoon')}</p>
+											<p class="text-sm text-muted-foreground">{t('account.profile.photo')}</p>
+											<p class="text-xs text-muted-foreground">{t('account.profile.photoComingSoon')}</p>
 										</div>
 									</div>
 
@@ -334,21 +332,18 @@
 											type="email"
 											value={authStore.supabaseUser?.email || ''}
 											disabled
-											class="max-w-md" style="background-color: var(--color-muted);"
+											class="max-w-md bg-muted"
 										/>
-										<p class="text-xs" style="color: var(--color-subtle);">{t('account.profile.emailNote')}</p>
+										<p class="text-xs text-muted-foreground">{t('account.profile.emailNote')}</p>
 									</div>
 
 									<!-- Role badge -->
 									<div class="space-y-2">
 										<Label>{t('account.profile.role')}</Label>
 										<div>
-											<span
-												class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium capitalize"
-												style="background-color: {getRoleBadgeStyle(authStore.user?.role || 'user').bg}; color: {getRoleBadgeStyle(authStore.user?.role || 'user').text};"
-											>
+											<Badge variant={getRoleBadgeVariant(authStore.user?.role || 'user')} size="lg" class="capitalize rounded-full">
 												{authStore.user?.role || 'user'}
-											</span>
+											</Badge>
 										</div>
 									</div>
 
@@ -360,7 +355,7 @@
 											disabled={saving}
 										>
 											{#if saving}
-												<LoadingSpinner size="sm" class="mr-2" />
+												<Spinner class="size-4 mr-2" />
 												{t('account.profile.saving')}
 											{:else}
 												{t('account.profile.saveChanges')}
@@ -368,10 +363,10 @@
 										</Button>
 									</div>
 								</div>
-							{:else if activeTab === 'preferences'}
+							</Tabs.Content>
+							<Tabs.Content value="preferences">
 								<h2
-									class="text-2xl font-bold mb-6 font-display"
-									style="color: var(--color-heading);"
+									class="text-2xl font-bold mb-6 font-display text-foreground"
 								>
 									{t('account.preferences.title')}
 								</h2>
@@ -379,53 +374,44 @@
 								<div class="space-y-6">
 									<!-- Language -->
 									<div class="space-y-2">
-										<Label for="language">{t('account.preferences.language')}</Label>
-										<SelectNative
-											id="language"
-											value={i18n.locale}
-											onchange={(e) => i18n.setLocale(e.currentTarget.value as Locale)}
-											variant="styled"
-											class="max-w-md"
-											style="background-color: var(--color-card); border-color: var(--color-border); color: var(--color-foreground);"
-										>
-											<option value="en">{t('languages.en')}</option>
-											<option value="vi">{t('languages.vi')}</option>
-										</SelectNative>
-										<p class="text-xs" style="color: var(--color-subtle);">{t('account.preferences.languageNote')}</p>
+										<Label>{t('account.preferences.language')}</Label>
+										<LanguageSelector class="max-w-md" />
+										<p class="text-xs text-muted-foreground">{t('account.preferences.languageNote')}</p>
 									</div>
 
 									<!-- Theme -->
 									<div class="space-y-2">
-										<Label for="theme">{t('account.preferences.theme')}</Label>
-										<SelectNative
-											id="theme"
-											value={theme}
-											onchange={(e) => setTheme(e.currentTarget.value as Theme)}
-											variant="styled"
-											class="max-w-md"
-											style="background-color: var(--color-card); border-color: var(--color-border); color: var(--color-foreground);"
-										>
-											<option value="system">{t('account.preferences.themeSystem')}</option>
-											<option value="light">{t('account.preferences.themeLight')}</option>
-											<option value="dark">{t('account.preferences.themeDark')}</option>
-										</SelectNative>
-										<p class="text-xs" style="color: var(--color-subtle);">{t('account.preferences.themeNote', { mode: themeStore.resolvedTheme })}</p>
+										<Label>{t('account.preferences.theme')}</Label>
+										<Select.Root type="single" value={theme} onValueChange={(value) => value && setTheme(value as Theme)}>
+											<Select.Trigger class="max-w-md">
+												<Select.Value placeholder={t('account.preferences.selectTheme')}>
+													{#if theme === 'light'}
+														<span class="flex items-center gap-2"><Sun class="size-4" /> {t('account.preferences.themeLight')}</span>
+													{:else if theme === 'dark'}
+														<span class="flex items-center gap-2"><Moon class="size-4" /> {t('account.preferences.themeDark')}</span>
+													{/if}
+												</Select.Value>
+											</Select.Trigger>
+											<Select.Content>
+												<Select.Item value="light"><span class="flex items-center gap-2"><Sun class="size-4" /> {t('account.preferences.themeLight')}</span></Select.Item>
+												<Select.Item value="dark"><span class="flex items-center gap-2"><Moon class="size-4" /> {t('account.preferences.themeDark')}</span></Select.Item>
+											</Select.Content>
+										</Select.Root>
 									</div>
 
 									<!-- Email Notifications -->
 									<div class="space-y-2">
 										<Label>{t('account.preferences.emailNotifications')}</Label>
-										<label class="flex items-center gap-3 cursor-pointer">
-											<input
-												type="checkbox"
+										<div class="flex items-center gap-3">
+											<Switch
 												bind:checked={emailNotifications}
-												class="w-5 h-5 rounded text-orange-500 focus:ring-orange-500" style="border-color: var(--color-border);"
+												class="data-[state=checked]:bg-orange-500"
 											/>
-											<span class="text-sm" style="color: var(--color-body);"
+											<span class="text-sm text-muted-foreground"
 												>{t('account.preferences.emailNotificationsLabel')}</span
 											>
-										</label>
-										<p class="text-xs" style="color: var(--color-subtle);">{t('account.preferences.emailNotificationsNote')}</p>
+										</div>
+										<p class="text-xs text-muted-foreground">{t('account.preferences.emailNotificationsNote')}</p>
 									</div>
 
 									<!-- Save button -->
@@ -438,46 +424,44 @@
 										</Button>
 									</div>
 								</div>
-							{:else if activeTab === 'account'}
+							</Tabs.Content>
+							<Tabs.Content value="account">
 								<h2
-									class="text-2xl font-bold mb-6 font-display"
-									style="color: var(--color-heading);"
+									class="text-2xl font-bold mb-6 font-display text-foreground"
 								>
 									{t('account.actions.title')}
 								</h2>
 
-								<div class="space-y-6">
+								<div class="space-y-8">
 									<!-- Connected Accounts -->
-									<div class="space-y-3">
-										<Label>{t('account.connected.title')}</Label>
-										<p class="text-sm" style="color: var(--color-subtle);">{t('account.connected.description')}</p>
+									<div class="space-y-4">
+										<div class="space-y-1">
+											<Label>{t('account.connected.title')}</Label>
+											<p class="text-sm text-muted-foreground">{t('account.connected.description')}</p>
+										</div>
 
 										{#if linkError}
-											<div
-												class="p-3 rounded-xl border flex items-center gap-2 text-sm"
-												style="background-color: var(--color-error-bg); border-color: var(--color-error-border); color: var(--color-error-text);"
-											>
-												<X class="w-4 h-4" />
-												{linkError}
-											</div>
+											<Alert.Root variant="destructive">
+												<X class="size-4" />
+												<Alert.Description>{linkError}</Alert.Description>
+											</Alert.Root>
 										{/if}
 
-										<div class="space-y-2">
+										<div class="space-y-3">
 											{#each socialProviders as provider}
 												{@const isConnected = authStore.isProviderConnected(provider.id)}
 												{@const isLinking = linkingProvider === provider.id}
 												{@const isUnlinking = unlinkingProvider === provider.id}
 												<div
-													class="p-4 rounded-xl border flex items-center justify-between"
-													style="background-color: var(--color-muted); border-color: var(--color-border);"
+													class="p-4 rounded-xl border flex items-center justify-between bg-muted border-border"
 												>
 													<div class="flex items-center gap-3">
 														<svg class="w-5 h-5" viewBox="0 0 24 24" fill={provider.color}>
 															{@html provider.icon.svg}
 														</svg>
 														<div>
-															<p class="font-medium" style="color: var(--color-heading);">{provider.name}</p>
-															<p class="text-xs" style="color: var(--color-subtle);">
+															<p class="font-medium text-foreground">{provider.name}</p>
+															<p class="text-xs text-muted-foreground">
 																{#if isConnected}
 																	{t('account.connected.connected')}
 																{:else}
@@ -494,7 +478,7 @@
 															disabled={isUnlinking || authStore.identities.length <= 1}
 														>
 															{#if isUnlinking}
-																<LoadingSpinner size="sm" class="mr-2" />
+																<Spinner class="size-4 mr-2" />
 															{:else}
 																<Unlink2 class="w-4 h-4 mr-2" />
 															{/if}
@@ -508,7 +492,7 @@
 															disabled={isLinking}
 														>
 															{#if isLinking}
-																<LoadingSpinner size="sm" class="mr-2" />
+																<Spinner class="size-4 mr-2" />
 															{:else}
 																<Link2 class="w-4 h-4 mr-2" />
 															{/if}
@@ -520,101 +504,103 @@
 										</div>
 
 										{#if authStore.identities.length <= 1}
-											<p class="text-xs" style="color: var(--color-subtle);">
+											<p class="text-xs text-muted-foreground">
 												{t('account.connected.mustHaveOne')}
 											</p>
 										{/if}
 									</div>
 
-									<div class="border-t pt-6" style="border-color: var(--color-border);"></div>
+									<div class="border-t border-border"></div>
 
-									<!-- Sign Out -->
-									<div
-										class="p-4 rounded-xl border flex items-center justify-between"
-										style="background-color: var(--color-muted); border-color: var(--color-border);"
-									>
-										<div>
-											<h3 class="font-medium" style="color: var(--color-heading);">{t('account.actions.signOutTitle')}</h3>
-											<p class="text-sm" style="color: var(--color-body);">{t('account.actions.signOutDescription')}</p>
+									<!-- Actions Section -->
+									<div class="space-y-3">
+										<!-- Sign Out -->
+										<div
+											class="p-4 rounded-xl border flex items-center justify-between bg-muted border-border"
+										>
+											<div>
+												<h3 class="font-medium text-foreground">{t('account.actions.signOutTitle')}</h3>
+												<p class="text-sm text-muted-foreground">{t('account.actions.signOutDescription')}</p>
+											</div>
+											<Button variant="outline" onclick={handleSignOut}>{t('common.signOut')}</Button>
 										</div>
-										<Button variant="outline" onclick={handleSignOut}>{t('common.signOut')}</Button>
-									</div>
 
-									<!-- Delete Account -->
-									<div
-										class="p-4 rounded-xl border"
-										style="background-color: var(--color-error-bg); border-color: var(--color-error-border);"
-									>
-										{#if !showDeleteConfirm}
-											<div class="flex items-center justify-between">
-												<div>
-													<h3 class="font-medium" style="color: var(--color-error-text);">{t('account.actions.deleteTitle')}</h3>
-													<p class="text-sm" style="color: var(--color-error-text); opacity: 0.8;">
-														{t('account.actions.deleteDescription')}
-													</p>
-												</div>
-												<Button variant="destructive" onclick={() => showDeleteConfirm = true}>
-													{t('common.delete')}
-												</Button>
+										<!-- Delete Account -->
+										<div
+											class="p-4 rounded-xl border bg-error-bg border-error-border"
+										>
+										<div class="flex items-center justify-between">
+											<div>
+												<h3 class="font-medium text-error-text">{t('account.actions.deleteTitle')}</h3>
+												<p class="text-sm text-error-text/80">
+													{t('account.actions.deleteDescription')}
+												</p>
 											</div>
-										{:else}
-											<div class="space-y-4">
-												<div>
-													<h3 class="font-medium" style="color: var(--color-error-text);">{t('account.delete.confirmTitle')}</h3>
-													<p class="text-sm mt-1" style="color: var(--color-error-text); opacity: 0.8;">
-														{t('account.delete.confirmDescription')}
-													</p>
-												</div>
+											<AlertDialog.Root bind:open={showDeleteConfirm} onOpenChange={(open) => { if (!open) cancelDelete(); }}>
+												<AlertDialog.Trigger>
+													{#snippet child({ props })}
+														<Button variant="destructive" {...props}>
+															{t('common.delete')}
+														</Button>
+													{/snippet}
+												</AlertDialog.Trigger>
+												<AlertDialog.Content class="sm:max-w-md">
+													<AlertDialog.Header>
+														<AlertDialog.Title class="text-destructive">
+															{t('account.delete.confirmTitle')}
+														</AlertDialog.Title>
+														<AlertDialog.Description>
+															{t('account.delete.confirmDescription')}
+														</AlertDialog.Description>
+													</AlertDialog.Header>
 
-												{#if deleteError}
-													<div
-														class="p-3 rounded-lg border flex items-center gap-2 text-sm"
-														style="background-color: var(--color-card); border-color: var(--color-error-border); color: var(--color-error-text);"
-													>
-														<X class="w-4 h-4" />
-														{deleteError}
+													{#if deleteError}
+														<Alert.Root variant="destructive">
+															<X class="size-4" />
+															<Alert.Description>{deleteError}</Alert.Description>
+														</Alert.Root>
+													{/if}
+
+													<div class="space-y-2">
+														<Label for="deleteConfirm" class="text-sm text-destructive">
+															{t('account.delete.typeConfirm')}
+														</Label>
+														<Input
+															id="deleteConfirm"
+															type="text"
+															placeholder="DELETE"
+															bind:value={deleteConfirmText}
+															class="border-destructive"
+														/>
 													</div>
-												{/if}
 
-												<div class="space-y-2">
-													<Label for="deleteConfirm" class="text-sm" style="color: var(--color-error-text);">
-														{t('account.delete.typeConfirm')}
-													</Label>
-													<Input
-														id="deleteConfirm"
-														type="text"
-														placeholder="DELETE"
-														bind:value={deleteConfirmText}
-														class="max-w-xs"
-														style="border-color: var(--color-error-border);"
-													/>
-												</div>
-
-												<div class="flex gap-3">
-													<Button
-														variant="destructive"
-														onclick={handleDeleteAccount}
-														disabled={deleting || deleteConfirmText !== 'DELETE'}
-													>
-														{#if deleting}
-															<LoadingSpinner size="sm" class="mr-2" />
-															{t('account.delete.deleting')}
-														{:else}
-															{t('account.delete.confirmButton')}
-														{/if}
-													</Button>
-													<Button variant="outline" onclick={cancelDelete} disabled={deleting}>
-														{t('common.cancel')}
-													</Button>
-												</div>
-											</div>
-										{/if}
+													<AlertDialog.Footer>
+														<AlertDialog.Cancel disabled={deleting}>
+															{t('common.cancel')}
+														</AlertDialog.Cancel>
+														<Button
+															variant="destructive"
+															onclick={handleDeleteAccount}
+															disabled={deleting || deleteConfirmText !== 'DELETE'}
+														>
+															{#if deleting}
+																<Spinner class="size-4 mr-2" />
+																{t('account.delete.deleting')}
+															{:else}
+																{t('account.delete.confirmButton')}
+															{/if}
+														</Button>
+													</AlertDialog.Footer>
+												</AlertDialog.Content>
+											</AlertDialog.Root>
+										</div>
+									</div>
 									</div>
 								</div>
-							{/if}
-						</GlassCard>
+							</Tabs.Content>
+						</Card>
 					</div>
-				</div>
+				</Tabs.Root>
 			</AnimatedContainer>
 		{/if}
 	</main>
