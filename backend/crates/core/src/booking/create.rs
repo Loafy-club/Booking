@@ -1,5 +1,5 @@
 use chrono::{Duration, Utc};
-use loafy_db::{models::Booking, queries::sessions, PgPool};
+use loafy_db::{models::Booking, queries::{bookings, sessions}, PgPool};
 use loafy_types::AppError;
 use uuid::Uuid;
 
@@ -26,6 +26,19 @@ pub async fn create_booking_with_lock(
             e.to_string(),
         ))))?
         .ok_or_else(|| AppError::NotFound("Session not found".to_string()))?;
+
+    // Check if user already has an active booking for this session
+    let has_existing = bookings::has_active_booking_for_session(pool, user_id, session_id)
+        .await
+        .map_err(|e| AppError::Database(sqlx::Error::Io(std::io::Error::new(
+            std::io::ErrorKind::Other,
+            e.to_string(),
+        ))))?;
+
+    if has_existing {
+        tx.rollback().await.ok();
+        return Err(AppError::Conflict("You already have a booking for this session".to_string()));
+    }
 
     // Check if session is cancelled
     if session.cancelled {
@@ -60,7 +73,6 @@ pub async fn create_booking_with_lock(
     // User pays base price, each guest pays base price
     let user_price_vnd = base_price_vnd;
     let guest_price_vnd = base_price_vnd * guest_count;
-    let total_price_vnd = user_price_vnd + guest_price_vnd;
 
     // Generate unique booking code
     let booking_code = generate_booking_code();
@@ -87,8 +99,8 @@ pub async fn create_booking_with_lock(
     .bind(guest_count)
     .bind(0) // Phase 1: no tickets used
     .bind("none") // Phase 1: no discount
-    .bind(total_price_vnd)
-    .bind(guest_price_vnd)
+    .bind(user_price_vnd)  // User's slot price only
+    .bind(guest_price_vnd) // Guests' total price
     .bind(payment_method)
     .bind("pending")
     .bind(payment_deadline.naive_utc())

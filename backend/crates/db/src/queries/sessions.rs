@@ -1,8 +1,17 @@
 use crate::models::Session;
 use anyhow::Result;
 use chrono::{NaiveDate, NaiveTime};
-use sqlx::{PgPool, QueryBuilder, Postgres};
+use sqlx::{FromRow, PgPool, QueryBuilder, Postgres};
 use uuid::Uuid;
+
+/// Participant info from joined booking + user query
+#[derive(Debug, Clone, FromRow)]
+pub struct SessionParticipant {
+    pub user_id: Uuid,
+    pub name: Option<String>,
+    pub avatar_url: Option<String>,
+    pub guest_count: i32,
+}
 
 /// List upcoming sessions with optional filters
 pub async fn list_sessions(
@@ -234,4 +243,59 @@ pub async fn increment_available_slots(
     .await?;
 
     Ok(())
+}
+
+/// Get confirmed participants for a session (paid bookings only)
+/// Deduplicates users - if a user has multiple bookings, aggregates their guest counts
+pub async fn get_session_participants(
+    pool: &PgPool,
+    session_id: Uuid,
+    limit: Option<i32>,
+) -> Result<Vec<SessionParticipant>> {
+    let limit_val = limit.unwrap_or(100);
+
+    let participants = sqlx::query_as::<_, SessionParticipant>(
+        r#"
+        SELECT
+            u.id as user_id,
+            u.name,
+            u.avatar_url,
+            COALESCE(SUM(b.guest_count), 0)::int4 as guest_count
+        FROM bookings b
+        JOIN users u ON u.id = b.user_id
+        WHERE b.session_id = $1
+          AND b.payment_status = 'confirmed'
+          AND b.cancelled_at IS NULL
+        GROUP BY u.id, u.name, u.avatar_url
+        ORDER BY MIN(b.created_at) ASC
+        LIMIT $2
+        "#
+    )
+    .bind(session_id)
+    .bind(limit_val)
+    .fetch_all(pool)
+    .await?;
+
+    Ok(participants)
+}
+
+/// Count unique confirmed participants for a session
+pub async fn count_session_participants(
+    pool: &PgPool,
+    session_id: Uuid,
+) -> Result<i64> {
+    let count: (i64,) = sqlx::query_as(
+        r#"
+        SELECT COUNT(DISTINCT user_id) as count
+        FROM bookings
+        WHERE session_id = $1
+          AND payment_status = 'confirmed'
+          AND cancelled_at IS NULL
+        "#
+    )
+    .bind(session_id)
+    .fetch_one(pool)
+    .await?;
+
+    Ok(count.0)
 }

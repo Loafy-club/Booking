@@ -1,28 +1,62 @@
 use axum::{
-    extract::{Path, State},
+    extract::{Path, Query, State},
     http::StatusCode,
     Json,
 };
 use loafy_core::booking::{cancel_booking, create_booking_with_lock};
 use loafy_db::queries::bookings;
-use loafy_types::api::bookings::{BookingResponse, CreateBookingRequest};
+use loafy_types::api::admin::PageInfo;
+use loafy_types::api::bookings::{BookingResponse, CreateBookingRequest, UserBookingsResponse};
+use serde::Deserialize;
 use uuid::Uuid;
 use validator::Validate;
 
 use crate::middleware::{AppState, AuthUser};
 use crate::response::{self, ApiError};
 
-/// List my bookings
+/// Query parameters for bookings list endpoint
+#[derive(Deserialize)]
+pub struct BookingsQuery {
+    #[serde(default = "default_page")]
+    pub page: i32,
+    #[serde(default = "default_per_page")]
+    pub per_page: i32,
+}
+
+fn default_page() -> i32 {
+    1
+}
+
+fn default_per_page() -> i32 {
+    10
+}
+
+/// List my bookings with pagination
 pub async fn list_my_bookings(
     AuthUser(user): AuthUser,
     State(state): State<AppState>,
-) -> Result<Json<Vec<BookingResponse>>, ApiError> {
-    let db_bookings = bookings::list_user_bookings(&state.db, user.id)
+    Query(query): Query<BookingsQuery>,
+) -> Result<Json<UserBookingsResponse>, ApiError> {
+    let page = query.page.max(1);
+    let per_page = query.per_page.clamp(1, 50);
+
+    let (db_bookings, total) = bookings::list_user_bookings_paginated(&state.db, user.id, page, per_page)
         .await
         .map_err(|e| response::internal_error_msg("Failed to fetch bookings", e))?;
 
-    let response: Vec<BookingResponse> = db_bookings.into_iter().map(Into::into).collect();
-    Ok(Json(response))
+    let total_pages = ((total as f64) / (per_page as f64)).ceil() as i32;
+
+    let data: Vec<BookingResponse> = db_bookings.into_iter().map(Into::into).collect();
+
+    Ok(Json(UserBookingsResponse {
+        data,
+        page_info: PageInfo {
+            page,
+            per_page,
+            total,
+            total_pages,
+        },
+    }))
 }
 
 /// Get booking by ID

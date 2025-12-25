@@ -75,6 +75,7 @@ async fn main() -> anyhow::Result<()> {
         // Session routes
         .route("/api/sessions", get(routes::sessions::list_sessions))
         .route("/api/sessions/:id", get(routes::sessions::get_session))
+        .route("/api/sessions/:id/participants", get(routes::sessions::get_session_participants))
         .route("/api/sessions", post(routes::sessions::create_session))
         .route("/api/sessions/:id", put(routes::sessions::update_session))
         .route("/api/sessions/:id", delete(routes::sessions::delete_session))
@@ -86,6 +87,22 @@ async fn main() -> anyhow::Result<()> {
         // Payment routes
         .route("/api/payments/stripe/intent", post(routes::payments::create_payment_intent))
         .route("/api/webhooks/stripe", post(routes::payments::stripe_webhook))
+        // Admin routes
+        .route("/api/admin/stats", get(routes::admin::get_stats))
+        .route("/api/admin/users", get(routes::admin::list_users))
+        .route("/api/admin/users/:id", put(routes::admin::update_user).delete(routes::admin::delete_user))
+        .route("/api/admin/users/:id/role", put(routes::admin::update_user_role))
+        .route("/api/admin/users/:id/suspend", post(routes::admin::suspend_user))
+        .route("/api/admin/users/:id/unsuspend", post(routes::admin::unsuspend_user))
+        .route("/api/admin/bookings", get(routes::admin::list_bookings))
+        .route("/api/admin/bookings/:id", get(routes::admin::get_booking).put(routes::admin::update_booking))
+        .route("/api/admin/sessions", get(routes::admin::list_sessions))
+        .route("/api/admin/roles", get(routes::admin::list_roles))
+        // Admin profit routes
+        .route("/api/admin/stats/profit", get(routes::admin::get_profit_stats))
+        .route("/api/admin/sessions/profit", get(routes::admin::get_sessions_profit))
+        .route("/api/admin/expenses/by-category", get(routes::admin::get_expenses_by_category))
+        .route("/api/admin/profit/daily", get(routes::admin::get_daily_profit_data))
         .layer(
             CorsLayer::new()
                 .allow_origin(frontend_url.parse::<axum::http::HeaderValue>()?)

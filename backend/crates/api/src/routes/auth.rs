@@ -34,22 +34,55 @@ pub async fn handle_callback(
         .await
         .map_err(|e| response::unauthorized(format!("Failed to verify token: {}", e)))?;
 
-    // Check if user exists in database
+    // Check if user exists in database (including soft-deleted users)
     let db_user = users::find_with_role_by_email(&state.db, &supabase_user.email)
         .await
         .map_err(response::db_error)?;
 
-    // Create user if doesn't exist
+    // Create user if doesn't exist, or restore if soft-deleted
     let user = match db_user {
-        Some(existing_user) => existing_user,
+        Some(existing_user) => {
+            // Check if user was soft-deleted and restore if so
+            if existing_user.user_deleted_at.is_some() {
+                // Restore the soft-deleted user (also update auth_provider_id in case it changed)
+                let restored_user = users::restore_user(
+                    &state.db,
+                    existing_user.id,
+                    supabase_user.user_metadata.full_name.as_deref(),
+                    supabase_user.user_metadata.avatar_url.as_deref(),
+                    &supabase_user.id.to_string(),
+                )
+                .await
+                .map_err(|e| response::internal_error_msg("Failed to restore user", e))?;
+
+                // Fetch user with role
+                users::find_with_role_by_id(&state.db, restored_user.id)
+                    .await
+                    .map_err(response::db_error)?
+                    .ok_or_else(|| response::internal_error("Failed to fetch restored user"))?
+            } else {
+                // Sync auth provider info on every login to keep it current
+                // Use providers array (all linked providers) joined by comma
+                let new_auth_provider = supabase_user.app_metadata.providers.join(", ");
+                let new_auth_provider_id = supabase_user.id.to_string();
+                if existing_user.auth_provider != new_auth_provider || existing_user.auth_provider_id != new_auth_provider_id {
+                    users::update_auth_provider(&state.db, existing_user.id, &new_auth_provider, &new_auth_provider_id)
+                        .await
+                        .map_err(|e| response::internal_error_msg("Failed to update auth provider", e))?;
+                }
+                existing_user
+            }
+        }
         None => {
             // Create new user with 'user' role by default
+            // Use providers array (all linked providers) joined by comma
+            let auth_provider = supabase_user.app_metadata.providers.join(", ");
             let new_user = users::create_user(
                 &state.db,
                 &supabase_user.email,
                 supabase_user.user_metadata.full_name.as_deref(),
                 supabase_user.user_metadata.avatar_url.as_deref(),
-                &supabase_user.app_metadata.provider,
+                &auth_provider,
                 &supabase_user.id.to_string(),
                 "user", // Default role
             )

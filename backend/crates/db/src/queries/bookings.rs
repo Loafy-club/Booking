@@ -47,6 +47,41 @@ pub async fn list_user_bookings(
     Ok(bookings)
 }
 
+/// List user's bookings with pagination
+pub async fn list_user_bookings_paginated(
+    pool: &PgPool,
+    user_id: Uuid,
+    page: i32,
+    per_page: i32,
+) -> Result<(Vec<Booking>, i64)> {
+    let offset = (page - 1) * per_page;
+
+    // Get total count
+    let total: (i64,) = sqlx::query_as(
+        "SELECT COUNT(*) FROM bookings WHERE user_id = $1"
+    )
+    .bind(user_id)
+    .fetch_one(pool)
+    .await?;
+
+    // Get paginated results
+    let bookings = sqlx::query_as::<_, Booking>(
+        r#"
+        SELECT * FROM bookings
+        WHERE user_id = $1
+        ORDER BY created_at DESC
+        LIMIT $2 OFFSET $3
+        "#
+    )
+    .bind(user_id)
+    .bind(per_page)
+    .bind(offset)
+    .fetch_all(pool)
+    .await?;
+
+    Ok((bookings, total.0))
+}
+
 /// List bookings for a session
 pub async fn list_session_bookings(
     pool: &PgPool,
@@ -65,6 +100,28 @@ pub async fn list_session_bookings(
     .await?;
 
     Ok(bookings)
+}
+
+/// Check if user has an active booking for a session
+pub async fn has_active_booking_for_session(
+    pool: &PgPool,
+    user_id: Uuid,
+    session_id: Uuid,
+) -> Result<bool> {
+    let count: (i64,) = sqlx::query_as(
+        r#"
+        SELECT COUNT(*) FROM bookings
+        WHERE user_id = $1
+          AND session_id = $2
+          AND cancelled_at IS NULL
+        "#
+    )
+    .bind(user_id)
+    .bind(session_id)
+    .fetch_one(pool)
+    .await?;
+
+    Ok(count.0 > 0)
 }
 
 /// Cancel booking

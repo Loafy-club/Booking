@@ -2,7 +2,7 @@ use axum::{
     async_trait,
     extract::{FromRef, FromRequestParts},
     http::{request::Parts, StatusCode},
-    RequestPartsExt,
+    Json, RequestPartsExt,
 };
 use axum_extra::{
     headers::{authorization::Bearer, Authorization},
@@ -10,6 +10,7 @@ use axum_extra::{
 };
 use loafy_db::{queries::users, models::UserWithRole, PgPool};
 use loafy_integrations::supabase::SupabaseAuth;
+use loafy_types::api::admin::SuspendedUserError;
 use loafy_types::AppError;
 
 /// Extractor for authenticated user (required)
@@ -28,13 +29,34 @@ pub struct AppState {
     pub db: PgPool,
 }
 
+/// Auth error that can be returned from extractors
+pub enum AuthError {
+    /// Standard unauthorized error with message
+    Unauthorized(String),
+    /// User account is suspended
+    Suspended(SuspendedUserError),
+}
+
+impl axum::response::IntoResponse for AuthError {
+    fn into_response(self) -> axum::response::Response {
+        match self {
+            AuthError::Unauthorized(msg) => {
+                (StatusCode::UNAUTHORIZED, msg).into_response()
+            }
+            AuthError::Suspended(error) => {
+                (StatusCode::FORBIDDEN, Json(error)).into_response()
+            }
+        }
+    }
+}
+
 #[async_trait]
 impl<S> FromRequestParts<S> for AuthUser
 where
     S: Send + Sync,
     AppState: axum::extract::FromRef<S>,
 {
-    type Rejection = (StatusCode, String);
+    type Rejection = AuthError;
 
     async fn from_request_parts(parts: &mut Parts, state: &S) -> Result<Self, Self::Rejection> {
         // Extract Authorization header
@@ -42,10 +64,7 @@ where
             .extract::<TypedHeader<Authorization<Bearer>>>()
             .await
             .map_err(|_| {
-                (
-                    StatusCode::UNAUTHORIZED,
-                    "Missing or invalid Authorization header".to_string(),
-                )
+                AuthError::Unauthorized("Missing or invalid Authorization header".to_string())
             })?;
 
         let token = bearer.token();
@@ -59,10 +78,7 @@ where
             .verify_token(token)
             .await
             .map_err(|e| {
-                (
-                    StatusCode::UNAUTHORIZED,
-                    format!("Invalid token: {}", e),
-                )
+                AuthError::Unauthorized(format!("Invalid token: {}", e))
             })?;
 
         // Get Supabase user ID from claims (stored as auth_provider_id in our DB)
@@ -72,17 +88,20 @@ where
         let user = users::find_with_role_by_auth_provider_id(&app_state.db, supabase_user_id)
             .await
             .map_err(|e| {
-                (
-                    StatusCode::INTERNAL_SERVER_ERROR,
-                    format!("Database error: {}", e),
-                )
+                AuthError::Unauthorized(format!("Database error: {}", e))
             })?
             .ok_or_else(|| {
-                (
-                    StatusCode::UNAUTHORIZED,
-                    "User not found".to_string(),
-                )
+                AuthError::Unauthorized("User not found".to_string())
             })?;
+
+        // Check if user is suspended
+        if user.is_suspended() {
+            return Err(AuthError::Suspended(SuspendedUserError {
+                error: "account_suspended".to_string(),
+                reason: user.suspension_reason().unwrap_or("No reason provided").to_string(),
+                until: user.suspension_until(),
+            }));
+        }
 
         Ok(AuthUser(user))
     }
@@ -94,7 +113,7 @@ where
     S: Send + Sync,
     AppState: axum::extract::FromRef<S>,
 {
-    type Rejection = (StatusCode, String);
+    type Rejection = AuthError;
 
     async fn from_request_parts(parts: &mut Parts, state: &S) -> Result<Self, Self::Rejection> {
         // Try to extract Authorization header (optional)
@@ -121,11 +140,19 @@ where
         let user = users::find_with_role_by_auth_provider_id(&app_state.db, supabase_user_id)
             .await
             .map_err(|e| {
-                (
-                    StatusCode::INTERNAL_SERVER_ERROR,
-                    format!("Database error: {}", e),
-                )
+                AuthError::Unauthorized(format!("Database error: {}", e))
             })?;
+
+        // Check if user is suspended
+        if let Some(ref u) = user {
+            if u.is_suspended() {
+                return Err(AuthError::Suspended(SuspendedUserError {
+                    error: "account_suspended".to_string(),
+                    reason: u.suspension_reason().unwrap_or("No reason provided").to_string(),
+                    until: u.suspension_until(),
+                }));
+            }
+        }
 
         Ok(OptionalAuthUser(user))
     }
@@ -138,9 +165,6 @@ pub fn require_role(user: &UserWithRole, required_role: &str) -> Result<(), AppE
             Err(AppError::Forbidden)
         }
         "organizer" if !user.is_organizer() => {
-            Err(AppError::Forbidden)
-        }
-        "moderator" if !user.is_moderator() => {
             Err(AppError::Forbidden)
         }
         _ => Ok(()),
