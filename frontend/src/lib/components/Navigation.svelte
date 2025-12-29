@@ -5,7 +5,7 @@
 	import { useTranslation } from '$lib/i18n/index.svelte';
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
 	import * as Avatar from '$lib/components/ui/avatar';
-	import { Calendar, Settings, Plus, Shield, LogOut, ChevronDown } from 'lucide-svelte';
+	import { Calendar, Settings, Plus, Shield, LogOut, ChevronDown, Ticket, Sparkles } from 'lucide-svelte';
 
 	interface Props {
 		hidden?: boolean;
@@ -41,6 +41,20 @@
 
 			<div class="flex items-center gap-4">
 				{#if authStore.isAuthenticated}
+					<!-- Ticket Badge - always visible -->
+					{#if authStore.ticketBalance !== null}
+						<a
+							href="/tickets"
+							class="flex items-center gap-1.5 rounded-full px-3 py-1.5 transition-colors shadow-sm bg-background border border-border hover:bg-muted"
+							title={authStore.hasActiveSubscription ? t('tickets.hasSubscription') : t('tickets.noActiveSubscription')}
+						>
+							<Ticket class="size-4 text-orange-500" />
+							<span class="text-sm font-semibold text-foreground">{authStore.ticketsRemaining}</span>
+							{#if authStore.hasActiveSubscription}
+								<span class="size-1.5 rounded-full bg-green-500" title="Active subscription"></span>
+							{/if}
+						</a>
+					{/if}
 					<DropdownMenu.Root>
 						<DropdownMenu.Trigger class="group flex items-center gap-2 rounded-full pr-1 pl-1 py-1 hover:bg-muted transition-colors cursor-pointer focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2">
 							<Avatar.Root class="size-8">
@@ -69,6 +83,14 @@
 								<DropdownMenu.Item onclick={() => goto('/bookings')}>
 									<Calendar class="mr-2 size-4" />
 									{t('nav.myBookings')}
+								</DropdownMenu.Item>
+								<DropdownMenu.Item onclick={() => goto('/tickets')}>
+									<Ticket class="mr-2 size-4" />
+									{t('nav.myTickets')}
+								</DropdownMenu.Item>
+								<DropdownMenu.Item onclick={() => goto('/subscriptions')}>
+									<Sparkles class="mr-2 size-4" />
+									{t('nav.subscription')}
 								</DropdownMenu.Item>
 								<DropdownMenu.Item onclick={() => goto('/account')}>
 									<Settings class="mr-2 size-4" />

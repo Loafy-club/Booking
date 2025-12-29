@@ -5,52 +5,49 @@
 
 <!-- Back button -->
 <div class="mb-6">
-	<Skeleton class="h-9 w-36" />
+	<Skeleton class="h-9 w-40" />
 </div>
 
-<div class="grid gap-6 lg:grid-cols-3">
-	<!-- Booking details -->
-	<div class="lg:col-span-2 space-y-6">
-		<Card variant="glass" class="[&>div:first-child]:hidden [&>div:last-child]:shadow-none">
-			<!-- Header with code and badges -->
-			<div class="flex items-center gap-3 flex-wrap mb-6">
-				<Skeleton class="h-8 w-48" />
-				<Skeleton class="h-5 w-20 rounded-md" />
-			</div>
-
-			<!-- Details grid -->
-			<div class="grid gap-4 sm:grid-cols-2">
-				{#each Array(6) as _}
-					<div>
-						<Skeleton class="h-3 w-24 mb-1" />
-						<Skeleton class="h-5 w-32" />
-					</div>
-				{/each}
-			</div>
-		</Card>
-
-		<!-- Session info card -->
-		<Card variant="glass" class="[&>div:first-child]:hidden [&>div:last-child]:shadow-none">
-			<Skeleton class="h-6 w-32 mb-4" />
-			<div class="space-y-3">
-				{#each Array(3) as _}
-					<div class="flex items-center gap-2">
-						<Skeleton class="h-4 w-4 rounded" />
-						<Skeleton class="h-4 w-48" />
-					</div>
-				{/each}
-			</div>
-		</Card>
+<Card variant="glass">
+	<!-- Header with code, date and badge -->
+	<div class="mb-6 flex items-center justify-between flex-wrap gap-4">
+		<div>
+			<Skeleton class="h-9 w-64 mb-2" />
+			<Skeleton class="h-4 w-40" />
+		</div>
+		<Skeleton class="h-6 w-28 rounded-full" />
 	</div>
 
-	<!-- Actions sidebar -->
-	<div class="lg:col-span-1">
-		<Card variant="glass" class="[&>div:first-child]:hidden [&>div:last-child]:shadow-none">
-			<Skeleton class="h-6 w-24 mb-4" />
-			<div class="space-y-3">
-				<Skeleton class="h-10 w-full rounded-md" />
-				<Skeleton class="h-10 w-full rounded-md" />
-			</div>
-		</Card>
+	<div class="space-y-6">
+		<!-- Info cards grid (2x2) -->
+		<div class="grid gap-6 md:grid-cols-2">
+			{#each Array(4) as _}
+				<Card variant="info">
+					<Skeleton class="h-4 w-28 mb-2" />
+					<Skeleton class="h-6 w-36" />
+				</Card>
+			{/each}
+		</div>
+
+		<!-- Price breakdown -->
+		<div class="border-t border-border pt-6">
+			<Skeleton class="h-4 w-32 mb-3" />
+			<Card variant="info" class="space-y-2">
+				<div class="flex justify-between">
+					<Skeleton class="h-4 w-20" />
+					<Skeleton class="h-4 w-24" />
+				</div>
+			</Card>
+		</div>
+
+		<!-- Alert placeholder -->
+		<Skeleton class="h-14 w-full rounded-lg" />
+
+		<!-- Action buttons -->
+		<div class="mt-8 flex gap-4 flex-wrap border-t border-border pt-6">
+			<Skeleton class="h-11 w-40 rounded-md" />
+			<Skeleton class="h-11 w-36 rounded-md" />
+			<Skeleton class="h-11 w-36 rounded-md" />
+		</div>
 	</div>
-</div>
+</Card>

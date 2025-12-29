@@ -1,6 +1,7 @@
 import { supabase } from '$lib/auth/supabase';
 import { api } from '$lib/api/client';
 import type { User as SupabaseUser, Session, Subscription } from '@supabase/supabase-js';
+import type { TicketBalanceResponse } from '$lib/types';
 
 export interface User {
 	id: string;
@@ -9,6 +10,13 @@ export interface User {
 	phone?: string;
 	avatar_url?: string;
 	role: 'user' | 'organizer' | 'admin';
+	birthday?: string;
+}
+
+export interface TicketBalance {
+	ticketsRemaining: number;
+	hasActiveSubscription: boolean;
+	currentPeriodEnd: string | null;
 }
 
 // Module-level tracking to survive HMR
@@ -18,6 +26,7 @@ let cachedSupabaseUser: SupabaseUser | null = null;
 class AuthStore {
 	user = $state<User | null>(null);
 	supabaseUser = $state<SupabaseUser | null>(cachedSupabaseUser);
+	ticketBalance = $state<TicketBalance | null>(null);
 	loading = $state(true);
 	initialized = $state(false);
 
@@ -83,10 +92,31 @@ class AuthStore {
 		try {
 			const response = await api.auth.me();
 			this.user = response.data;
+			// Fetch ticket balance in background
+			this.fetchTicketBalance();
 		} catch (error) {
 			console.error('Failed to fetch user:', error);
 			this.user = null;
 		}
+	}
+
+	async fetchTicketBalance() {
+		try {
+			const response = await api.subscriptions.getTicketBalance();
+			const data: TicketBalanceResponse = response.data;
+			this.ticketBalance = {
+				ticketsRemaining: data.tickets_remaining,
+				hasActiveSubscription: data.has_active_subscription,
+				currentPeriodEnd: data.current_period_end
+			};
+		} catch (error) {
+			console.error('Failed to fetch ticket balance:', error);
+			this.ticketBalance = null;
+		}
+	}
+
+	async refreshTicketBalance() {
+		return this.fetchTicketBalance();
 	}
 
 	/**
@@ -135,6 +165,7 @@ class AuthStore {
 			await supabase.auth.signOut();
 			this.user = null;
 			this.supabaseUser = null;
+			this.ticketBalance = null;
 		}
 	}
 
@@ -155,6 +186,7 @@ class AuthStore {
 		await supabase.auth.signOut();
 		this.user = null;
 		this.supabaseUser = null;
+		this.ticketBalance = null;
 		cachedSupabaseUser = null;
 	}
 
@@ -232,6 +264,18 @@ class AuthStore {
 
 	get isOrganizer(): boolean {
 		return this.user?.role === 'organizer' || this.user?.role === 'admin';
+	}
+
+	get ticketsRemaining(): number {
+		return this.ticketBalance?.ticketsRemaining ?? 0;
+	}
+
+	get hasActiveSubscription(): boolean {
+		return this.ticketBalance?.hasActiveSubscription ?? false;
+	}
+
+	get hasTickets(): boolean {
+		return this.ticketsRemaining > 0;
 	}
 }
 

@@ -1,10 +1,10 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
+	import { onMount, tick } from 'svelte';
 	import { page } from '$app/stores';
 	import { goto } from '$app/navigation';
 	import { loadStripe, type Stripe, type StripeElements } from '@stripe/stripe-js';
 	import { api } from '$lib/api/client';
-	import { formatCurrency, formatDate, getBookingTotal, extractErrorMessage } from '$lib/utils';
+	import { formatCurrency, formatDate, extractErrorMessage } from '$lib/utils';
 	import { requireAuth } from '$lib/guards/auth';
 	import { useTranslation } from '$lib/i18n/index.svelte';
 	import Navigation from '$lib/components/Navigation.svelte';
@@ -15,7 +15,8 @@
 	import { AnimatedContainer } from '$lib/components/ui/animated-container';
 	import { Alert, AlertDescription } from '$lib/components/ui/alert';
 	import { Card } from '$lib/components/ui/card';
-	import { ShieldCheck, ArrowLeft, AlertCircle } from 'lucide-svelte';
+	import { Countdown } from '$lib/components/ui/countdown';
+	import { ShieldCheck, ArrowLeft, AlertCircle, Clock } from 'lucide-svelte';
 	import type { Booking } from '$lib/types';
 
 	const t = useTranslation();
@@ -45,6 +46,8 @@
 		clearTimeout(skeletonTimer);
 	});
 
+	let shouldInitStripe = $state(false);
+
 	async function loadBooking() {
 		loading = true;
 		error = null;
@@ -55,7 +58,7 @@
 			booking = loadedBooking;
 
 			if (!loadedBooking.cancelled_at && loadedBooking.payment_status === 'pending' && loadedBooking.payment_method === 'stripe') {
-				await initializeStripe();
+				shouldInitStripe = true;
 			} else if (loadedBooking.payment_status === 'confirmed') {
 				error = t('payment.alreadyPaid');
 			} else if (loadedBooking.cancelled_at) {
@@ -69,6 +72,13 @@
 			loading = false;
 		}
 	}
+
+	// Initialize Stripe when the payment element is available
+	$effect(() => {
+		if (shouldInitStripe && paymentElement && !stripe) {
+			initializeStripe();
+		}
+	});
 
 	async function initializeStripe() {
 		try {
@@ -84,6 +94,9 @@
 			elements = stripe.elements({ clientSecret: client_secret });
 
 			const payment = elements.create('payment');
+
+			// Wait for DOM to update after booking is set
+			await tick();
 
 			if (paymentElement) {
 				payment.mount(paymentElement);
@@ -205,14 +218,16 @@
 
 							{#if booking.payment_deadline}
 								<Alert class="mt-4" variant="warning">
-									<AlertDescription>
-										{t('payment.completeBy', { date: formatDate(booking.payment_deadline) })}
+									<AlertDescription class="flex items-center gap-2">
+										<Clock class="h-4 w-4 shrink-0" />
+										{t('countdown.timeRemaining')}:
+										<Countdown deadline={booking.payment_deadline} compact class="text-warning-foreground" />
 									</AlertDescription>
 								</Alert>
 							{/if}
 
 							<form onsubmit={handleSubmit} class="mt-8">
-								<div bind:this={paymentElement} class="rounded-xl border-2 border-border p-4 bg-card"></div>
+								<div bind:this={paymentElement}></div>
 
 								{#if paymentError}
 									<Alert class="mt-4" variant="destructive">
@@ -227,7 +242,7 @@
 									class="mt-6 w-full py-6 text-lg"
 									disabled={paymentLoading || !stripe || !elements}
 								>
-									{paymentLoading ? t('payment.processing') : t('payment.pay', { amount: formatCurrency(getBookingTotal(booking)) })}
+									{paymentLoading ? t('payment.processing') : t('payment.pay', { amount: formatCurrency(booking.total_paid_vnd) })}
 								</Button>
 
 								<p class="mt-4 text-center text-xs text-muted-foreground">
@@ -258,15 +273,66 @@
 									</p>
 								</Card>
 
-								<div class="border-t border-border pt-3">
-									<div class="flex justify-between text-sm">
-										<span class="text-muted-foreground">{t('bookings.yourSlot')}</span>
-										<span class="font-medium text-foreground">{formatCurrency(booking.price_paid_vnd)}</span>
+								<!-- Price breakdown -->
+								<div class="border-t border-border pt-3 space-y-2">
+									<!-- Your slot section -->
+									<div class="space-y-1">
+										<div class="flex justify-between text-sm">
+											<span class="text-muted-foreground">{t('bookings.yourSlot')}</span>
+											{#if booking.discount_applied === 'ticket'}
+												<span class="font-medium text-foreground line-through text-muted-foreground">
+													{formatCurrency(booking.session_price_vnd)}
+												</span>
+											{:else if booking.discount_applied === 'out_of_ticket'}
+												<span class="font-medium text-foreground line-through text-muted-foreground">
+													{formatCurrency(booking.session_price_vnd)}
+												</span>
+											{:else}
+												<span class="font-medium text-foreground">{formatCurrency(booking.session_price_vnd)}</span>
+											{/if}
+										</div>
+
+										{#if booking.discount_applied === 'ticket'}
+											<div class="flex justify-between text-sm">
+												<span class="text-success-text flex items-center gap-1">
+													<span class="inline-block w-2 h-2 rounded-full bg-success"></span>
+													{t('pricing.ticketUsed')}
+												</span>
+												<span class="font-medium text-success-text">-{formatCurrency(booking.session_price_vnd)}</span>
+											</div>
+										{:else if booking.discount_applied === 'out_of_ticket'}
+											<div class="flex justify-between text-sm">
+												<span class="text-primary flex items-center gap-1">
+													<span class="inline-block w-2 h-2 rounded-full bg-primary"></span>
+													{t('pricing.subscriberDiscount')}
+												</span>
+												<span class="font-medium text-primary">-{formatCurrency(booking.session_price_vnd - booking.price_paid_vnd)}</span>
+											</div>
+										{/if}
+
+										{#if booking.discount_applied !== 'none'}
+											<div class="flex justify-between text-sm font-medium">
+												<span class="text-muted-foreground">{t('pricing.subtotalUser')}</span>
+												<span class="text-foreground">{formatCurrency(booking.price_paid_vnd)}</span>
+											</div>
+										{/if}
 									</div>
+
+									<!-- Guest slots section -->
 									{#if booking.guest_count > 0}
-										<div class="mt-2 flex justify-between text-sm">
-											<span class="text-muted-foreground">{t('bookings.guestSlots', { count: booking.guest_count })}</span>
-											<span class="font-medium text-foreground">{formatCurrency(booking.guest_price_paid_vnd)}</span>
+										<div class="pt-2 space-y-1">
+											<div class="flex justify-between text-sm">
+												<span class="text-muted-foreground">
+													{t('bookings.guestSlots', { count: booking.guest_count })}
+												</span>
+												<span class="font-medium text-foreground">
+													{booking.guest_count} × {formatCurrency(booking.session_price_vnd)}
+												</span>
+											</div>
+											<div class="flex justify-between text-sm font-medium">
+												<span class="text-muted-foreground">{t('pricing.subtotalGuests')}</span>
+												<span class="text-foreground">{formatCurrency(booking.guest_price_paid_vnd)}</span>
+											</div>
 										</div>
 									{/if}
 								</div>
@@ -275,7 +341,7 @@
 									<div class="flex justify-between">
 										<span class="text-base font-semibold text-foreground">{t('payment.total')}</span>
 										<span class="text-xl font-bold text-gradient-primary">
-											{formatCurrency(getBookingTotal(booking))}
+											{formatCurrency(booking.total_paid_vnd)}
 										</span>
 									</div>
 								</div>

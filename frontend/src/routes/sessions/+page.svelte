@@ -1,8 +1,9 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
+	import { page } from '$app/stores';
 	import { api } from '$lib/api/client';
-	import { formatCurrency, formatDate, getSessionDateTime, extractErrorMessage } from '$lib/utils';
+	import { formatCurrency, formatDateOnly, formatTime, formatDuration, getSessionDateTime, extractErrorMessage } from '$lib/utils';
 	import { useTranslation } from '$lib/i18n/index.svelte';
 	import Navigation from '$lib/components/Navigation.svelte';
 	import { Button } from '$lib/components/ui/button';
@@ -14,35 +15,176 @@
 	import { Alert, AlertDescription } from '$lib/components/ui/alert';
 	import { Badge } from '$lib/components/ui/badge';
 	import { AnimatedContainer } from '$lib/components/ui/animated-container';
-	import * as Tabs from '$lib/components/ui/tabs';
 	import { SessionParticipants } from '$lib/components/ui/session-participants';
-	import { MapPin, Calendar, LayoutGrid } from 'lucide-svelte';
-	import type { Session } from '$lib/types';
+	import { Pagination } from '$lib/components/ui/pagination';
+	import { SessionFilters } from '$lib/components/sessions';
+	import { MapPin, Calendar, Clock } from 'lucide-svelte';
+	import {
+		startOfWeek,
+		endOfWeek,
+		today,
+		getLocalTimeZone,
+		parseDate,
+		type DateValue
+	} from '@internationalized/date';
+	import type { Session, PageInfo } from '$lib/types';
 
 	const t = useTranslation();
 
+	const SESSIONS_PER_PAGE = 8;
+
+	// State
 	let sessions = $state<Session[]>([]);
+	let locations = $state<string[]>([]);
 	let bookedSessionIds = $state<Set<string>>(new Set());
 	let loading = $state(true);
 	let showSkeleton = $state(false);
 	let error = $state<string | null>(null);
-	let filter = $state<'upcoming' | 'all' | undefined>('upcoming');
+	let currentPage = $state(1);
+
+	// Filter state - initialized from URL
+	let dateRange = $state<'this' | 'next' | 'pick' | 'past'>('this');
+	let pickedDate = $state<DateValue | undefined>(undefined);
+	let timeOfDay = $state<('morning' | 'afternoon' | 'evening')[]>([]);
+	let locationFilter = $state('');
+	let showFull = $state(false);
+
+	// Derived
+	const paginatedSessions = $derived(
+		sessions.slice((currentPage - 1) * SESSIONS_PER_PAGE, currentPage * SESSIONS_PER_PAGE)
+	);
+
+	const pageInfo = $derived<PageInfo>({
+		page: currentPage,
+		per_page: SESSIONS_PER_PAGE,
+		total: sessions.length,
+		total_pages: Math.max(1, Math.ceil(sessions.length / SESSIONS_PER_PAGE))
+	});
+
+	// Initialize from URL params
+	function initFromUrl() {
+		const params = $page.url.searchParams;
+
+		// Date range
+		const week = params.get('week');
+		if (week === 'next') dateRange = 'next';
+		else if (week === 'past') dateRange = 'past';
+		else if (params.get('date')) {
+			dateRange = 'pick';
+			try {
+				pickedDate = parseDate(params.get('date')!);
+			} catch {
+				dateRange = 'this';
+			}
+		} else {
+			dateRange = 'this';
+		}
+
+		// Time of day
+		const timeParam = params.get('time');
+		if (timeParam) {
+			timeOfDay = timeParam.split(',').filter((t) =>
+				['morning', 'afternoon', 'evening'].includes(t)
+			) as ('morning' | 'afternoon' | 'evening')[];
+		}
+
+		// Location
+		locationFilter = params.get('location') || '';
+
+		// Show full
+		showFull = params.get('showFull') === 'true';
+
+		// Page
+		const pageParam = params.get('page');
+		if (pageParam) {
+			currentPage = parseInt(pageParam) || 1;
+		}
+	}
+
+	// Sync state to URL
+	function syncToUrl() {
+		const params = new URLSearchParams();
+
+		if (dateRange === 'next') params.set('week', 'next');
+		else if (dateRange === 'past') params.set('week', 'past');
+		else if (dateRange === 'pick' && pickedDate) {
+			params.set('date', pickedDate.toString());
+		}
+		// 'this' is default, no param needed
+
+		if (timeOfDay.length > 0) params.set('time', timeOfDay.join(','));
+		if (locationFilter) params.set('location', locationFilter);
+		if (showFull) params.set('showFull', 'true');
+		if (currentPage > 1) params.set('page', currentPage.toString());
+
+		const queryString = params.toString();
+		const newUrl = queryString ? `/sessions?${queryString}` : '/sessions';
+
+		goto(newUrl, { replaceState: true, keepFocus: true });
+	}
+
+	// Calculate date range for API
+	function getDateFilters(): { from_date?: string; to_date?: string } {
+		const tz = getLocalTimeZone();
+		const now = today(tz);
+
+		if (dateRange === 'this') {
+			const weekStart = startOfWeek(now, 'en-US');
+			const weekEnd = endOfWeek(now, 'en-US');
+			return {
+				from_date: now.toString(),
+				to_date: weekEnd.toString()
+			};
+		} else if (dateRange === 'next') {
+			const nextWeek = now.add({ weeks: 1 });
+			const nextWeekStart = startOfWeek(nextWeek, 'en-US');
+			const nextWeekEnd = endOfWeek(nextWeek, 'en-US');
+			return {
+				from_date: nextWeekStart.toString(),
+				to_date: nextWeekEnd.toString()
+			};
+		} else if (dateRange === 'pick' && pickedDate) {
+			return {
+				from_date: pickedDate.toString(),
+				to_date: pickedDate.toString()
+			};
+		} else if (dateRange === 'past') {
+			// Past 30 days until yesterday
+			const thirtyDaysAgo = now.subtract({ days: 30 });
+			const yesterday = now.subtract({ days: 1 });
+			return {
+				from_date: thirtyDaysAgo.toString(),
+				to_date: yesterday.toString()
+			};
+		}
+
+		return { from_date: now.toString() };
+	}
 
 	onMount(async () => {
-		// Only show skeleton if loading takes longer than 200ms
+		initFromUrl();
+
 		const skeletonTimer = setTimeout(() => {
 			if (loading) showSkeleton = true;
 		}, 200);
 
-		await Promise.all([loadSessions(), loadUserBookings()]);
+		await Promise.all([loadSessions(), loadLocations(), loadUserBookings()]);
 		clearTimeout(skeletonTimer);
 	});
+
+	async function loadLocations() {
+		try {
+			const response = await api.sessions.locations();
+			locations = response.data;
+		} catch {
+			// Silently fail - locations are optional
+		}
+	}
 
 	async function loadUserBookings() {
 		try {
 			const response = await api.bookings.list({ per_page: 100 });
 			const bookings = response.data.data || response.data;
-			// Extract session IDs from active (non-cancelled) bookings
 			const sessionIds = new Set<string>();
 			for (const booking of bookings) {
 				if (!booking.cancelled_at) {
@@ -60,12 +202,18 @@
 		error = null;
 
 		try {
-			const params: any = {};
+			const dateFilters = getDateFilters();
+			const params: Parameters<typeof api.sessions.list>[0] = {
+				...dateFilters,
+				available_only: !showFull && dateRange !== 'past'
+			};
 
-			if (filter === 'upcoming') {
-				const today = new Date().toISOString().split('T')[0];
-				params.from_date = today;
-				params.available_only = true;
+			if (timeOfDay.length > 0) {
+				params.time_of_day = timeOfDay.join(',');
+			}
+
+			if (locationFilter) {
+				params.location = locationFilter;
 			}
 
 			const response = await api.sessions.list(params);
@@ -100,11 +248,57 @@
 		return { label: t('sessions.status.completed'), key: 'completed', variant: 'session' };
 	}
 
-	$effect(() => {
-		if (filter) {
-			loadSessions();
-		}
-	});
+	// Filter change handlers
+	function handleDateRangeChange(range: 'this' | 'next' | 'pick' | 'past') {
+		dateRange = range;
+		currentPage = 1;
+		syncToUrl();
+		loadSessions();
+	}
+
+	function handlePickedDateChange(date: DateValue | undefined) {
+		pickedDate = date;
+		currentPage = 1;
+		syncToUrl();
+		loadSessions();
+	}
+
+	function handleTimeOfDayChange(times: ('morning' | 'afternoon' | 'evening')[]) {
+		timeOfDay = times;
+		currentPage = 1;
+		syncToUrl();
+		loadSessions();
+	}
+
+	function handleLocationChange(loc: string) {
+		locationFilter = loc;
+		currentPage = 1;
+		syncToUrl();
+		loadSessions();
+	}
+
+	function handleShowFullChange(show: boolean) {
+		showFull = show;
+		currentPage = 1;
+		syncToUrl();
+		loadSessions();
+	}
+
+	function handleClearFilters() {
+		dateRange = 'this';
+		pickedDate = undefined;
+		timeOfDay = [];
+		locationFilter = '';
+		showFull = false;
+		currentPage = 1;
+		syncToUrl();
+		loadSessions();
+	}
+
+	function handlePageChange(page: number) {
+		currentPage = page;
+		syncToUrl();
+	}
 </script>
 
 <svelte:head>
@@ -126,19 +320,32 @@
 
 		<!-- Filters -->
 		<AnimatedContainer animation="fade-up" delay={100}>
-			<div class="mb-8 flex justify-center">
-				<Tabs.Root bind:value={filter}>
-					<Tabs.List class="h-10">
-						<Tabs.Trigger value="upcoming" class="px-6 data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-500 data-[state=active]:to-pink-500 data-[state=active]:text-white data-[state=active]:border-transparent">
-							{t('sessions.upcomingSessions')}
-						</Tabs.Trigger>
-						<Tabs.Trigger value="all" class="px-6 data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-500 data-[state=active]:to-pink-500 data-[state=active]:text-white data-[state=active]:border-transparent">
-							{t('sessions.allSessions')}
-						</Tabs.Trigger>
-					</Tabs.List>
-				</Tabs.Root>
+			<div class="mb-6">
+				<SessionFilters
+					{dateRange}
+					{pickedDate}
+					{timeOfDay}
+					location={locationFilter}
+					{locations}
+					{showFull}
+					onDateRangeChange={handleDateRangeChange}
+					onPickedDateChange={handlePickedDateChange}
+					onTimeOfDayChange={handleTimeOfDayChange}
+					onLocationChange={handleLocationChange}
+					onShowFullChange={handleShowFullChange}
+					onClearFilters={handleClearFilters}
+				/>
 			</div>
 		</AnimatedContainer>
+
+		<!-- Results Count -->
+		{#if !loading && sessions.length > 0}
+			<AnimatedContainer animation="fade-up" delay={120}>
+				<p class="mb-4 text-sm text-muted-foreground">
+					{t('sessions.filters.results', { count: sessions.length })}
+				</p>
+			</AnimatedContainer>
+		{/if}
 
 		{#if loading && showSkeleton}
 			<div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
@@ -167,15 +374,20 @@
 							</Empty.Media>
 							<Empty.Title>{t('sessions.noSessions')}</Empty.Title>
 							<Empty.Description>
-								{filter === 'upcoming' ? t('sessions.noUpcoming') : t('sessions.noSessionsDesc')}
+								{t('sessions.filters.noResults')}
 							</Empty.Description>
 						</Empty.Header>
+						<Empty.Content>
+							<Button variant="outline" onclick={handleClearFilters}>
+								{t('sessions.filters.clearAll')}
+							</Button>
+						</Empty.Content>
 					</Empty.Root>
 				</Card>
 			</AnimatedContainer>
 		{:else}
 			<div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-				{#each sessions as session, i}
+				{#each paginatedSessions as session, i}
 					{@const status = getSessionStatus(session)}
 					<AnimatedContainer animation="fade-up" delay={150 + i * 50} trigger="scroll">
 						<Card hover variant={i % 3 === 0 ? 'glassYellow' : i % 3 === 1 ? 'glassOrange' : 'glassPink'}>
@@ -192,18 +404,22 @@
 							</div>
 
 							<div class="space-y-3">
-								<!-- Date & Time -->
+								<!-- Date -->
 								<div class="flex items-center gap-2 text-sm">
 									<Calendar class="h-4 w-4 text-muted-foreground" />
-									<span class="text-foreground">{formatDate(`${session.date}T${session.time}`)}</span>
-									<span class="text-muted-foreground">{t('sessions.at')} {session.time.slice(0, 5)}</span>
+									<span class="text-foreground font-medium">{formatDateOnly(session.date)}</span>
 								</div>
 
-								<!-- Courts & Players -->
+								<!-- Time & Duration -->
 								<div class="flex items-center gap-2 text-sm">
-									<LayoutGrid class="h-4 w-4 text-muted-foreground" />
-									<span class="text-foreground">{session.courts} {session.courts > 1 ? t('sessions.courts') : t('sessions.court')}</span>
-									<span class="text-muted-foreground">&middot; {session.max_players_per_court} {t('sessions.perCourt')}</span>
+									<Clock class="h-4 w-4 text-muted-foreground" />
+									<span class="text-foreground">{formatTime(session.time)}</span>
+									{#if session.end_time}
+										{@const duration = formatDuration(session.time, session.end_time)}
+										{#if duration}
+											<span class="text-muted-foreground">({duration})</span>
+										{/if}
+									{/if}
 								</div>
 
 								<!-- Participants & Availability -->
@@ -243,6 +459,14 @@
 					</AnimatedContainer>
 				{/each}
 			</div>
+
+			{#if pageInfo.total_pages > 1}
+				<AnimatedContainer animation="fade-up" delay={200}>
+					<div class="mt-8">
+						<Pagination {pageInfo} onPageChange={handlePageChange} />
+					</div>
+				</AnimatedContainer>
+			{/if}
 		{/if}
 	</main>
 </PageBackground>

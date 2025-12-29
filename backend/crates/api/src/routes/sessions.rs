@@ -16,8 +16,13 @@ use crate::response::{self, ApiError};
 #[derive(Debug, Deserialize)]
 pub struct SessionFilters {
     pub from_date: Option<NaiveDate>,
+    pub to_date: Option<NaiveDate>,
+    pub time_of_day: Option<String>, // "morning,afternoon,evening" (comma-separated)
+    pub location: Option<String>,
     pub organizer_id: Option<Uuid>,
     pub available_only: Option<bool>,
+    pub page: Option<i32>,
+    pub per_page: Option<i32>,
 }
 
 /// List upcoming sessions
@@ -27,9 +32,14 @@ pub async fn list_sessions(
 ) -> Result<Json<Vec<SessionResponse>>, ApiError> {
     let db_sessions = sessions::list_sessions(
         &state.db,
-        filters.from_date,
-        filters.organizer_id,
-        filters.available_only.unwrap_or(false),
+        sessions::SessionQueryFilters {
+            from_date: filters.from_date,
+            to_date: filters.to_date,
+            time_of_day: filters.time_of_day.clone(),
+            location: filters.location.clone(),
+            organizer_id: filters.organizer_id,
+            available_only: filters.available_only.unwrap_or(false),
+        },
     )
     .await
     .map_err(|e| response::internal_error_msg("Failed to fetch sessions", e))?;
@@ -138,6 +148,11 @@ pub async fn create_session(
     let date = start_datetime.date();
     let time = start_datetime.time();
 
+    // Parse end_time if provided
+    let end_time = NaiveDateTime::parse_from_str(&payload.end_time, "%Y-%m-%dT%H:%M")
+        .map(|dt| dt.time())
+        .ok();
+
     // Validate expenses if provided
     if let Some(ref expenses) = payload.expenses {
         for expense in expenses {
@@ -171,6 +186,7 @@ pub async fn create_session(
         &payload.title,
         date,
         time,
+        end_time,
         &payload.location,
         courts,
         max_players_per_court,
@@ -252,6 +268,11 @@ pub async fn update_session(
     let date = start_datetime.date();
     let time = start_datetime.time();
 
+    // Parse end_time if provided
+    let end_time = NaiveDateTime::parse_from_str(&payload.end_time, "%Y-%m-%dT%H:%M")
+        .map(|dt| dt.time())
+        .ok();
+
     // For simplicity, treat max_slots as total available (1 court with max_slots players)
     let courts = 1;
     let max_players_per_court = Some(payload.max_slots);
@@ -263,6 +284,7 @@ pub async fn update_session(
         Some(&payload.title),
         Some(date),
         Some(time),
+        end_time,
         Some(&payload.location),
         Some(courts),
         max_players_per_court,
@@ -288,6 +310,17 @@ pub async fn delete_session(
         .map_err(|e| response::internal_error_msg("Failed to delete session", e))?;
 
     Ok(StatusCode::NO_CONTENT)
+}
+
+/// Get all distinct session locations
+pub async fn list_locations(
+    State(state): State<AppState>,
+) -> Result<Json<Vec<String>>, ApiError> {
+    let locations = sessions::list_locations(&state.db)
+        .await
+        .map_err(|e| response::internal_error_msg("Failed to fetch locations", e))?;
+
+    Ok(Json(locations))
 }
 
 /// Get all participants for a session

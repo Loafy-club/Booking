@@ -13,19 +13,28 @@ pub struct SessionParticipant {
     pub guest_count: i32,
 }
 
+/// Query filters for listing sessions
+#[derive(Debug, Clone, Default)]
+pub struct SessionQueryFilters {
+    pub from_date: Option<NaiveDate>,
+    pub to_date: Option<NaiveDate>,
+    pub time_of_day: Option<String>, // "morning,afternoon,evening" (comma-separated)
+    pub location: Option<String>,
+    pub organizer_id: Option<Uuid>,
+    pub available_only: bool,
+}
+
 /// List upcoming sessions with optional filters
 pub async fn list_sessions(
     pool: &PgPool,
-    from_date: Option<NaiveDate>,
-    organizer_id: Option<Uuid>,
-    only_available: bool,
+    filters: SessionQueryFilters,
 ) -> Result<Vec<Session>> {
     let mut query_builder: QueryBuilder<Postgres> = QueryBuilder::new(
         "SELECT * FROM sessions WHERE cancelled = false"
     );
 
-    // Add date filter with parameterized query
-    if let Some(date) = from_date {
+    // Add from_date filter with parameterized query
+    if let Some(date) = filters.from_date {
         query_builder.push(" AND date >= ");
         query_builder.push_bind(date);
     } else {
@@ -33,14 +42,51 @@ pub async fn list_sessions(
         query_builder.push(" AND date >= CURRENT_DATE");
     }
 
+    // Add to_date filter (for date range filtering)
+    if let Some(date) = filters.to_date {
+        query_builder.push(" AND date <= ");
+        query_builder.push_bind(date);
+    }
+
+    // Add time of day filter
+    // Morning: 06:00-12:00, Afternoon: 12:00-17:00, Evening: 17:00+
+    if let Some(ref time_of_day) = filters.time_of_day {
+        let times: Vec<&str> = time_of_day.split(',').collect();
+        if !times.is_empty() && !times.contains(&"all") {
+            let mut time_conditions = Vec::new();
+            for t in times {
+                match t.trim() {
+                    "morning" => time_conditions.push("(time >= '06:00' AND time < '12:00')"),
+                    "afternoon" => time_conditions.push("(time >= '12:00' AND time < '17:00')"),
+                    "evening" => time_conditions.push("(time >= '17:00' OR time < '06:00')"),
+                    _ => {}
+                }
+            }
+            if !time_conditions.is_empty() {
+                query_builder.push(" AND (");
+                query_builder.push(time_conditions.join(" OR "));
+                query_builder.push(")");
+            }
+        }
+    }
+
+    // Add location filter (case-insensitive partial match)
+    if let Some(ref loc) = filters.location {
+        if !loc.is_empty() {
+            query_builder.push(" AND LOWER(location) LIKE LOWER(");
+            query_builder.push_bind(format!("%{}%", loc));
+            query_builder.push(")");
+        }
+    }
+
     // Add organizer filter with parameterized query
-    if let Some(org_id) = organizer_id {
+    if let Some(org_id) = filters.organizer_id {
         query_builder.push(" AND organizer_id = ");
         query_builder.push_bind(org_id);
     }
 
     // Add availability filter
-    if only_available {
+    if filters.available_only {
         query_builder.push(" AND available_slots > 0");
     }
 
@@ -52,6 +98,22 @@ pub async fn list_sessions(
         .await?;
 
     Ok(sessions)
+}
+
+/// Get distinct locations from all sessions
+pub async fn list_locations(pool: &PgPool) -> Result<Vec<String>> {
+    let locations: Vec<(String,)> = sqlx::query_as(
+        r#"
+        SELECT DISTINCT location
+        FROM sessions
+        WHERE cancelled = false
+        ORDER BY location ASC
+        "#
+    )
+    .fetch_all(pool)
+    .await?;
+
+    Ok(locations.into_iter().map(|(l,)| l).collect())
 }
 
 /// Get session by ID
@@ -88,6 +150,7 @@ pub async fn create_session(
     title: &str,
     date: NaiveDate,
     time: NaiveTime,
+    end_time: Option<NaiveTime>,
     location: &str,
     courts: i32,
     max_players_per_court: Option<i32>,
@@ -100,10 +163,10 @@ pub async fn create_session(
     let session = sqlx::query_as::<_, Session>(
         r#"
         INSERT INTO sessions (
-            organizer_id, title, date, time, location, courts,
+            organizer_id, title, date, time, end_time, location, courts,
             max_players_per_court, total_slots, available_slots, price_vnd
         )
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $8, $9)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $9, $10)
         RETURNING *
         "#
     )
@@ -111,6 +174,7 @@ pub async fn create_session(
     .bind(title)
     .bind(date)
     .bind(time)
+    .bind(end_time)
     .bind(location)
     .bind(courts)
     .bind(max_players_per_court)
@@ -129,6 +193,7 @@ pub async fn update_session(
     title: Option<&str>,
     date: Option<NaiveDate>,
     time: Option<NaiveTime>,
+    end_time: Option<NaiveTime>,
     location: Option<&str>,
     courts: Option<i32>,
     max_players_per_court: Option<i32>,
@@ -155,12 +220,13 @@ pub async fn update_session(
         SET title = COALESCE($2, title),
             date = COALESCE($3, date),
             time = COALESCE($4, time),
-            location = COALESCE($5, location),
-            courts = COALESCE($6, courts),
-            max_players_per_court = COALESCE($7, max_players_per_court),
-            total_slots = $8,
-            available_slots = $9,
-            price_vnd = COALESCE($10, price_vnd),
+            end_time = COALESCE($5, end_time),
+            location = COALESCE($6, location),
+            courts = COALESCE($7, courts),
+            max_players_per_court = COALESCE($8, max_players_per_court),
+            total_slots = $9,
+            available_slots = $10,
+            price_vnd = COALESCE($11, price_vnd),
             updated_at = NOW()
         WHERE id = $1
         RETURNING *
@@ -170,6 +236,7 @@ pub async fn update_session(
     .bind(title)
     .bind(date)
     .bind(time)
+    .bind(end_time)
     .bind(location)
     .bind(courts)
     .bind(max_players_per_court)

@@ -197,51 +197,55 @@ bookings: id (UUID), user_id (UUID FK), session_id (UUID FK),
           created_at, updated_at
 ```
 
-### Phase 2 Tables (Future)
+### Phase 2 Tables
 
 ```sql
--- Subscriptions
+-- ✅ Subscriptions (IMPLEMENTED)
 subscriptions: id, user_id, tickets_remaining, status, stripe_subscription_id,
                current_period_start, current_period_end, auto_renew, created_at
 
--- Waitlist
+-- ✅ Ticket Transactions (IMPLEMENTED - tracks all ticket operations)
+ticket_transactions: id, user_id, transaction_type, amount, balance_before,
+                     balance_after, reference_id, reference_type, description, created_at
+
+-- ✅ Bonus Tickets (IMPLEMENTED - prevents duplicate bonuses)
+bonus_tickets: id, user_id, bonus_type, tickets, year, created_at
+-- Unique index on (user_id, year) WHERE bonus_type = 'birthday'
+
+-- ❌ Waitlist (NOT IMPLEMENTED)
 waitlist: id, user_id, session_id, priority (1=subscriber, 0=drop-in),
           position, notified_at, can_book, created_at
 
--- Notification Preferences
+-- ❌ Notification Preferences (NOT IMPLEMENTED)
 notification_preferences: id, user_id, email_alerts, daily_recap,
                           daily_recap_hour, in_app_notifications, created_at, updated_at
 
--- Notifications (in-app)
+-- ❌ Notifications (NOT IMPLEMENTED)
 notifications: id, user_id, type, title, message, link, read, created_at
 ```
 
-### Phase 3 Tables (Future)
+### Phase 3 Tables (NOT IMPLEMENTED)
 
 ```sql
--- Payment Screenshots
+-- ❌ Payment Screenshots
 payment_screenshots: id, booking_id, file_url, uploaded_at
 
--- OCR Verifications
+-- ❌ OCR Verifications
 ocr_verifications: id, booking_id, raw_text, booking_code_found,
                    amount_found, date_found, checks_passed (JSONB), created_at
 
--- Monthly OCR Usage
+-- ❌ Monthly OCR Usage
 monthly_ocr_usage: id, month (DATE UNIQUE), ocr_requests (INT),
                    alert_400_sent, alert_700_sent, alert_1000_sent, created_at
 
--- Screenshot Upload Attempts (rate limiting)
+-- ❌ Screenshot Upload Attempts (rate limiting)
 screenshot_upload_attempts: id, user_id, created_at
 
--- Referrals
+-- ❌ Referrals
 referrals: id, referrer_id, referred_id, referrer_bonus_applied,
            referred_bonus_applied, created_at
 
--- Bonus Tickets Log
-bonus_tickets: id, user_id, type ('referral'|'birthday'|'manual'),
-               tickets (INT), note (TEXT), created_at
-
--- Auth Tokens (one-click email links)
+-- ❌ Auth Tokens (one-click email links)
 auth_tokens: id, user_id, token (VARCHAR UNIQUE), target_url (TEXT),
              used (BOOLEAN), expires_at (TIMESTAMPTZ), created_at
 ```
@@ -250,23 +254,25 @@ auth_tokens: id, user_id, token (VARCHAR UNIQUE), target_url (TEXT),
 
 ## API Endpoints (Complete List)
 
-### Phase 1 - Authentication
+### Phase 1 - Authentication ✅ IMPLEMENTED
 ```
 POST   /api/auth/callback       # OAuth callback from Supabase
 GET    /api/auth/me             # Get current user
 POST   /api/auth/logout         # Logout
 ```
 
-### Phase 1 - Sessions
+### Phase 1 - Sessions ✅ IMPLEMENTED (+ extras)
 ```
-GET    /api/sessions            # List upcoming sessions (with filters)
+GET    /api/sessions            # List sessions (with filters)
 GET    /api/sessions/:id        # Get session details
 POST   /api/sessions            # Create session (organizer+)
-PUT    /api/sessions/:id        # Update session (admin only)
+PUT    /api/sessions/:id        # Update session
 DELETE /api/sessions/:id        # Delete session (admin only)
+GET    /api/sessions/locations  # Get distinct locations (EXTRA)
+GET    /api/sessions/:id/participants  # Get participants (EXTRA)
 ```
 
-### Phase 1 - Bookings
+### Phase 1 - Bookings ✅ IMPLEMENTED
 ```
 GET    /api/bookings            # List my bookings
 GET    /api/bookings/:id        # Get booking details
@@ -274,65 +280,84 @@ POST   /api/bookings            # Create booking (self + guests)
 DELETE /api/bookings/:id        # Cancel booking
 ```
 
-### Phase 1 - Payments (Stripe)
+### Phase 1 - Payments ✅ STRIPE IMPLEMENTED
 ```
-POST   /api/payments/stripe/intent     # Create payment intent
-POST   /api/payments/stripe/confirm    # Confirm payment
-POST   /api/webhooks/stripe            # Stripe webhooks
-```
-
-### Phase 2 - Subscriptions
-```
-GET    /api/subscriptions/current      # My subscription
-POST   /api/subscriptions/purchase     # Buy subscription
-POST   /api/subscriptions/cancel       # Cancel auto-renewal
-GET    /api/subscriptions/tickets      # My ticket history
+POST   /api/payments/intent     # Create Stripe payment intent
+POST   /api/payments/webhook    # Stripe webhooks
 ```
 
-### Phase 2 - Waitlist
+### Phase 2 - Subscriptions ⚠️ PARTIAL (read-only)
+```
+❌ GET    /api/subscriptions/current      # My subscription (NOT IMPLEMENTED)
+❌ POST   /api/subscriptions/purchase     # Buy subscription (NOT IMPLEMENTED)
+❌ POST   /api/subscriptions/cancel       # Cancel auto-renewal (NOT IMPLEMENTED)
+✅ GET    /api/subscriptions/tickets      # My ticket balance
+✅ GET    /api/subscriptions/tickets/history  # Ticket transaction history
+```
+
+### Phase 2 - Waitlist ❌ NOT IMPLEMENTED
 ```
 POST   /api/waitlist/join/:session_id  # Join waitlist
 DELETE /api/waitlist/leave/:session_id # Leave waitlist
 GET    /api/waitlist/:session_id       # My waitlist status
 ```
 
-### Phase 2 - Notifications
+### Phase 2 - Notifications ❌ NOT IMPLEMENTED
 ```
 GET    /api/notifications              # My notifications
 PUT    /api/notifications/:id/read     # Mark as read
 ```
 
-### Phase 3 - QR Payments
+### Phase 3 - QR Payments ❌ NOT IMPLEMENTED
 ```
 POST   /api/payments/qr/upload         # Upload screenshot
 GET    /api/payments/qr/:booking_id    # QR payment status
 POST   /api/payments/qr/:id/verify     # Admin: manual verification
 ```
 
-### Phase 3 - Referrals
+### Phase 3 - Referrals ❌ NOT IMPLEMENTED
 ```
 GET    /api/referrals/my-code          # My referral code
 POST   /api/referrals/apply            # Apply referral code
 ```
 
-### Phase 3 - Admin
+### Admin Endpoints ✅ EXCEEDS SPEC
 ```
-GET    /api/admin/ocr-usage            # OCR usage stats
-GET    /api/admin/payment-screenshots  # Pending verifications
-POST   /api/admin/screenshots/:id/approve
-POST   /api/admin/screenshots/:id/reject
-GET    /api/admin/stats                # Dashboard statistics
-GET    /api/admin/config               # View global config
-PUT    /api/admin/config               # Update global config
-POST   /api/admin/qr-code              # Upload global QR code
-GET    /api/admin/users                # List users
-PUT    /api/admin/users/:id/role       # Change user role
+# Stats & Analytics
+✅ GET    /api/admin/stats                # Dashboard with period comparison
+✅ GET    /api/admin/profit               # Profit statistics
+✅ GET    /api/admin/profit/sessions      # Per-session profit breakdown
+✅ GET    /api/admin/profit/daily         # Daily profit data
+✅ GET    /api/admin/expenses             # Expense breakdown by category
+
+# User Management
+✅ GET    /api/admin/users                # List users (paginated, searchable)
+✅ PUT    /api/admin/users/:id            # Update user details
+✅ PUT    /api/admin/users/:id/role       # Change user role
+✅ POST   /api/admin/users/:id/suspend    # Suspend user
+✅ DELETE /api/admin/users/:id/suspend    # Unsuspend user
+✅ DELETE /api/admin/users/:id            # Soft delete user
+✅ GET    /api/admin/users/:id/tickets    # User ticket balance
+✅ POST   /api/admin/users/:id/tickets/grant   # Grant bonus tickets
+✅ POST   /api/admin/users/:id/tickets/revoke  # Revoke tickets
+
+# Booking & Session Management
+✅ GET    /api/admin/bookings             # List all bookings
+✅ GET    /api/admin/bookings/:id         # Booking details
+✅ PUT    /api/admin/bookings/:id         # Update booking
+✅ GET    /api/admin/sessions             # List all sessions
+✅ GET    /api/admin/roles                # List available roles
+
+# Not Implemented
+❌ GET    /api/admin/ocr-usage            # OCR usage stats
+❌ GET    /api/admin/config               # View global config
+❌ PUT    /api/admin/config               # Update global config
 ```
 
-### Phase 3 - User Profile
+### User Profile ✅ IMPLEMENTED
 ```
-PUT    /api/users/profile              # Update profile (birthday)
-GET    /api/users/tickets              # Ticket history
+PUT    /api/users/profile              # Update profile (name, phone, birthday)
+DELETE /api/users/account              # Soft delete account (EXTRA)
 ```
 
 ---
@@ -340,14 +365,14 @@ GET    /api/users/tickets              # Ticket history
 ## Background Jobs Schedule
 
 ```
-Every 1 minute    → Release unpaid bookings (payment deadline)
-Every 15 minutes  → Process waitlist (staggered notifications)
-Every hour        → Stripe subscription sync
-Daily at 00:01    → Birthday ticket allocation
-Daily at 03:00    → Screenshot cleanup (1 month+)
-Daily at 04:00    → Rate limit cleanup (7 days+)
-1st of month      → Monthly OCR counter reset
-Hourly at :00     → Daily recap emails (user-configured time)
+✅ Every 1 minute    → Release unpaid bookings (payment deadline)
+❌ Every 15 minutes  → Process waitlist (NOT IMPLEMENTED)
+❌ Every hour        → Stripe subscription sync (NOT IMPLEMENTED)
+✅ Daily at 00:01    → Birthday ticket allocation
+❌ Daily at 03:00    → Screenshot cleanup (NOT IMPLEMENTED)
+❌ Daily at 04:00    → Rate limit cleanup (NOT IMPLEMENTED)
+❌ 1st of month      → Monthly OCR counter reset (NOT IMPLEMENTED)
+❌ Hourly at :00     → Daily recap emails (NOT IMPLEMENTED)
 ```
 
 ---
@@ -620,33 +645,53 @@ cd frontend && npm test
 
 ## Current Implementation Status
 
-**Phase**: Phase 1 - MVP Core Booking Flow
 **Started**: December 20, 2024
-**Status**: In Progress
 
-**Completed**:
+### Phase 1 - MVP Core Booking Flow: ✅ COMPLETE
+
 - ✅ Project structure initialized
 - ✅ Rust workspace with 6 crates
 - ✅ SvelteKit frontend with TypeScript
 - ✅ Docker Compose configurations
-- ✅ Initial database migration (Phase 1 schema)
-- ✅ Environment templates
-- ✅ Documentation (README, CLAUDE.md, PROGRESS.md, CONTEXT.md)
-- ✅ GitHub repository created: https://github.com/Loafy-club/Booking
-- ✅ Supabase Auth integration
-- ✅ User database models and queries
+- ✅ Database schema (10 migrations)
+- ✅ Supabase Auth integration (Google, Facebook, Apple)
+- ✅ User management (profiles, soft delete, suspension)
+- ✅ Session CRUD with expenses tracking
+- ✅ Booking system with race condition protection
+- ✅ Stripe payment integration (intents, webhooks)
+- ✅ Release unpaid bookings job (every 1 minute)
+- ✅ Frontend pages (sessions, bookings, account, tickets)
+- ✅ Admin dashboard with analytics
 
-**In Progress**:
-- ⏳ Auth middleware and routes
-- ⏳ Session management
-- ⏳ Booking system
-- ⏳ Stripe integration
-- ⏳ Frontend implementation
+### Phase 2 - Subscriptions + Waitlist: ⚠️ PARTIAL
+
+- ✅ Subscriptions table created
+- ✅ Ticket system working (balance, transactions, grants)
+- ✅ Birthday bonus tickets job (daily at 00:01)
+- ❌ Subscription purchase flow NOT implemented
+- ❌ Waitlist system NOT implemented
+- ❌ Notification preferences NOT implemented
+
+### Phase 3 - QR Payments + Referrals: ❌ NOT STARTED
+
+- ❌ QR payment verification with OCR
+- ❌ Referral system
+- ❌ Email notifications (Resend)
+
+### Additional Features Built (beyond original spec)
+
+- ✅ Session expenses tracking (session_expenses table, admin UI)
+- ✅ User suspension system (with expiration dates)
+- ✅ Profit/expense analytics dashboard with period comparison
+- ✅ Admin ticket grant/revoke system
+- ✅ Session end time/duration
+- ✅ OAuth provider management (link/unlink identities)
+- ✅ Account deletion with PII cleanup
 
 **Next Steps**:
-- Complete Phase 1 (target: ~1 week)
-- Deploy Phase 1 to Vultr
-- Begin Phase 2 (Subscriptions + Waitlist)
+- Deploy Phase 1 to production
+- Implement subscription purchase flow
+- Build waitlist system
 
 ---
 
@@ -764,6 +809,6 @@ Booking/
 
 ---
 
-**Last Updated**: December 20, 2024
-**Version**: 1.0.0
-**Status**: Phase 1 In Progress
+**Last Updated**: December 29, 2024
+**Version**: 1.1.0
+**Status**: Phase 1 Complete, Phase 2 Partial

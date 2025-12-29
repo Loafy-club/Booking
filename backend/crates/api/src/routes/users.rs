@@ -1,4 +1,5 @@
 use axum::{extract::State, http::StatusCode, Json};
+use chrono::Utc;
 use loafy_db::queries::users;
 use loafy_types::api::{AuthUser, UpdateProfileRequest};
 use uuid::Uuid;
@@ -12,7 +13,28 @@ pub async fn update_profile(
     crate::middleware::AuthUser(user): crate::middleware::AuthUser,
     Json(payload): Json<UpdateProfileRequest>,
 ) -> Result<Json<AuthUser>, ApiError> {
-    // Update user in database
+    // Handle birthday if provided
+    if let Some(birthday) = payload.birthday {
+        // Validate birthday is in the past
+        let today = Utc::now().date_naive();
+        if birthday >= today {
+            return Err(response::bad_request("Birthday must be a date in the past"));
+        }
+
+        // Try to set birthday (will fail if already set)
+        users::set_birthday(&state.db, user.id, birthday)
+            .await
+            .map_err(|e| {
+                let msg = e.to_string();
+                if msg.contains("already been set") {
+                    response::bad_request("Birthday has already been set and cannot be changed")
+                } else {
+                    response::internal_error_msg("Failed to set birthday", e)
+                }
+            })?;
+    }
+
+    // Update other user fields in database
     let updated_user = users::update_user(
         &state.db,
         user.id,

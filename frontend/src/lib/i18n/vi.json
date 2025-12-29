@@ -26,11 +26,18 @@
 		"filter": "Loc",
 		"sort": "Sap xep",
 		"select": "Chon",
-		"noResults": "Khong tim thay ket qua"
+		"noResults": "Khong tim thay ket qua",
+		"refresh": "Lam moi",
+		"pagination": {
+			"showing": "Hien thi {from}-{to} cua {total}"
+		}
 	},
 	"nav": {
 		"sessions": "Buoi choi",
 		"myBookings": "Dat cho cua toi",
+		"myTickets": "Ve cua toi",
+		"tickets": "ve",
+		"subscription": "Goi thanh vien",
 		"createSession": "Tao buoi choi",
 		"admin": "Quan tri"
 	},
@@ -116,6 +123,9 @@
 			"email": "Dia chi email",
 			"emailNote": "Khong the thay doi email (quan ly boi OAuth)",
 			"role": "Vai tro tai khoan",
+			"birthday": "Ngay sinh",
+			"birthdayLocked": "Ngay sinh da duoc cai dat va khong the thay doi",
+			"birthdayWarning": "Luu y: Ngay sinh chi co the cai dat mot lan va khong the thay doi sau do",
 			"saveChanges": "Luu thay doi",
 			"saving": "Dang luu..."
 		},
@@ -203,6 +213,33 @@
 			"draft": "Ban nhap",
 			"published": "Da dang",
 			"inProgress": "Dang dien ra"
+		},
+		"filters": {
+			"results": "{count} buoi choi",
+			"noResults": "Khong co buoi choi phu hop voi bo loc",
+			"showFull": "Hien thi buoi da het cho",
+			"clearAll": "Xoa bo loc"
+		},
+		"date": {
+			"label": "Ngay",
+			"thisWeek": "Tuan nay",
+			"nextWeek": "Tuan sau",
+			"pickDate": "Chon ngay",
+			"past": "Da qua"
+		},
+		"time": {
+			"label": "Thoi gian",
+			"morning": "Sang",
+			"afternoon": "Chieu",
+			"evening": "Toi",
+			"morningHours": "6h - 12h",
+			"afternoonHours": "12h - 17h",
+			"eveningHours": "Sau 17h"
+		},
+		"location": {
+			"label": "Dia diem",
+			"all": "Tat ca dia diem",
+			"placeholder": "Chon dia diem"
 		}
 	},
 	"bookings": {
@@ -220,6 +257,9 @@
 		"confirmCancelButton": "Xac nhan huy",
 		"viewDetails": "Xem chi tiet",
 		"bookingCode": "Dat cho",
+		"session": "Buoi choi",
+		"sessionDateTime": "Ngay & gio choi",
+		"sessionLocation": "Dia diem",
 		"bookedOn": "Ngay dat",
 		"createdOn": "Tao ngay {date}",
 		"paymentMethod": "Phuong thuc thanh toan",
@@ -252,6 +292,37 @@
 		},
 		"totalCount": "Hien thi {count} dat cho"
 	},
+	"tickets": {
+		"pageTitle": "Ve cua toi",
+		"title": "Ve cua toi",
+		"description": "Xem so du ve va lich su giao dich",
+		"currentBalance": "So du hien tai",
+		"ticketsLabel": "ve",
+		"validUntil": "Hieu luc den",
+		"noPeriodEnd": "Khong co ngay het han",
+		"noActiveSubscription": "Khong co goi thanh vien",
+		"hasSubscription": "Goi thanh vien dang hoat dong",
+		"history": "Lich su giao dich",
+		"historyDescription": "Giao dich ve va hoat dong cua ban",
+		"noHistory": "Chua co giao dich nao",
+		"table": {
+			"date": "Ngay",
+			"type": "Loai",
+			"amount": "So luong",
+			"balance": "So du",
+			"details": "Chi tiet"
+		},
+		"types": {
+			"subscription_grant": "Goi thanh vien",
+			"used": "Da su dung",
+			"restored": "Da khoi phuc",
+			"bonus_referral": "Thuong gioi thieu",
+			"bonus_birthday": "Thuong sinh nhat",
+			"bonus_manual": "Quan tri cap",
+			"expired": "Da het han",
+			"revoked": "Da thu hoi"
+		}
+	},
 	"auth": {
 		"login": {
 			"title": "Chao mung tro lai",
@@ -277,6 +348,8 @@
 		"loadingSession": "Dang tai buoi choi...",
 		"backToSessions": "Quay lai danh sach",
 		"location": "Dia diem",
+		"date": "Ngay",
+		"time": "Gio",
 		"dateTime": "Ngay & Gio",
 		"participants": "Nguoi choi",
 		"availability": "Con trong",
@@ -303,7 +376,12 @@
 		"total": "Tong",
 		"creatingBooking": "Dang tao dat cho...",
 		"paymentTime": "Ban co 30 phut de hoan tat thanh toan",
-		"onlySpotsAvailable": "Chi con {count} cho trong"
+		"onlySpotsAvailable": "Chi con {count} cho trong",
+		"free": "Mien phi",
+		"subscriptionPromo": {
+			"title": "Dang ky & tiet kiem 20%",
+			"subtitle": "Nhan 10 ve, truy cap som va uu tien danh sach cho"
+		}
 	},
 	"organizer": {
 		"sessions": {
@@ -341,8 +419,8 @@
 				"locationPlaceholder": "Trung tam The thao Ha Noi",
 				"startTime": "Thoi gian bat dau",
 				"selectStartTime": "Chon ngay va gio bat dau",
-				"endTime": "Thoi gian ket thuc",
-				"selectEndTime": "Chon ngay va gio ket thuc",
+				"duration": "Thoi luong",
+				"selectDuration": "Chon thoi luong buoi choi",
 				"maxSlots": "So cho toi da",
 				"priceVnd": "Gia (VND)",
 				"earlyAccess": "Truy cap som ket thuc luc (Tuy chon)",
@@ -547,6 +625,7 @@
 			"table": {
 				"session": "Buoi choi",
 				"dateTime": "Ngay/Gio",
+				"duration": "Thoi luong",
 				"participants": "Nguoi choi",
 				"slots": "Cho",
 				"price": "Gia",
@@ -597,6 +676,23 @@
 			"fillRateTooltip": "Muc do day trung binh cua cac buoi choi sap toi",
 			"successRate": "Ty le thanh cong",
 			"successRateTooltip": "Trong so dat cho da hoan tat (khong cho xu ly), phan tram da xac nhan so voi da huy"
+		},
+		"tickets": {
+			"title": "Quan ly ve",
+			"currentBalance": "So du hien tai",
+			"activeSubscription": "Thanh vien dang hoat dong",
+			"noSubscription": "Khong co goi thanh vien",
+			"grant": "Cap ve",
+			"revoke": "Thu hoi ve",
+			"amount": "So luong",
+			"reason": "Ly do (tuy chon)",
+			"reasonPlaceholder": "Nhap ly do cho hanh dong nay...",
+			"grantButton": "Cap {amount} ve",
+			"revokeButton": "Thu hoi {amount} ve",
+			"recentTransactions": "Giao dich gan day",
+			"loadError": "Khong the tai du lieu ve",
+			"grantError": "Khong the cap ve",
+			"revokeError": "Khong the thu hoi ve"
 		},
 		"profit": {
 			"title": "Loi nhuan & Chi phi",
@@ -660,6 +756,14 @@
 		"zalo": "Nhom Zalo",
 		"responseTimeLabel": "Thoi gian phan hoi",
 		"responseTime": "Chung toi thuong phan hoi trong vong 24 gio."
+	},
+	"countdown": {
+		"expired": "Da het han",
+		"days": "n",
+		"hours": "g",
+		"minutes": "p",
+		"seconds": "s",
+		"timeRemaining": "Thoi gian con lai"
 	},
 	"languages": {
 		"en": "English",
@@ -749,6 +853,96 @@
 				"content": "Doi voi cac cau hoi hoac thac mac lien quan den quyen rieng tu, vui long lien he voi chung toi tai support@loafy.club."
 			}
 		}
+	},
+	"subscriptions": {
+		"pageTitle": "Goi thanh vien",
+		"title": "Goi thanh vien Loafy Club",
+		"description": "Nhan ve giam gia va mo khoa cac quyen loi thanh vien",
+		"packTitle": "Goi 10 Ve",
+		"packDescription": "Gia tri tot nhat cho nguoi choi thuong xuyen",
+		"validity": "Hieu luc 3 thang",
+		"purchase": "Dang ky ngay",
+		"currentPlan": "Goi cua ban",
+		"remainingTickets": "Ve con lai",
+		"ticketsFromPrevious": "Tu goi truoc cua ban",
+		"viewTicketHistory": "Xem lich su ve",
+		"autoRenewNote": "Tu dong gia han moi 3 thang. Huy bat cu luc nao.",
+		"renewsOn": "Gia han vao",
+		"expiresOn": "Het han vao",
+		"cancelledNote": "Goi cua ban se khong gia han. Ban van co the su dung ve con lai cho den het ky hien tai.",
+		"cancelAutoRenew": "Huy tu dong gia han",
+		"resumeAutoRenew": "Tiep tuc tu dong gia han",
+		"confirmCancel": "Ban co chac muon huy tu dong gia han? Ban se giu quyen truy cap cho den het ky hien tai.",
+		"cancelDialogTitle": "Huy tu dong gia han?",
+		"cancelDialogDescription": "Goi cua ban se khong tu dong gia han. Ban van giu ve con lai va quyen loi cho den het ky thanh toan hien tai.",
+		"confirmCancelButton": "Dong y, Huy gia han",
+		"loadError": "Khong the tai thong tin goi",
+		"purchaseError": "Khong the bat dau thanh toan",
+		"cancelError": "Khong the huy goi",
+		"resumeError": "Khong the tiep tuc goi",
+		"status": {
+			"active": "Dang hoat dong",
+			"expired": "Het han",
+			"cancelled": "Da huy",
+			"pastDue": "Can thanh toan",
+			"cancelling": "Dang huy"
+		},
+		"benefits": {
+			"tickets": "10 ve choi",
+			"discount": "Giam 20% gia thuong (80k so voi 100k)",
+			"earlyAccess": "Dat truoc 7 ngay",
+			"priority": "Uu tien #1 trong danh sach cho",
+			"cancellation": "Huy truoc 24h (so voi 48h cho khach le)",
+			"outOfTicket": "Het ve? Van duoc giam 10% (90k so voi 100k)",
+			"referral": "Gioi thieu ban be → ca hai nhan 1 ve",
+			"birthdayBonus": "Sinh nhat: 1 ve mien phi moi nam"
+		},
+		"guestPrice": "Gia khach: 100,000 VND (khong giam gia)",
+		"comparisonTitle": "Thanh vien vs Khach le",
+		"comparison": {
+			"pricePerSession": "Gia moi buoi",
+			"subscriberPrice": "80,000 VND",
+			"dropInPrice": "100,000 VND",
+			"savings": "Tiet kiem 20%",
+			"earlyAccess": "Dat truoc",
+			"subscriberEarlyAccess": "Truoc 7 ngay",
+			"dropInEarlyAccess": "Khi mo dang ky",
+			"waitlistPriority": "Uu tien cho",
+			"subscriberWaitlist": "Dau tien",
+			"dropInWaitlist": "Sau thanh vien",
+			"cancellation": "Huy mien phi",
+			"subscriberCancellation": "Truoc 24h",
+			"dropInCancellation": "Truoc 48h",
+			"outOfTickets": "Het ve",
+			"subscriberOutOfTickets": "90k (giam 10%)",
+			"dropInOutOfTickets": "N/A",
+			"birthdayBonus": "Thuong sinh nhat",
+			"subscriberBirthday": "1 ve mien phi",
+			"dropInBirthday": "Khong co",
+			"referralBonus": "Thuong gioi thieu",
+			"subscriberReferral": "1 ve moi ben",
+			"dropInReferral": "Khong co"
+		},
+		"successTitle": "Da kich hoat goi thanh vien!",
+		"successMessage": "Ve cua ban da duoc them vao tai khoan",
+		"ticketsAdded": "{count} ve da duoc them vao tai khoan",
+		"validFor3Months": "Hieu luc 3 thang",
+		"bookSession": "Dat buoi choi",
+		"viewSubscription": "Xem goi thanh vien",
+		"cancelledTitle": "Da huy mua",
+		"cancelledMessage": "Ban co the mua goi thanh vien bat cu luc nao",
+		"benefitsReminder": "Giam 20% va dat truoc voi goi thanh vien",
+		"tryAgain": "Thu lai",
+		"browseSessions": "Xem buoi choi"
+	},
+	"pricing": {
+		"ticketUsed": "Da dung ve",
+		"subscriberDiscount": "Giam gia thanh vien (10%)",
+		"subtotalUser": "Tong phu ban",
+		"subtotalGuests": "Tong phu khach",
+		"basePrice": "Gia goc",
+		"discount": "Giam gia",
+		"perPerson": "moi nguoi"
 	},
 	"error": {
 		"pageNotFound": "Khong tim thay trang",

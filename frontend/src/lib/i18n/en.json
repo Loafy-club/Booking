@@ -26,11 +26,18 @@
 		"filter": "Filter",
 		"sort": "Sort",
 		"select": "Select",
-		"noResults": "No results found"
+		"noResults": "No results found",
+		"refresh": "Refresh",
+		"pagination": {
+			"showing": "Showing {from}-{to} of {total}"
+		}
 	},
 	"nav": {
 		"sessions": "Sessions",
 		"myBookings": "My Bookings",
+		"myTickets": "My Tickets",
+		"tickets": "tickets",
+		"subscription": "Subscription",
 		"createSession": "Create Session",
 		"admin": "Admin"
 	},
@@ -116,6 +123,9 @@
 			"email": "Email Address",
 			"emailNote": "Email cannot be changed (managed by OAuth)",
 			"role": "Account Role",
+			"birthday": "Birthday",
+			"birthdayLocked": "Birthday is set and cannot be changed",
+			"birthdayWarning": "Warning: Birthday can only be set once and cannot be changed later",
 			"saveChanges": "Save Changes",
 			"saving": "Saving..."
 		},
@@ -203,6 +213,33 @@
 			"draft": "Draft",
 			"published": "Published",
 			"inProgress": "In Progress"
+		},
+		"filters": {
+			"results": "{count} sessions",
+			"noResults": "No sessions match your filters",
+			"showFull": "Show full sessions",
+			"clearAll": "Clear filters"
+		},
+		"date": {
+			"label": "Date",
+			"thisWeek": "This Week",
+			"nextWeek": "Next Week",
+			"pickDate": "Pick Date",
+			"past": "Past"
+		},
+		"time": {
+			"label": "Time of Day",
+			"morning": "Morning",
+			"afternoon": "Afternoon",
+			"evening": "Evening",
+			"morningHours": "6am - 12pm",
+			"afternoonHours": "12pm - 5pm",
+			"eveningHours": "After 5pm"
+		},
+		"location": {
+			"label": "Location",
+			"all": "All Locations",
+			"placeholder": "Select location"
 		}
 	},
 	"bookings": {
@@ -220,6 +257,9 @@
 		"confirmCancelButton": "Yes, Cancel Booking",
 		"viewDetails": "View Details",
 		"bookingCode": "Booking",
+		"session": "Session",
+		"sessionDateTime": "Session Date & Time",
+		"sessionLocation": "Location",
 		"bookedOn": "Booked On",
 		"createdOn": "Created on {date}",
 		"paymentMethod": "Payment Method",
@@ -251,6 +291,37 @@
 			"cancelled": "Cancelled"
 		},
 		"totalCount": "Showing {count} booking(s)"
+	},
+	"tickets": {
+		"pageTitle": "My Tickets",
+		"title": "My Tickets",
+		"description": "View your ticket balance and transaction history",
+		"currentBalance": "Current Balance",
+		"ticketsLabel": "tickets",
+		"validUntil": "Valid until",
+		"noPeriodEnd": "No expiration date",
+		"noActiveSubscription": "No active subscription",
+		"hasSubscription": "Active subscription",
+		"history": "Transaction History",
+		"historyDescription": "Your ticket transactions and activity",
+		"noHistory": "No transactions yet",
+		"table": {
+			"date": "Date",
+			"type": "Type",
+			"amount": "Amount",
+			"balance": "Balance",
+			"details": "Details"
+		},
+		"types": {
+			"subscription_grant": "Subscription",
+			"used": "Used",
+			"restored": "Restored",
+			"bonus_referral": "Referral Bonus",
+			"bonus_birthday": "Birthday Bonus",
+			"bonus_manual": "Admin Grant",
+			"expired": "Expired",
+			"revoked": "Revoked"
+		}
 	},
 	"payment": {
 		"pageTitle": "Payment",
@@ -298,6 +369,8 @@
 		"loadingSession": "Loading session...",
 		"backToSessions": "Back to Sessions",
 		"location": "Location",
+		"date": "Date",
+		"time": "Time",
 		"dateTime": "Date & Time",
 		"participants": "Participants",
 		"availability": "Availability",
@@ -324,7 +397,12 @@
 		"total": "Total",
 		"creatingBooking": "Creating Booking...",
 		"paymentTime": "You'll have 30 minutes to complete payment",
-		"onlySpotsAvailable": "Only {count} spots available"
+		"onlySpotsAvailable": "Only {count} spots available",
+		"free": "Free",
+		"subscriptionPromo": {
+			"title": "Subscribe & save 20%",
+			"subtitle": "Get 10 tickets, early access, and priority waitlist"
+		}
 	},
 	"organizer": {
 		"sessions": {
@@ -362,8 +440,8 @@
 				"locationPlaceholder": "Hanoi Sports Center",
 				"startTime": "Start Time",
 				"selectStartTime": "Select start date and time",
-				"endTime": "End Time",
-				"selectEndTime": "Select end date and time",
+				"duration": "Duration",
+				"selectDuration": "Select session duration",
 				"maxSlots": "Maximum Slots",
 				"priceVnd": "Price (VND)",
 				"earlyAccess": "Early Access Ends At (Optional)",
@@ -568,6 +646,7 @@
 			"table": {
 				"session": "Session",
 				"dateTime": "Date/Time",
+				"duration": "Duration",
 				"participants": "Participants",
 				"slots": "Slots",
 				"price": "Price",
@@ -619,6 +698,23 @@
 			"successRate": "Success Rate",
 			"successRateTooltip": "Of completed bookings (not pending), percentage that were confirmed vs cancelled"
 		},
+		"tickets": {
+			"title": "Ticket Management",
+			"currentBalance": "Current Balance",
+			"activeSubscription": "Active Subscription",
+			"noSubscription": "No Subscription",
+			"grant": "Grant Tickets",
+			"revoke": "Revoke Tickets",
+			"amount": "Amount",
+			"reason": "Reason (optional)",
+			"reasonPlaceholder": "Enter reason for this action...",
+			"grantButton": "Grant {amount} ticket(s)",
+			"revokeButton": "Revoke {amount} ticket(s)",
+			"recentTransactions": "Recent Transactions",
+			"loadError": "Failed to load ticket data",
+			"grantError": "Failed to grant tickets",
+			"revokeError": "Failed to revoke tickets"
+		},
 		"profit": {
 			"title": "Profit & Expenses",
 			"totalExpenses": "Total Expenses",
@@ -660,6 +756,14 @@
 		"zalo": "Zalo Group",
 		"responseTimeLabel": "Response Time",
 		"responseTime": "We typically respond within 24 hours."
+	},
+	"countdown": {
+		"expired": "Expired",
+		"days": "d",
+		"hours": "h",
+		"minutes": "m",
+		"seconds": "s",
+		"timeRemaining": "Time remaining"
 	},
 	"languages": {
 		"en": "English",
@@ -749,6 +853,96 @@
 				"content": "For privacy-related questions or concerns, please contact us at support@loafy.club."
 			}
 		}
+	},
+	"subscriptions": {
+		"pageTitle": "Subscription",
+		"title": "Loafy Club Subscription",
+		"description": "Get tickets at a discount and unlock member benefits",
+		"packTitle": "10 Ticket Pack",
+		"packDescription": "Best value for regular players",
+		"validity": "3 months validity",
+		"purchase": "Subscribe Now",
+		"currentPlan": "Your Subscription",
+		"remainingTickets": "Remaining Tickets",
+		"ticketsFromPrevious": "From your previous subscription",
+		"viewTicketHistory": "View ticket history",
+		"autoRenewNote": "Auto-renews every 3 months. Cancel anytime.",
+		"renewsOn": "Renews on",
+		"expiresOn": "Expires on",
+		"cancelledNote": "Your subscription will not renew. You can still use your remaining tickets until the end of your current period.",
+		"cancelAutoRenew": "Cancel Auto-Renewal",
+		"resumeAutoRenew": "Resume Auto-Renewal",
+		"confirmCancel": "Are you sure you want to cancel auto-renewal? You will keep access until the end of your current period.",
+		"cancelDialogTitle": "Cancel Auto-Renewal?",
+		"cancelDialogDescription": "Your subscription will not renew automatically. You'll keep your remaining tickets and benefits until the end of your current billing period.",
+		"confirmCancelButton": "Yes, Cancel Renewal",
+		"loadError": "Failed to load subscription",
+		"purchaseError": "Failed to start checkout",
+		"cancelError": "Failed to cancel subscription",
+		"resumeError": "Failed to resume subscription",
+		"status": {
+			"active": "Active",
+			"expired": "Expired",
+			"cancelled": "Cancelled",
+			"pastDue": "Payment Due",
+			"cancelling": "Cancelling"
+		},
+		"benefits": {
+			"tickets": "10 session tickets",
+			"discount": "20% off regular price (80k vs 100k)",
+			"earlyAccess": "7-day early access to sessions",
+			"priority": "#1 priority on waitlist",
+			"cancellation": "Cancel up to 24h before (vs 48h for drop-ins)",
+			"outOfTicket": "Out of tickets? Still get 10% off (90k vs 100k)",
+			"referral": "Refer a friend → you both get 1 bonus ticket",
+			"birthdayBonus": "Birthday bonus: 1 free ticket yearly"
+		},
+		"guestPrice": "Guest price: 100,000 VND (no discount)",
+		"comparisonTitle": "Subscriber vs Drop-in",
+		"comparison": {
+			"pricePerSession": "Price per session",
+			"subscriberPrice": "80,000 VND",
+			"dropInPrice": "100,000 VND",
+			"savings": "Save 20%",
+			"earlyAccess": "Early access",
+			"subscriberEarlyAccess": "7 days before",
+			"dropInEarlyAccess": "When session opens",
+			"waitlistPriority": "Waitlist priority",
+			"subscriberWaitlist": "First in line",
+			"dropInWaitlist": "After subscribers",
+			"cancellation": "Free cancellation",
+			"subscriberCancellation": "24h before",
+			"dropInCancellation": "48h before",
+			"outOfTickets": "Out of tickets",
+			"subscriberOutOfTickets": "90k (10% off)",
+			"dropInOutOfTickets": "N/A",
+			"birthdayBonus": "Birthday bonus",
+			"subscriberBirthday": "1 free ticket",
+			"dropInBirthday": "None",
+			"referralBonus": "Referral bonus",
+			"subscriberReferral": "1 ticket each",
+			"dropInReferral": "None"
+		},
+		"successTitle": "Subscription Activated!",
+		"successMessage": "Your tickets have been added to your account",
+		"ticketsAdded": "{count} tickets added to your account",
+		"validFor3Months": "Valid for 3 months",
+		"bookSession": "Book a Session",
+		"viewSubscription": "View Subscription",
+		"cancelledTitle": "Purchase Cancelled",
+		"cancelledMessage": "You can purchase a subscription anytime",
+		"benefitsReminder": "Get 20% off and early access with a subscription",
+		"tryAgain": "Try Again",
+		"browseSessions": "Browse Sessions"
+	},
+	"pricing": {
+		"ticketUsed": "Ticket used",
+		"subscriberDiscount": "Subscriber discount (10%)",
+		"subtotalUser": "Your subtotal",
+		"subtotalGuests": "Guest subtotal",
+		"basePrice": "Base price",
+		"discount": "Discount",
+		"perPerson": "per person"
 	},
 	"error": {
 		"pageNotFound": "Page Not Found",

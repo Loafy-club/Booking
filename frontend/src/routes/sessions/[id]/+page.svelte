@@ -5,7 +5,9 @@
 	import { api } from '$lib/api/client';
 	import {
 		formatCurrency,
-		formatDate,
+		formatDateOnly,
+		formatTime,
+		formatDuration,
 		canBookSession,
 		getSessionDateTime,
 		extractErrorMessage
@@ -23,15 +25,16 @@
 	import * as Select from '$lib/components/ui/select';
 	import { RadioGroup, RadioGroupItem } from '$lib/components/ui/radio-group';
 	import { Alert, AlertDescription } from '$lib/components/ui/alert';
-	import { MapPin, Calendar, Users, DollarSign, ArrowLeft, AlertCircle } from 'lucide-svelte';
+	import { MapPin, Calendar, Clock, Users, DollarSign, ArrowLeft, AlertCircle, Sparkles } from 'lucide-svelte';
 	import { SessionParticipants } from '$lib/components/ui/session-participants';
-	import type { Session } from '$lib/types';
+	import type { Session, TicketBalanceResponse } from '$lib/types';
 
 	const t = useTranslation();
 
 	let sessionId = $derived($page.params.id);
 	let session = $state<Session | null>(null);
 	let hasExistingBooking = $state(false);
+	let ticketBalance = $state<TicketBalanceResponse | null>(null);
 	let loading = $state(true);
 	let showSkeleton = $state(false);
 	let error = $state<string | null>(null);
@@ -46,9 +49,18 @@
 			if (loading) showSkeleton = true;
 		}, 200);
 
-		await Promise.all([loadSession(), checkExistingBooking()]);
+		await Promise.all([loadSession(), checkExistingBooking(), checkSubscription()]);
 		clearTimeout(skeletonTimer);
 	});
+
+	async function checkSubscription() {
+		try {
+			const response = await api.subscriptions.getTicketBalance();
+			ticketBalance = response.data;
+		} catch {
+			// Silently fail - user just won't see promo
+		}
+	}
 
 	async function checkExistingBooking() {
 		if (!sessionId) return;
@@ -99,16 +111,56 @@
 				payment_method: paymentMethod
 			});
 
-			goto(`/bookings/${response.data.id}/payment`);
+			// If booking is auto-confirmed (ticket covered it), go to booking detail
+			// Otherwise, go to payment page
+			if (response.data.payment_status === 'confirmed') {
+				goto(`/bookings/${response.data.id}`);
+			} else {
+				goto(`/bookings/${response.data.id}/payment`);
+			}
 		} catch (err: unknown) {
 			error = extractErrorMessage(err, 'Failed to create booking');
 			bookingLoading = false;
 		}
 	}
 
+	// Discount percentage for subscribers without tickets (matches backend config)
+	const OUT_OF_TICKET_DISCOUNT_PERCENT = 10;
+
+	function getDiscountType(): 'ticket' | 'out_of_ticket' | 'none' {
+		if (!ticketBalance?.has_active_subscription) return 'none';
+		if (ticketBalance.tickets_remaining > 0) return 'ticket';
+		return 'out_of_ticket';
+	}
+
+	function getUserPrice(): number {
+		if (!session) return 0;
+		const discountType = getDiscountType();
+		if (discountType === 'ticket') return 0;
+		if (discountType === 'out_of_ticket') {
+			return Math.floor(session.price_vnd * (100 - OUT_OF_TICKET_DISCOUNT_PERCENT) / 100);
+		}
+		return session.price_vnd;
+	}
+
+	function getDiscountAmount(): number {
+		if (!session) return 0;
+		const discountType = getDiscountType();
+		if (discountType === 'ticket') return session.price_vnd;
+		if (discountType === 'out_of_ticket') {
+			return session.price_vnd - getUserPrice();
+		}
+		return 0;
+	}
+
+	function getGuestPrice(): number {
+		if (!session) return 0;
+		return session.price_vnd * guestCount;
+	}
+
 	function getTotalPrice(): number {
 		if (!session) return 0;
-		return session.price_vnd * (1 + guestCount);
+		return getUserPrice() + getGuestPrice();
 	}
 
 	function getSessionStatusText(): string {
@@ -172,6 +224,21 @@
 				</div>
 			</AnimatedContainer>
 
+			{#if !ticketBalance?.has_active_subscription}
+				<AnimatedContainer animation="fade-up" delay={50}>
+					<a href="/subscriptions" class="flex items-center justify-between gap-4 mb-6 px-4 py-3 rounded-xl bg-gradient-to-r from-orange-500/10 to-pink-500/10 border border-orange-500/20 hover:border-orange-500/40 transition-colors">
+						<div class="flex items-center gap-3">
+							<div class="rounded-full bg-gradient-to-r from-orange-500 to-pink-500 p-1.5">
+								<Sparkles class="size-3.5 text-white" />
+							</div>
+							<span class="font-medium text-foreground">{t('sessionDetail.subscriptionPromo.title')}</span>
+							<span class="hidden sm:inline text-sm text-muted-foreground">— {t('sessionDetail.subscriptionPromo.subtitle')}</span>
+						</div>
+						<span class="text-sm text-orange-500 font-medium">{t('common.viewAll')} →</span>
+					</a>
+				</AnimatedContainer>
+			{/if}
+
 			<div class="grid gap-6 lg:grid-cols-3">
 				<div class="lg:col-span-2">
 					<AnimatedContainer animation="fade-up" delay={100}>
@@ -196,8 +263,24 @@
 								<div class="flex items-start">
 									<Calendar class="mr-3 h-6 w-6 text-orange-400" />
 									<div>
-										<p class="font-medium text-foreground">{t('sessionDetail.dateTime')}</p>
-										<p class="text-muted-foreground">{session.date} {t('sessions.at')} {session.time}</p>
+										<p class="font-medium text-foreground">{t('sessionDetail.date')}</p>
+										<p class="text-muted-foreground">{formatDateOnly(session.date)}</p>
+									</div>
+								</div>
+
+								<div class="flex items-start">
+									<Clock class="mr-3 h-6 w-6 text-orange-400" />
+									<div>
+										<p class="font-medium text-foreground">{t('sessionDetail.time')}</p>
+										<p class="text-muted-foreground">
+											{formatTime(session.time)}
+											{#if session.end_time}
+												{@const duration = formatDuration(session.time, session.end_time)}
+												{#if duration}
+													<span class="text-muted-foreground/70">({duration})</span>
+												{/if}
+											{/if}
+										</p>
 									</div>
 								</div>
 
@@ -215,16 +298,41 @@
 									<DollarSign class="mr-3 h-6 w-6 text-orange-400" />
 									<div>
 										<p class="font-medium text-foreground">{t('sessionDetail.price')}</p>
-									<p class="text-2xl font-bold text-gradient-primary">
-										{formatCurrency(session.price_vnd)}
-									</p>
-										<p class="text-sm text-muted-foreground">{t('sessionDetail.perPerson')}</p>
+										{#if getDiscountType() === 'ticket'}
+											<p class="text-lg text-muted-foreground line-through">
+												{formatCurrency(session.price_vnd)}
+											</p>
+											<p class="text-2xl font-bold text-success-text">
+												{t('sessionDetail.free')}
+											</p>
+											<p class="text-sm text-success-text flex items-center gap-1">
+												<span class="inline-block w-2 h-2 rounded-full bg-success"></span>
+												{t('pricing.ticketUsed')}
+											</p>
+										{:else if getDiscountType() === 'out_of_ticket'}
+											<p class="text-lg text-muted-foreground line-through">
+												{formatCurrency(session.price_vnd)}
+											</p>
+											<p class="text-2xl font-bold text-gradient-primary">
+												{formatCurrency(getUserPrice())}
+											</p>
+											<p class="text-sm text-primary flex items-center gap-1">
+												<span class="inline-block w-2 h-2 rounded-full bg-primary"></span>
+												{t('pricing.subscriberDiscount')}
+											</p>
+										{:else}
+											<p class="text-2xl font-bold text-gradient-primary">
+												{formatCurrency(session.price_vnd)}
+											</p>
+											<p class="text-sm text-muted-foreground">{t('sessionDetail.perPerson')}</p>
+										{/if}
 									</div>
 								</div>
 							</div>
 						</Card>
 					</AnimatedContainer>
-				</div>
+
+					</div>
 
 				<div class="lg:col-span-1">
 					<AnimatedContainer animation="fade-up" delay={200}>
@@ -288,20 +396,74 @@
 										</RadioGroup>
 									</fieldset>
 
-									<div class="border-t border-border pt-4">
-										<div class="flex justify-between text-sm text-muted-foreground">
-											<span>{t('sessionDetail.pricePerPerson')}</span>
-											<span>{formatCurrency(session.price_vnd)}</span>
+									<div class="border-t border-border pt-4 space-y-3">
+										<!-- Your slot section -->
+										<div class="space-y-1">
+											<div class="flex justify-between text-sm">
+												<span class="text-muted-foreground">{t('bookings.yourSlot')}</span>
+												{#if getDiscountType() === 'ticket'}
+													<span class="font-medium line-through text-muted-foreground">
+														{formatCurrency(session.price_vnd)}
+													</span>
+												{:else if getDiscountType() === 'out_of_ticket'}
+													<span class="font-medium line-through text-muted-foreground">
+														{formatCurrency(session.price_vnd)}
+													</span>
+												{:else}
+													<span class="font-medium text-foreground">{formatCurrency(session.price_vnd)}</span>
+												{/if}
+											</div>
+
+											{#if getDiscountType() === 'ticket'}
+												<div class="flex justify-between text-sm">
+													<span class="text-success-text flex items-center gap-1">
+														<span class="inline-block w-2 h-2 rounded-full bg-success"></span>
+														{t('pricing.ticketUsed')}
+													</span>
+													<span class="font-medium text-success-text">-{formatCurrency(session.price_vnd)}</span>
+												</div>
+											{:else if getDiscountType() === 'out_of_ticket'}
+												<div class="flex justify-between text-sm">
+													<span class="text-primary flex items-center gap-1">
+														<span class="inline-block w-2 h-2 rounded-full bg-primary"></span>
+														{t('pricing.subscriberDiscount')}
+													</span>
+													<span class="font-medium text-primary">-{formatCurrency(getDiscountAmount())}</span>
+												</div>
+											{/if}
+
+											{#if getDiscountType() !== 'none'}
+												<div class="flex justify-between text-sm font-medium">
+													<span class="text-muted-foreground">{t('pricing.subtotalUser')}</span>
+													<span class="text-foreground">{formatCurrency(getUserPrice())}</span>
+												</div>
+											{/if}
 										</div>
-										<div class="mt-2 flex justify-between text-sm text-muted-foreground">
-											<span>{t('sessionDetail.numberOfPeople')}</span>
-											<span>{1 + guestCount}</span>
-										</div>
-										<div class="mt-2 flex justify-between text-lg font-bold text-foreground">
-											<span>{t('sessionDetail.total')}</span>
-										<span class="text-gradient-primary">
-											{formatCurrency(getTotalPrice())}
-										</span>
+
+										<!-- Guest slots section -->
+										{#if guestCount > 0}
+											<div class="pt-2 border-t border-border/50 space-y-1">
+												<div class="flex justify-between text-sm">
+													<span class="text-muted-foreground">
+														{t('bookings.guestSlots', { count: guestCount })}
+													</span>
+													<span class="font-medium text-foreground">
+														{guestCount} × {formatCurrency(session.price_vnd)}
+													</span>
+												</div>
+												<div class="flex justify-between text-sm font-medium">
+													<span class="text-muted-foreground">{t('pricing.subtotalGuests')}</span>
+													<span class="text-foreground">{formatCurrency(getGuestPrice())}</span>
+												</div>
+											</div>
+										{/if}
+
+										<!-- Total -->
+										<div class="pt-2 border-t border-border">
+											<div class="flex justify-between">
+												<span class="font-semibold text-foreground">{t('payment.total')}</span>
+												<span class="font-bold text-gradient-primary">{formatCurrency(getTotalPrice())}</span>
+											</div>
 										</div>
 									</div>
 

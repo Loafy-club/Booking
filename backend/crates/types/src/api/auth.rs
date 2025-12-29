@@ -1,3 +1,4 @@
+use chrono::NaiveDate;
 use serde::{Deserialize, Serialize};
 use ts_rs::TS;
 use utoipa::ToSchema;
@@ -14,6 +15,7 @@ pub struct AuthUser {
     pub phone: Option<String>,
     pub avatar_url: Option<String>,
     pub role: UserRole,
+    pub birthday: Option<NaiveDate>,
 }
 
 #[derive(Debug, Deserialize, TS, ToSchema)]
@@ -22,6 +24,7 @@ pub struct UpdateProfileRequest {
     pub name: Option<String>,
     pub phone: Option<String>,
     pub avatar_url: Option<String>,
+    pub birthday: Option<NaiveDate>,
 }
 
 #[derive(Debug, Deserialize, ToSchema)]

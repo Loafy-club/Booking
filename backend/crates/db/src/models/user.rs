@@ -1,4 +1,4 @@
-use chrono::{DateTime, Utc};
+use chrono::{DateTime, NaiveDate, Utc};
 use serde::{Deserialize, Serialize};
 use sqlx::FromRow;
 use uuid::Uuid;
@@ -13,6 +13,7 @@ pub struct User {
     pub role_id: Uuid,
     pub auth_provider: String,
     pub auth_provider_id: String,
+    pub birthday: Option<NaiveDate>,
     pub created_at: DateTime<Utc>,
     pub updated_at: DateTime<Utc>,
     pub deleted_at: Option<DateTime<Utc>>,
@@ -40,6 +41,7 @@ pub struct UserWithRole {
     pub role_id: Uuid,
     pub auth_provider: String,
     pub auth_provider_id: String,
+    pub birthday: Option<NaiveDate>,
     pub user_created_at: DateTime<Utc>,
     pub user_updated_at: DateTime<Utc>,
     pub user_deleted_at: Option<DateTime<Utc>>,

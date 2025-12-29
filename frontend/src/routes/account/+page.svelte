@@ -50,6 +50,7 @@
 	// Profile form state
 	let name = $state('');
 	let phone = $state('');
+	let birthday = $state('');
 
 	// Preferences state
 	let emailNotifications = $state(true);
@@ -65,8 +66,12 @@
 		if (authStore.user) {
 			name = authStore.user.name || '';
 			phone = authStore.user.phone || '';
+			birthday = authStore.user.birthday || '';
 		}
 	});
+
+	// Check if birthday is already set (can only be set once)
+	let birthdayAlreadySet = $derived(!!authStore.user?.birthday);
 
 	// Load preferences from localStorage
 	onMount(() => {
@@ -100,7 +105,9 @@
 		try {
 			const response = await api.users.updateProfile({
 				name: name || undefined,
-				phone: phone || undefined
+				phone: phone || undefined,
+				// Only send birthday if it's being set for the first time
+				birthday: !birthdayAlreadySet && birthday ? birthday : undefined
 			});
 
 			// Update auth store with new user data
@@ -322,6 +329,24 @@
 											bind:value={phone}
 											class="max-w-md"
 										/>
+									</div>
+
+									<!-- Birthday -->
+									<div class="space-y-2">
+										<Label for="birthday">{t('account.profile.birthday')}</Label>
+										<Input
+											id="birthday"
+											type="date"
+											bind:value={birthday}
+											disabled={birthdayAlreadySet}
+											class="max-w-md {birthdayAlreadySet ? 'bg-muted' : ''}"
+											max={new Date().toISOString().split('T')[0]}
+										/>
+										{#if birthdayAlreadySet}
+											<p class="text-xs text-muted-foreground">{t('account.profile.birthdayLocked')}</p>
+										{:else}
+											<p class="text-xs text-amber-600 dark:text-amber-400">{t('account.profile.birthdayWarning')}</p>
+										{/if}
 									</div>
 
 									<!-- Email (read-only) -->

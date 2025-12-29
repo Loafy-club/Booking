@@ -130,10 +130,10 @@
 			<div class="flex items-start justify-between">
 				<div class="flex-1">
 					<p class="text-sm font-medium text-muted-foreground">{title}</p>
-					<div class="mt-1 flex items-baseline gap-2">
+					<div class="mt-1">
 						<p class="text-3xl font-bold text-foreground">{value}</p>
 						{#if percentChange !== null}
-							<div class="flex items-center gap-0.5 rounded-full px-1.5 py-0.5 {trend === 'up' ? 'bg-emerald-500/10' : trend === 'down' ? 'bg-red-500/10' : 'bg-muted'}">
+							<div class="mt-1 flex w-fit items-center gap-0.5 rounded-full px-1.5 py-0.5 {trend === 'up' ? 'bg-emerald-500/10' : trend === 'down' ? 'bg-red-500/10' : 'bg-muted'}">
 								{#if trend === 'up'}
 									<TrendingUp class="h-3 w-3 text-emerald-600 dark:text-emerald-400" />
 									<span class="text-xs font-semibold text-emerald-600 dark:text-emerald-400">+{percentChange}%</span>

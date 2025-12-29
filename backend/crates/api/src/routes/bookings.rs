@@ -5,9 +5,11 @@ use axum::{
 };
 use loafy_core::booking::{cancel_booking, create_booking_with_lock};
 use loafy_db::queries::bookings;
+use loafy_integrations::stripe::StripePayments;
 use loafy_types::api::admin::PageInfo;
 use loafy_types::api::bookings::{BookingResponse, CreateBookingRequest, UserBookingsResponse};
 use serde::Deserialize;
+use stripe::PaymentIntentId;
 use uuid::Uuid;
 use validator::Validate;
 
@@ -65,7 +67,7 @@ pub async fn get_booking(
     State(state): State<AppState>,
     Path(id): Path<Uuid>,
 ) -> Result<Json<BookingResponse>, ApiError> {
-    let booking = bookings::find_by_id(&state.db, id)
+    let booking = bookings::find_by_id_with_session(&state.db, id)
         .await
         .map_err(response::db_error)?
         .ok_or_else(|| response::not_found("Booking"))?;
@@ -113,6 +115,17 @@ pub async fn cancel_booking_route(
     State(state): State<AppState>,
     Path(id): Path<Uuid>,
 ) -> Result<Json<BookingResponse>, ApiError> {
+    // Get original booking to check payment status before cancellation
+    let original_booking = bookings::find_by_id(&state.db, id)
+        .await
+        .map_err(response::db_error)?
+        .ok_or_else(|| response::not_found("Booking"))?;
+
+    // Check if refund will be needed (before status changes to 'cancelled')
+    let needs_refund = original_booking.payment_method == "stripe"
+        && original_booking.payment_status == "confirmed"
+        && original_booking.stripe_payment_id.is_some();
+
     let cancelled_booking = cancel_booking(&state.db, id, user.id)
         .await
         .map_err(|e| {
@@ -122,6 +135,33 @@ pub async fn cancel_booking_route(
                 e.to_string(),
             )
         })?;
+
+    // Process Stripe refund if payment was confirmed
+    if needs_refund {
+        if let Some(ref payment_intent_id) = original_booking.stripe_payment_id {
+            // Parse the payment intent ID
+            let intent_id: PaymentIntentId = payment_intent_id.parse().map_err(|_| {
+                response::internal_error("Invalid payment intent ID stored in booking")
+            })?;
+
+            // Get Stripe client
+            let stripe_key = std::env::var("STRIPE_SECRET_KEY")
+                .map_err(|_| response::internal_error("Stripe not configured"))?;
+            let stripe = StripePayments::new(stripe_key);
+
+            // Process refund
+            stripe
+                .refund_payment(&intent_id)
+                .await
+                .map_err(|e| response::internal_error_msg("Failed to process refund", e))?;
+
+            tracing::info!(
+                "Processed refund for cancelled booking {} (PaymentIntent: {})",
+                cancelled_booking.booking_code,
+                payment_intent_id
+            );
+        }
+    }
 
     Ok(Json(cancelled_booking.into()))
 }

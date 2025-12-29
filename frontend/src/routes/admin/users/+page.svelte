@@ -27,7 +27,7 @@
 	import { DateTimePicker } from '$lib/components/ui/datetime-picker';
 	import * as Tooltip from '$lib/components/ui/tooltip';
 	import { Pagination } from '$lib/components/ui/pagination';
-	import { Users, MoreHorizontal, Ban, UserCheck, Info, Search, ArrowUpDown, ArrowUp, ArrowDown, X, Pencil, Trash2 } from 'lucide-svelte';
+	import { Users, MoreHorizontal, Ban, UserCheck, Info, Search, ArrowUpDown, ArrowUp, ArrowDown, X, Pencil, Trash2, Ticket } from 'lucide-svelte';
 	import type { AdminUser, PageInfo } from '$lib/types';
 
 	const t = useTranslation();
@@ -79,6 +79,16 @@
 	let userToDelete = $state<AdminUser | null>(null);
 	let deleteError = $state<string | null>(null);
 	let deleting = $state(false);
+
+	// Ticket dialog state
+	let ticketDialogOpen = $state(false);
+	let ticketUser = $state<AdminUser | null>(null);
+	let ticketAction = $state<'grant' | 'revoke'>('grant');
+	let ticketAmount = $state(1);
+	let ticketReason = $state('');
+	let ticketProcessing = $state(false);
+	let ticketError = $state<string | null>(null);
+	let userTicketBalance = $state<number | null>(null);
 
 	// Initialize from URL params
 	function initFromUrl() {
@@ -347,6 +357,49 @@
 		}
 	}
 
+	// Ticket functions
+	async function openTicketDialog(user: AdminUser, action: 'grant' | 'revoke') {
+		ticketUser = user;
+		ticketAction = action;
+		ticketAmount = 1;
+		ticketReason = '';
+		ticketError = null;
+		ticketDialogOpen = true;
+
+		// Load user's current ticket balance
+		try {
+			const response = await api.admin.getUserTickets(user.id);
+			userTicketBalance = response.data.tickets_remaining ?? 0;
+		} catch {
+			userTicketBalance = null;
+		}
+	}
+
+	async function handleTicketAction() {
+		if (!ticketUser || ticketAmount < 1) return;
+
+		ticketProcessing = true;
+		ticketError = null;
+
+		try {
+			if (ticketAction === 'grant') {
+				await api.admin.grantTickets(ticketUser.id, {
+					amount: ticketAmount,
+					reason: ticketReason || undefined
+				});
+			} else {
+				await api.admin.revokeTickets(ticketUser.id, {
+					amount: ticketAmount,
+					reason: ticketReason || undefined
+				});
+			}
+			ticketDialogOpen = false;
+		} catch (err: any) {
+			ticketError = extractErrorMessage(err, `Failed to ${ticketAction} tickets`);
+		} finally {
+			ticketProcessing = false;
+		}
+	}
 
 	function getInitials(name: string | undefined, email: string): string {
 		if (name) {
@@ -453,7 +506,7 @@
 	</AnimatedContainer>
 
 	{#if loading && showSkeleton}
-		<TableSkeleton rows={5} cols={5} />
+		<TableSkeleton rows={5} cols={7} />
 	{:else if loading}
 		<!-- Brief loading -->
 	{:else if users.length === 0}
@@ -593,18 +646,29 @@
 										</Select.Root>
 									</Table.Cell>
 									<Table.Cell>
-										{#if user.role !== 'admin'}
-											<DropdownMenu.Root>
-												<DropdownMenu.Trigger>
-													<Button variant="ghost" size="icon" class="h-8 w-8">
-														<MoreHorizontal class="h-4 w-4" />
-													</Button>
-												</DropdownMenu.Trigger>
-												<DropdownMenu.Content align="end">
+										<DropdownMenu.Root>
+											<DropdownMenu.Trigger>
+												<Button variant="ghost" size="icon" class="h-8 w-8">
+													<MoreHorizontal class="h-4 w-4" />
+												</Button>
+											</DropdownMenu.Trigger>
+											<DropdownMenu.Content align="end">
+												{#if user.role !== 'admin'}
 													<DropdownMenu.Item onclick={() => openEditDialog(user)}>
 														<Pencil class="mr-2 h-4 w-4" />
 														{t('common.edit')}
 													</DropdownMenu.Item>
+													<DropdownMenu.Separator />
+												{/if}
+												<DropdownMenu.Item onclick={() => openTicketDialog(user, 'grant')}>
+													<Ticket class="mr-2 h-4 w-4 text-green-500" />
+													Grant Tickets
+												</DropdownMenu.Item>
+												<DropdownMenu.Item onclick={() => openTicketDialog(user, 'revoke')}>
+													<Ticket class="mr-2 h-4 w-4 text-red-500" />
+													Revoke Tickets
+												</DropdownMenu.Item>
+												{#if user.role !== 'admin'}
 													<DropdownMenu.Separator />
 													{#if user.restriction.is_suspended}
 														<DropdownMenu.Item
@@ -631,9 +695,9 @@
 														<Trash2 class="mr-2 h-4 w-4 text-destructive" />
 														{t('common.delete')}
 													</DropdownMenu.Item>
-												</DropdownMenu.Content>
-											</DropdownMenu.Root>
-										{/if}
+												{/if}
+											</DropdownMenu.Content>
+										</DropdownMenu.Root>
 									</Table.Cell>
 								</Table.Row>
 							{/each}
@@ -812,6 +876,68 @@
 					disabled={deleting}
 				>
 					{deleting ? t('admin.users.deleting') : t('common.delete')}
+				</Button>
+			</AlertDialog.Footer>
+		</AlertDialog.Content>
+	</AlertDialog.Root>
+
+	<!-- Ticket Grant/Revoke Dialog -->
+	<AlertDialog.Root bind:open={ticketDialogOpen}>
+		<AlertDialog.Content class="max-w-md" interactOutsideBehavior="close">
+			<AlertDialog.Header>
+				<AlertDialog.Title>
+					{ticketAction === 'grant' ? 'Grant Tickets' : 'Revoke Tickets'}
+				</AlertDialog.Title>
+				<AlertDialog.Description>
+					{#if ticketUser}
+						{ticketAction === 'grant' ? 'Add' : 'Remove'} tickets for {ticketUser.name || ticketUser.email}
+						{#if userTicketBalance !== null}
+							<br />
+							<span class="font-medium">Current balance: {userTicketBalance} tickets</span>
+						{/if}
+					{/if}
+				</AlertDialog.Description>
+			</AlertDialog.Header>
+
+			{#if ticketError}
+				<Alert variant="destructive" class="mb-4">
+					<AlertDescription>{ticketError}</AlertDescription>
+				</Alert>
+			{/if}
+
+			<div class="grid gap-4 py-4">
+				<div class="grid grid-cols-4 items-center gap-4">
+					<Label for="ticket_amount" class="text-right">Amount</Label>
+					<Input
+						id="ticket_amount"
+						type="number"
+						min="1"
+						max={ticketAction === 'revoke' && userTicketBalance !== null ? userTicketBalance : 100}
+						bind:value={ticketAmount}
+						class="col-span-3"
+					/>
+				</div>
+				<div class="grid grid-cols-4 items-center gap-4">
+					<Label for="ticket_reason" class="text-right">Reason</Label>
+					<Input
+						id="ticket_reason"
+						bind:value={ticketReason}
+						placeholder="Optional reason"
+						class="col-span-3"
+					/>
+				</div>
+			</div>
+
+			<AlertDialog.Footer>
+				<AlertDialog.Cancel disabled={ticketProcessing}>
+					{t('common.cancel')}
+				</AlertDialog.Cancel>
+				<Button
+					variant={ticketAction === 'grant' ? 'default' : 'destructive'}
+					onclick={handleTicketAction}
+					disabled={ticketProcessing || ticketAmount < 1}
+				>
+					{ticketProcessing ? 'Processing...' : ticketAction === 'grant' ? 'Grant' : 'Revoke'}
 				</Button>
 			</AlertDialog.Footer>
 		</AlertDialog.Content>

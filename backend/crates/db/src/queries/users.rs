@@ -1,6 +1,6 @@
 use crate::models::{Role, User, UserWithRole};
 use anyhow::Result;
-use chrono::{DateTime, Utc};
+use chrono::{DateTime, NaiveDate, Utc};
 use sqlx::PgPool;
 use uuid::Uuid;
 
@@ -16,6 +16,7 @@ const USER_WITH_ROLE_SELECT: &str = r#"
         u.role_id,
         u.auth_provider,
         u.auth_provider_id,
+        u.birthday,
         u.created_at as user_created_at,
         u.updated_at as user_updated_at,
         u.deleted_at as user_deleted_at,
@@ -369,4 +370,72 @@ pub async fn unsuspend_user(pool: &PgPool, user_id: Uuid) -> Result<User> {
     .await?;
 
     Ok(user)
+}
+
+/// Set user birthday (can only be set once)
+pub async fn set_birthday(pool: &PgPool, user_id: Uuid, birthday: NaiveDate) -> Result<User> {
+    // First check if birthday is already set
+    let current: Option<(Option<NaiveDate>,)> = sqlx::query_as(
+        "SELECT birthday FROM users WHERE id = $1"
+    )
+    .bind(user_id)
+    .fetch_optional(pool)
+    .await?;
+
+    if let Some((Some(_existing),)) = current {
+        return Err(anyhow::anyhow!("Birthday has already been set and cannot be changed"));
+    }
+
+    let user = sqlx::query_as::<_, User>(
+        r#"
+        UPDATE users
+        SET birthday = $2,
+            updated_at = NOW()
+        WHERE id = $1 AND birthday IS NULL
+        RETURNING *
+        "#
+    )
+    .bind(user_id)
+    .bind(birthday)
+    .fetch_one(pool)
+    .await?;
+
+    Ok(user)
+}
+
+/// Find users with birthday today who are eligible for birthday bonus
+/// Requirements:
+/// - Has birthday set
+/// - Account is at least `min_account_age_days` old
+/// - Has an active subscription
+/// - Not already received birthday bonus this year
+pub async fn find_birthday_bonus_eligible(
+    pool: &PgPool,
+    today: NaiveDate,
+    min_account_age_days: i32,
+    current_year: i32,
+) -> Result<Vec<User>> {
+    let users = sqlx::query_as::<_, User>(
+        r#"
+        SELECT u.* FROM users u
+        JOIN subscriptions s ON s.user_id = u.id AND s.status = 'active'
+        LEFT JOIN bonus_tickets bt ON bt.user_id = u.id
+            AND bt.bonus_type = 'birthday'
+            AND bt.year = $4
+        WHERE u.birthday IS NOT NULL
+          AND EXTRACT(MONTH FROM u.birthday) = EXTRACT(MONTH FROM $1::date)
+          AND EXTRACT(DAY FROM u.birthday) = EXTRACT(DAY FROM $1::date)
+          AND u.created_at < NOW() - ($2::int || ' days')::interval
+          AND u.deleted_at IS NULL
+          AND bt.id IS NULL
+        "#
+    )
+    .bind(today)
+    .bind(min_account_age_days)
+    .bind(min_account_age_days)
+    .bind(current_year)
+    .fetch_all(pool)
+    .await?;
+
+    Ok(users)
 }

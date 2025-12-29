@@ -140,7 +140,7 @@
 	<title>Authenticating... - Loafy Club</title>
 </svelte:head>
 
-<PageBackground>
+<PageBackground noFooter>
 	<div class="fixed inset-0 flex items-center justify-center">
 		<div class="w-full max-w-sm px-4">
 			<div class="mb-8 flex justify-center">

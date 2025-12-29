@@ -3,7 +3,7 @@
 	import { goto } from '$app/navigation';
 	import { api } from '$lib/api/client';
 	import { formatCurrency, formatCompactCurrency, extractErrorMessage } from '$lib/utils';
-	import { getPaymentBadgeVariant } from '$lib/utils/status';
+	import { getBookingBadgeVariant, getBookingStatusKey } from '$lib/utils/status';
 	import { requireRole } from '$lib/guards/auth';
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { useTranslation } from '$lib/i18n/index.svelte';
@@ -82,6 +82,7 @@
 		total_price_vnd: number;
 		payment_status: string;
 		payment_deadline: string | null;
+		cancelled_at: string | null;
 		created_at: string;
 	}
 
@@ -218,6 +219,13 @@
 		return 'text-success-text';
 	}
 
+	function getPlayersColor(joined: number, total: number): string {
+		const ratio = joined / total;
+		if (ratio >= 0.8) return 'text-success-text';
+		if (ratio >= 0.5) return 'text-warning-text';
+		return 'text-muted-foreground';
+	}
+
 	async function handlePeriodChange(period: Period) {
 		selectedPeriod = period;
 		await loadDashboard();
@@ -327,38 +335,82 @@
 	</AnimatedContainer>
 
 	{#if loading}
-		<!-- Main Stats Skeleton -->
+		<!-- Main Stats Skeleton (4 StatCards with sparklines) -->
 		<div class="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
 			{#each Array(4) as _}
 				<Card variant="glass">
-					<Skeleton class="mb-2 h-4 w-24" />
-					<Skeleton class="h-8 w-16" />
+					<div class="flex items-start justify-between">
+						<div>
+							<Skeleton class="mb-2 h-4 w-24" />
+							<Skeleton class="mb-1 h-8 w-16" />
+							<Skeleton class="h-3 w-20" />
+						</div>
+						<Skeleton class="h-9 w-9 rounded-lg" />
+					</div>
+					<Skeleton class="mt-3 h-10 w-full" />
 				</Card>
 			{/each}
 		</div>
 
-		<!-- Key Metrics Skeleton -->
+		<!-- Profit & Expenses Section Skeleton -->
 		<div class="mt-8">
-			<Skeleton class="mb-4 h-6 w-32" />
-			<div class="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-				{#each Array(4) as _}
+			<Skeleton class="mb-4 h-6 w-36" />
+			<div class="grid gap-4 md:grid-cols-3">
+				{#each Array(3) as _}
 					<Card variant="glass">
 						<div class="flex items-center gap-3">
 							<Skeleton class="h-9 w-9 rounded-lg" />
-							<div>
-								<Skeleton class="mb-1 h-3 w-20" />
-								<Skeleton class="h-6 w-12" />
+							<div class="flex-1">
+								<Skeleton class="mb-1 h-3 w-24" />
+								<Skeleton class="h-6 w-16" />
 							</div>
 						</div>
+						<Skeleton class="mt-3 h-10 w-full" />
 					</Card>
 				{/each}
 			</div>
 		</div>
 
-		<!-- Charts Skeleton -->
-		<div class="mt-8 grid gap-6 lg:grid-cols-2">
+		<!-- Profit Charts Row Skeleton -->
+		<div class="mt-6 grid gap-6 lg:grid-cols-2">
+			<Card variant="glass" class="min-h-[320px]">
+				<Skeleton class="mb-4 h-5 w-32" />
+				<Skeleton class="h-[260px] w-full rounded-lg" />
+			</Card>
+			<Card variant="glass" class="min-h-[320px]">
+				<Skeleton class="mb-4 h-5 w-40" />
+				<Skeleton class="mx-auto h-[180px] w-[180px] rounded-full" />
+				<div class="mt-4 flex flex-wrap justify-center gap-3">
+					{#each Array(4) as _}
+						<Skeleton class="h-4 w-16" />
+					{/each}
+				</div>
+			</Card>
+		</div>
+
+		<!-- Key Metrics Section Skeleton -->
+		<div class="mt-8">
+			<Skeleton class="mb-4 h-6 w-28" />
+			<div class="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+				{#each Array(4) as _}
+					<Card variant="glass">
+						<div class="flex items-center gap-3">
+							<Skeleton class="h-9 w-9 rounded-lg" />
+							<div class="flex-1">
+								<Skeleton class="mb-1 h-3 w-24" />
+								<Skeleton class="h-6 w-12" />
+							</div>
+						</div>
+						<Skeleton class="mt-3 h-10 w-full" />
+					</Card>
+				{/each}
+			</div>
+		</div>
+
+		<!-- Booking & Session Charts Skeleton -->
+		<div class="mt-6 grid gap-6 lg:grid-cols-2">
 			<Card variant="glass">
-				<Skeleton class="mb-4 h-4 w-28" />
+				<Skeleton class="mb-4 h-5 w-32" />
 				<Skeleton class="mx-auto h-[200px] w-[200px] rounded-full" />
 				<div class="mt-4 flex justify-center gap-4">
 					<Skeleton class="h-4 w-20" />
@@ -367,7 +419,7 @@
 				</div>
 			</Card>
 			<Card variant="glass">
-				<Skeleton class="mb-4 h-4 w-32" />
+				<Skeleton class="mb-4 h-5 w-36" />
 				<div class="space-y-4">
 					{#each Array(5) as _}
 						<div class="space-y-1.5">
@@ -616,8 +668,8 @@
 									<div class="min-w-0 flex-1">
 										<div class="flex items-center gap-2">
 											<span class="font-mono text-sm font-medium text-foreground">{booking.booking_code}</span>
-											<Badge variant={getPaymentBadgeVariant(booking.payment_status)} class="text-xs">
-												{booking.payment_status}
+											<Badge variant={getBookingBadgeVariant(booking.payment_status, !!booking.cancelled_at)} class="text-xs">
+												{t(`admin.bookings.status.${getBookingStatusKey(booking.payment_status, !!booking.cancelled_at)}`)}
 											</Badge>
 										</div>
 										<p class="text-sm text-muted-foreground truncate">
@@ -660,8 +712,8 @@
 										</p>
 									</div>
 									<div class="text-right ml-4">
-										<p class="text-sm font-medium {getSlotsColor(session.available_slots, session.total_slots)}">
-											{session.available_slots}/{session.total_slots} slots
+										<p class="text-sm font-medium {getPlayersColor(session.total_slots - session.available_slots, session.total_slots)}">
+											{session.total_slots - session.available_slots}/{session.total_slots} players
 										</p>
 										<p class="text-xs text-muted-foreground">{formatCurrency(session.price_vnd)}</p>
 									</div>

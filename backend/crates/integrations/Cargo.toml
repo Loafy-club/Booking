@@ -21,9 +21,8 @@ thiserror = { workspace = true }
 tracing = { workspace = true }
 reqwest = { workspace = true }
 
-# Stripe - temporarily comment out for testing
-# We'll add proper integration after getting backend running
-# stripe-rust = "0.12"
+# Stripe payments
+async-stripe = { version = "0.41", features = ["runtime-tokio-hyper"] }
 
 # Google Cloud Vision
 google-vision1 = "6.0"

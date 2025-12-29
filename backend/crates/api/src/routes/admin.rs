@@ -4,15 +4,23 @@ use axum::{
 };
 use chrono::Duration;
 use loafy_types::{parse_period, validate_payment_method, validate_payment_status, validate_role};
-use loafy_db::queries::{admin, sessions as sessions_queries, users};
+use loafy_db::{
+    models::{bonus_types, transaction_types},
+    queries::{admin, bookings, sessions as sessions_queries, subscriptions, ticket_transactions, users},
+};
 use loafy_types::api::admin::{
     AdminBookingResponse, AdminSessionResponse, AdminUserResponse,
     PageInfo, PaginatedBookingsResponse, PaginatedSessionsResponse, PaginatedUsersResponse,
     SuspendUserRequest, UpdateBookingRequest, UpdateUserRequest,
 };
+use loafy_types::api::subscriptions::{
+    AdminGrantTicketsRequest, AdminUserTicketsResponse, TicketBalanceResponse,
+    TicketTransactionResponse,
+};
 use loafy_types::api::sessions::ParticipantInfo;
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
+use validator::Validate;
 
 use crate::middleware::{AppState, AuthUser, require_role};
 use crate::response::{self, ApiError};
@@ -662,6 +670,7 @@ pub async fn list_sessions(
             title: s.title,
             date: s.date,
             time: s.time,
+            end_time: s.end_time,
             location: s.location,
             courts: s.courts,
             total_slots: s.total_slots,
@@ -896,4 +905,198 @@ pub async fn get_daily_profit_data(
         .collect();
 
     Ok(Json(response))
+}
+
+// =============================================================================
+// Ticket Management Endpoints
+// =============================================================================
+
+/// GET /api/admin/users/:id/tickets
+/// Get user's ticket balance and recent transactions (admin only)
+pub async fn get_user_tickets(
+    AuthUser(admin): AuthUser,
+    State(state): State<AppState>,
+    Path(user_id): Path<Uuid>,
+) -> Result<Json<AdminUserTicketsResponse>, ApiError> {
+    require_role(&admin, "admin").map_err(|_| response::forbidden("Admin access required"))?;
+
+    // Check user exists
+    let _user = users::find_by_id(&state.db, user_id)
+        .await
+        .map_err(response::db_error)?
+        .ok_or_else(|| response::not_found("User"))?;
+
+    // Get subscription and ticket balance
+    let subscription = subscriptions::find_by_user_id(&state.db, user_id)
+        .await
+        .map_err(response::db_error)?;
+
+    // Get recent transactions (last 10)
+    let (transactions, _) = ticket_transactions::list_user_transactions(&state.db, user_id, 1, 10)
+        .await
+        .map_err(response::db_error)?;
+
+    // Convert transactions to response format with booking codes
+    let mut recent_transactions = Vec::with_capacity(transactions.len());
+    for tx in transactions {
+        let booking_code = if let Some(booking_id) = tx.booking_id {
+            bookings::find_by_id(&state.db, booking_id)
+                .await
+                .ok()
+                .flatten()
+                .map(|b| b.booking_code)
+        } else {
+            None
+        };
+
+        recent_transactions.push(TicketTransactionResponse {
+            id: tx.id,
+            transaction_type: tx.transaction_type,
+            amount: tx.amount,
+            balance_after: tx.balance_after,
+            notes: tx.notes,
+            booking_code,
+            created_at: tx.created_at.naive_utc(),
+        });
+    }
+
+    Ok(Json(AdminUserTicketsResponse {
+        user_id,
+        tickets_remaining: subscription.as_ref().map(|s| s.tickets_remaining).unwrap_or(0),
+        has_active_subscription: subscription.as_ref().map(|s| s.is_active()).unwrap_or(false),
+        current_period_end: subscription.and_then(|s| s.current_period_end.map(|dt| dt.naive_utc())),
+        recent_transactions,
+    }))
+}
+
+/// POST /api/admin/users/:id/tickets/grant
+/// Grant bonus tickets to a user (admin only)
+pub async fn grant_tickets(
+    AuthUser(admin): AuthUser,
+    State(state): State<AppState>,
+    Path(user_id): Path<Uuid>,
+    Json(request): Json<AdminGrantTicketsRequest>,
+) -> Result<Json<TicketBalanceResponse>, ApiError> {
+    require_role(&admin, "admin").map_err(|_| response::forbidden("Admin access required"))?;
+
+    // Validate request
+    request.validate().map_err(|e| response::bad_request(&e.to_string()))?;
+
+    // Check user exists
+    let _user = users::find_by_id(&state.db, user_id)
+        .await
+        .map_err(response::db_error)?
+        .ok_or_else(|| response::not_found("User"))?;
+
+    // Get user's subscription
+    let subscription = subscriptions::find_by_user_id(&state.db, user_id)
+        .await
+        .map_err(response::db_error)?
+        .ok_or_else(|| response::bad_request("User does not have a subscription"))?;
+
+    // Add bonus tickets
+    let new_balance = subscriptions::add_bonus_tickets(&state.db, subscription.id, request.amount)
+        .await
+        .map_err(response::db_error)?;
+
+    // Log the ticket transaction
+    ticket_transactions::create_with_pool(
+        &state.db,
+        user_id,
+        Some(subscription.id),
+        None,
+        transaction_types::BONUS_MANUAL,
+        request.amount,
+        new_balance,
+        request.reason.as_deref(),
+        Some(admin.id),
+    )
+    .await
+    .map_err(response::db_error)?;
+
+    // Record the bonus ticket award
+    ticket_transactions::create_bonus_ticket(
+        &state.db,
+        user_id,
+        bonus_types::MANUAL,
+        request.amount,
+        request.reason.as_deref(),
+        None,
+        Some(admin.id),
+        None,
+    )
+    .await
+    .map_err(response::db_error)?;
+
+    tracing::info!(
+        "Admin {} granted {} tickets to user {}",
+        admin.id,
+        request.amount,
+        user_id
+    );
+
+    Ok(Json(TicketBalanceResponse {
+        tickets_remaining: new_balance,
+        has_active_subscription: subscription.is_active(),
+        current_period_end: subscription.current_period_end.map(|dt| dt.naive_utc()),
+    }))
+}
+
+/// POST /api/admin/users/:id/tickets/revoke
+/// Revoke tickets from a user (admin only)
+pub async fn revoke_tickets(
+    AuthUser(admin): AuthUser,
+    State(state): State<AppState>,
+    Path(user_id): Path<Uuid>,
+    Json(request): Json<AdminGrantTicketsRequest>,
+) -> Result<Json<TicketBalanceResponse>, ApiError> {
+    require_role(&admin, "admin").map_err(|_| response::forbidden("Admin access required"))?;
+
+    // Validate request
+    request.validate().map_err(|e| response::bad_request(&e.to_string()))?;
+
+    // Check user exists
+    let _user = users::find_by_id(&state.db, user_id)
+        .await
+        .map_err(response::db_error)?
+        .ok_or_else(|| response::not_found("User"))?;
+
+    // Get user's subscription
+    let subscription = subscriptions::find_by_user_id(&state.db, user_id)
+        .await
+        .map_err(response::db_error)?
+        .ok_or_else(|| response::bad_request("User does not have a subscription"))?;
+
+    // Revoke tickets
+    let new_balance = subscriptions::revoke_tickets(&state.db, subscription.id, request.amount)
+        .await
+        .map_err(response::db_error)?;
+
+    // Log the ticket transaction
+    ticket_transactions::create_with_pool(
+        &state.db,
+        user_id,
+        Some(subscription.id),
+        None,
+        transaction_types::REVOKED,
+        -request.amount, // negative for revocation
+        new_balance,
+        request.reason.as_deref(),
+        Some(admin.id),
+    )
+    .await
+    .map_err(response::db_error)?;
+
+    tracing::info!(
+        "Admin {} revoked {} tickets from user {}",
+        admin.id,
+        request.amount,
+        user_id
+    );
+
+    Ok(Json(TicketBalanceResponse {
+        tickets_remaining: new_balance,
+        has_active_subscription: subscription.is_active(),
+        current_period_end: subscription.current_period_end.map(|dt| dt.naive_utc()),
+    }))
 }

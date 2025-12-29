@@ -59,9 +59,14 @@ pub async fn create_payment_intent(
     // Calculate total amount
     let total_amount_vnd = booking.price_paid_vnd + booking.guest_price_paid_vnd;
 
-    // Create payment intent
+    // Create payment intent with metadata for webhook correlation
     let payment_intent = stripe
-        .create_payment_intent(total_amount_vnd, &booking.id.to_string())
+        .create_payment_intent(
+            total_amount_vnd,
+            &booking.id.to_string(),
+            &user.id.to_string(),
+            &booking.booking_code,
+        )
         .await
         .map_err(|e| response::internal_error_msg("Failed to create payment intent", e))?;
 

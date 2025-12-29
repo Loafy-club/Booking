@@ -74,6 +74,7 @@ async fn main() -> anyhow::Result<()> {
         .route("/api/users/me", put(routes::users::update_profile).delete(routes::users::delete_account))
         // Session routes
         .route("/api/sessions", get(routes::sessions::list_sessions))
+        .route("/api/sessions/locations", get(routes::sessions::list_locations))
         .route("/api/sessions/:id", get(routes::sessions::get_session))
         .route("/api/sessions/:id/participants", get(routes::sessions::get_session_participants))
         .route("/api/sessions", post(routes::sessions::create_session))
@@ -87,6 +88,13 @@ async fn main() -> anyhow::Result<()> {
         // Payment routes
         .route("/api/payments/stripe/intent", post(routes::payments::create_payment_intent))
         .route("/api/webhooks/stripe", post(routes::payments::stripe_webhook))
+        // Subscription/ticket routes
+        .route("/api/subscriptions/tickets", get(routes::subscriptions::get_ticket_balance))
+        .route("/api/subscriptions/tickets/history", get(routes::subscriptions::get_ticket_history))
+        .route("/api/subscriptions/purchase", post(routes::subscriptions::create_checkout_session))
+        .route("/api/subscriptions/current", get(routes::subscriptions::get_current_subscription))
+        .route("/api/subscriptions/cancel", post(routes::subscriptions::cancel_subscription))
+        .route("/api/subscriptions/resume", post(routes::subscriptions::resume_subscription))
         // Admin routes
         .route("/api/admin/stats", get(routes::admin::get_stats))
         .route("/api/admin/users", get(routes::admin::list_users))
@@ -94,6 +102,9 @@ async fn main() -> anyhow::Result<()> {
         .route("/api/admin/users/:id/role", put(routes::admin::update_user_role))
         .route("/api/admin/users/:id/suspend", post(routes::admin::suspend_user))
         .route("/api/admin/users/:id/unsuspend", post(routes::admin::unsuspend_user))
+        .route("/api/admin/users/:id/tickets", get(routes::admin::get_user_tickets))
+        .route("/api/admin/users/:id/tickets/grant", post(routes::admin::grant_tickets))
+        .route("/api/admin/users/:id/tickets/revoke", post(routes::admin::revoke_tickets))
         .route("/api/admin/bookings", get(routes::admin::list_bookings))
         .route("/api/admin/bookings/:id", get(routes::admin::get_booking).put(routes::admin::update_booking))
         .route("/api/admin/sessions", get(routes::admin::list_sessions))

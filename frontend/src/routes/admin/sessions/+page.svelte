@@ -76,11 +76,33 @@
 	let formDescription = $state('');
 	let formLocation = $state('');
 	let formStartTime = $state('');
-	let formEndTime = $state('');
+	let formDuration = $state(120); // Duration in minutes (default 2 hours)
 	let formMaxSlots = $state(8);
 	let formPriceVnd = $state<number>(100000);
 	let formEarlyAccessEndsAt = $state('');
 	let formExpenses = $state<Expense[]>([]);
+
+	// Duration options (in minutes)
+	const durationOptions = [
+		{ value: 60, label: '1h' },
+		{ value: 90, label: '1h 30m' },
+		{ value: 120, label: '2h' },
+		{ value: 150, label: '2h 30m' },
+		{ value: 180, label: '3h' }
+	];
+
+	// Format duration from start and end time strings (HH:MM:SS format)
+	function formatDuration(startTime: string, endTime?: string): string {
+		if (!endTime) return '';
+		const [startH, startM] = startTime.split(':').map(Number);
+		const [endH, endM] = endTime.split(':').map(Number);
+		let durationMins = (endH * 60 + endM) - (startH * 60 + startM);
+		if (durationMins < 0) durationMins += 24 * 60; // Handle crossing midnight
+		const hours = Math.floor(durationMins / 60);
+		const mins = durationMins % 60;
+		if (mins === 0) return `${hours}h`;
+		return `${hours}h ${mins}m`;
+	}
 
 	const categoryOptions = [
 		{ value: 'court_rental', label: () => t('organizer.createSession.expenses.courtRental') },
@@ -255,7 +277,7 @@
 		formDescription = '';
 		formLocation = '';
 		formStartTime = '';
-		formEndTime = '';
+		formDuration = 120; // Default 2 hours
 		formMaxSlots = 8;
 		formPriceVnd = 100000;
 		formEarlyAccessEndsAt = '';
@@ -283,10 +305,19 @@
 		formTitle = session.title;
 		formDescription = session.description || '';
 		formLocation = session.location;
-		formStartTime = `${session.date}T${session.time}`;
-		const startDate = new Date(`${session.date}T${session.time}`);
-		startDate.setHours(startDate.getHours() + 2);
-		formEndTime = startDate.toISOString().slice(0, 16);
+		formStartTime = `${session.date}T${session.time.slice(0, 5)}`;
+
+		// Calculate duration from start and end times
+		if (session.end_time) {
+			const [startH, startM] = session.time.split(':').map(Number);
+			const [endH, endM] = session.end_time.split(':').map(Number);
+			let durationMins = (endH * 60 + endM) - (startH * 60 + startM);
+			if (durationMins < 0) durationMins += 24 * 60; // Handle crossing midnight
+			formDuration = durationMins;
+		} else {
+			formDuration = 120; // Default 2 hours
+		}
+
 		formMaxSlots = session.total_slots;
 		formPriceVnd = session.price_vnd || 100000;
 		formEarlyAccessEndsAt = session.early_access_ends_at || '';
@@ -336,19 +367,19 @@
 	}
 
 	async function saveSession() {
-		// Validate times
+		// Validate start time
 		const startTime = new Date(formStartTime);
-		const endTime = new Date(formEndTime);
-
-		if (startTime >= endTime) {
-			sessionError = t('organizer.createSession.errors.endTimeAfterStart');
-			return;
-		}
 
 		if (isCreating && startTime < new Date()) {
 			sessionError = t('organizer.createSession.errors.startTimeInFuture');
 			return;
 		}
+
+		// Calculate end_time from start_time + duration (keep local timezone)
+		const endTime = new Date(startTime.getTime() + formDuration * 60 * 1000);
+		// Format as local time YYYY-MM-DDTHH:MM (not UTC)
+		const pad = (n: number) => n.toString().padStart(2, '0');
+		const endTimeStr = `${endTime.getFullYear()}-${pad(endTime.getMonth() + 1)}-${pad(endTime.getDate())}T${pad(endTime.getHours())}:${pad(endTime.getMinutes())}`;
 
 		// Validate expenses
 		for (const expense of formExpenses) {
@@ -370,7 +401,7 @@
 				title: formTitle,
 				location: formLocation,
 				start_time: formStartTime,
-				end_time: formEndTime,
+				end_time: endTimeStr,
 				max_slots: formMaxSlots,
 				price_vnd: formPriceVnd
 			};
@@ -479,7 +510,7 @@
 	</AnimatedContainer>
 
 	{#if loading && showSkeleton}
-		<TableSkeleton rows={5} cols={6} />
+		<TableSkeleton rows={5} cols={7} />
 	{:else if loading}
 		<!-- Brief loading -->
 	{:else if sessions.length === 0}
@@ -527,6 +558,7 @@
 										<svelte:component this={getSortIcon('date')} class="h-4 w-4" />
 									</button>
 								</Table.Head>
+								<Table.Head>{t('admin.sessions.table.duration')}</Table.Head>
 								<Table.Head>{t('admin.sessions.table.participants')}</Table.Head>
 								<Table.Head>
 									<button
@@ -549,7 +581,10 @@
 										<div class="text-sm text-muted-foreground">{session.location}</div>
 									</Table.Cell>
 									<Table.Cell class="text-muted-foreground">
-										{session.date} {session.time}
+										{session.date} {session.time.slice(0, 5)}
+									</Table.Cell>
+									<Table.Cell class="text-muted-foreground">
+										{formatDuration(session.time, session.end_time) || '-'}
 									</Table.Cell>
 									<Table.Cell>
 										<SessionParticipants session={session} variant="default" />
@@ -725,17 +760,23 @@
 				/>
 			</div>
 
-			<!-- End Time -->
+			<!-- Duration -->
 			<div class="space-y-2">
-				<Label for="form_end_time">
-					{t('organizer.createSession.form.endTime')} <span class="text-destructive">*</span>
+				<Label for="form_duration">
+					{t('organizer.createSession.form.duration')} <span class="text-destructive">*</span>
 				</Label>
-				<DateTimePicker
-					id="form_end_time"
-					bind:value={formEndTime}
-					placeholder={t('organizer.createSession.form.selectEndTime')}
-					required
-				/>
+				<Select.Root type="single" value={String(formDuration)} onValueChange={(v) => v && (formDuration = Number(v))}>
+					<Select.Trigger id="form_duration" class="w-full">
+						<Select.Value placeholder={t('organizer.createSession.form.selectDuration')}>
+							{durationOptions.find(o => o.value === formDuration)?.label || `${Math.floor(formDuration / 60)}h ${formDuration % 60}m`}
+						</Select.Value>
+					</Select.Trigger>
+					<Select.Content>
+						{#each durationOptions as option}
+							<Select.Item value={String(option.value)}>{option.label}</Select.Item>
+						{/each}
+					</Select.Content>
+				</Select.Root>
 			</div>
 
 			<!-- Max Slots and Price Row -->

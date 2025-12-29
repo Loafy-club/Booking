@@ -6,6 +6,9 @@
 	import {
 		formatCurrency,
 		formatDate,
+		formatDateOnly,
+		formatTime,
+		formatDuration,
 		isBookingPending,
 		canCancelBooking,
 		getBookingTotal,
@@ -25,7 +28,8 @@
 	import { Alert, AlertDescription } from '$lib/components/ui/alert';
 	import * as AlertDialog from '$lib/components/ui/alert-dialog';
 	import { Pagination } from '$lib/components/ui/pagination';
-	import { Ticket } from 'lucide-svelte';
+	import { Countdown } from '$lib/components/ui/countdown';
+	import { Ticket, Clock, Calendar, MapPin } from 'lucide-svelte';
 	import type { Booking, PageInfo } from '$lib/types';
 
 	// Cancel booking dialog state
@@ -197,9 +201,29 @@
 										{t('bookings.bookingCode')} {booking.booking_code}
 									</h3>
 										<Badge variant={booking.payment_status as any}>{t(`bookings.status.${booking.payment_status}`)}</Badge>
-										{#if booking.cancelled_at}
-											<Badge variant="cancelled">{t('bookings.status.cancelled')}</Badge>
-										{/if}
+									</div>
+
+									<!-- Session Info -->
+									<div class="mt-3 p-3 rounded-lg bg-muted/50">
+										<p class="text-sm font-semibold text-foreground mb-2">
+											{booking.session_title}
+										</p>
+										<div class="flex flex-wrap gap-4 text-sm text-muted-foreground">
+											<span class="flex items-center gap-1.5">
+												<Calendar class="h-4 w-4" />
+												{formatDateOnly(booking.session_date)} • {formatTime(booking.session_time)}{#if booking.session_end_time} - {formatTime(booking.session_end_time)}{/if}
+												{#if booking.session_end_time}
+													{@const duration = formatDuration(booking.session_time, booking.session_end_time)}
+													{#if duration}
+														<span class="text-xs text-muted-foreground/70">({duration})</span>
+													{/if}
+												{/if}
+											</span>
+											<span class="flex items-center gap-1.5">
+												<MapPin class="h-4 w-4" />
+												{booking.session_location}
+											</span>
+										</div>
 									</div>
 
 									<div class="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -234,8 +258,10 @@
 
 							{#if isBookingPending(booking) && booking.payment_deadline}
 										<Alert class="mt-4" variant="warning">
-											<AlertDescription>
-												{t('bookings.paymentRequired', { date: formatDate(booking.payment_deadline) })}
+											<AlertDescription class="flex items-center gap-2">
+												<Clock class="h-4 w-4 shrink-0" />
+												{t('countdown.timeRemaining')}:
+												<Countdown deadline={booking.payment_deadline} compact class="text-warning-foreground" />
 											</AlertDescription>
 										</Alert>
 									{/if}

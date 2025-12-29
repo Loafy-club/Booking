@@ -84,15 +84,24 @@ export const api = {
 
 	// Users
 	users: {
-		updateProfile: (data: { name?: string; phone?: string; avatar_url?: string }) =>
+		updateProfile: (data: { name?: string; phone?: string; avatar_url?: string; birthday?: string }) =>
 			apiClient.put('/api/users/me', data),
 		deleteAccount: () => apiClient.delete('/api/users/me')
 	},
 
 	// Sessions
 	sessions: {
-		list: (params?: { from_date?: string; organizer_id?: string; available_only?: boolean }) =>
-			apiClient.get('/api/sessions', { params }),
+		list: (params?: {
+			from_date?: string;
+			to_date?: string;
+			time_of_day?: string;
+			location?: string;
+			organizer_id?: string;
+			available_only?: boolean;
+			page?: number;
+			per_page?: number;
+		}) => apiClient.get('/api/sessions', { params }),
+		locations: () => apiClient.get<string[]>('/api/sessions/locations'),
 		get: (id: string) => apiClient.get(`/api/sessions/${id}`),
 		getParticipants: (id: string) => apiClient.get(`/api/sessions/${id}/participants`),
 		create: (data: {
@@ -142,6 +151,17 @@ export const api = {
 	payments: {
 		createIntent: (booking_id: string) =>
 			apiClient.post('/api/payments/stripe/intent', { booking_id })
+	},
+
+	// Subscriptions/Tickets
+	subscriptions: {
+		getTicketBalance: () => apiClient.get('/api/subscriptions/tickets'),
+		getTicketHistory: (params?: { page?: number; per_page?: number }) =>
+			apiClient.get('/api/subscriptions/tickets/history', { params }),
+		getCurrent: () => apiClient.get('/api/subscriptions/current'),
+		purchase: () => apiClient.post('/api/subscriptions/purchase'),
+		cancel: () => apiClient.post('/api/subscriptions/cancel'),
+		resume: () => apiClient.post('/api/subscriptions/resume')
 	},
 
 	// Admin
@@ -200,6 +220,13 @@ export const api = {
 		getExpensesByCategory: (period: string = '30d') =>
 			apiClient.get(`/api/admin/expenses/by-category?period=${period}`),
 		getDailyProfitData: (period: string = '30d') =>
-			apiClient.get(`/api/admin/profit/daily?period=${period}`)
+			apiClient.get(`/api/admin/profit/daily?period=${period}`),
+		// Ticket management
+		getUserTickets: (userId: string) =>
+			apiClient.get(`/api/admin/users/${userId}/tickets`),
+		grantTickets: (userId: string, data: { amount: number; reason?: string }) =>
+			apiClient.post(`/api/admin/users/${userId}/tickets/grant`, data),
+		revokeTickets: (userId: string, data: { amount: number; reason?: string }) =>
+			apiClient.post(`/api/admin/users/${userId}/tickets/revoke`, data)
 	}
 };

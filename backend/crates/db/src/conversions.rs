@@ -3,7 +3,7 @@
 //! These From implementations centralize the conversion logic that was
 //! previously duplicated across multiple route handlers.
 
-use crate::models::{Booking, Session, SessionExpense, UserWithRole};
+use crate::models::{Booking, BookingWithSession, Session, SessionExpense, UserWithRole};
 use loafy_types::{
     api::{
         admin::{AdminUserRestriction, AdminUserResponse},
@@ -25,6 +25,7 @@ impl From<UserWithRole> for AuthUser {
             phone: user.phone,
             avatar_url: user.avatar_url,
             role: user.role_name.parse().unwrap_or(UserRole::User),
+            birthday: user.birthday,
         }
     }
 }
@@ -38,6 +39,7 @@ impl From<&UserWithRole> for AuthUser {
             phone: user.phone.clone(),
             avatar_url: user.avatar_url.clone(),
             role: user.role_name.parse().unwrap_or(UserRole::User),
+            birthday: user.birthday,
         }
     }
 }
@@ -106,6 +108,7 @@ impl From<Booking> for BookingResponse {
             guest_count: b.guest_count,
             tickets_used: b.tickets_used,
             discount_applied: b.discount_applied.parse().unwrap_or(DiscountType::None),
+            session_price_vnd: DEFAULT_PRICE_VND, // Not available from basic Booking
             price_paid_vnd: b.price_paid_vnd,
             guest_price_paid_vnd: b.guest_price_paid_vnd,
             total_paid_vnd: b.price_paid_vnd + b.guest_price_paid_vnd,
@@ -115,7 +118,14 @@ impl From<Booking> for BookingResponse {
                 .verification_status
                 .map(|s| s.parse().unwrap_or(VerificationStatus::Pending)),
             payment_deadline: b.payment_deadline,
+            cancelled_at: b.cancelled_at,
             created_at: b.created_at,
+            // Session details not available when converting from basic Booking
+            session_title: String::new(),
+            session_date: chrono::NaiveDate::from_ymd_opt(1970, 1, 1).unwrap(),
+            session_time: chrono::NaiveTime::from_hms_opt(0, 0, 0).unwrap(),
+            session_end_time: None,
+            session_location: String::new(),
         }
     }
 }
@@ -130,6 +140,7 @@ impl From<&Booking> for BookingResponse {
             guest_count: b.guest_count,
             tickets_used: b.tickets_used,
             discount_applied: b.discount_applied.parse().unwrap_or(DiscountType::None),
+            session_price_vnd: DEFAULT_PRICE_VND, // Not available from basic Booking
             price_paid_vnd: b.price_paid_vnd,
             guest_price_paid_vnd: b.guest_price_paid_vnd,
             total_paid_vnd: b.price_paid_vnd + b.guest_price_paid_vnd,
@@ -140,7 +151,81 @@ impl From<&Booking> for BookingResponse {
                 .as_ref()
                 .map(|s| s.parse().unwrap_or(VerificationStatus::Pending)),
             payment_deadline: b.payment_deadline,
+            cancelled_at: b.cancelled_at,
             created_at: b.created_at,
+            // Session details not available when converting from basic Booking
+            session_title: String::new(),
+            session_date: chrono::NaiveDate::from_ymd_opt(1970, 1, 1).unwrap(),
+            session_time: chrono::NaiveTime::from_hms_opt(0, 0, 0).unwrap(),
+            session_end_time: None,
+            session_location: String::new(),
+        }
+    }
+}
+
+// ============================================================================
+// BookingWithSession -> BookingResponse
+// ============================================================================
+
+impl From<BookingWithSession> for BookingResponse {
+    fn from(b: BookingWithSession) -> Self {
+        Self {
+            id: b.id,
+            user_id: b.user_id,
+            session_id: b.session_id,
+            booking_code: b.booking_code,
+            guest_count: b.guest_count,
+            tickets_used: b.tickets_used,
+            discount_applied: b.discount_applied.parse().unwrap_or(DiscountType::None),
+            session_price_vnd: b.session_price_vnd,
+            price_paid_vnd: b.price_paid_vnd,
+            guest_price_paid_vnd: b.guest_price_paid_vnd,
+            total_paid_vnd: b.price_paid_vnd + b.guest_price_paid_vnd,
+            payment_method: b.payment_method.parse().unwrap_or(PaymentMethod::Stripe),
+            payment_status: b.payment_status.parse().unwrap_or(PaymentStatus::Pending),
+            verification_status: b
+                .verification_status
+                .map(|s| s.parse().unwrap_or(VerificationStatus::Pending)),
+            payment_deadline: b.payment_deadline,
+            cancelled_at: b.cancelled_at,
+            created_at: b.created_at,
+            session_title: b.session_title,
+            session_date: b.session_date,
+            session_time: b.session_time,
+            session_end_time: b.session_end_time,
+            session_location: b.session_location,
+        }
+    }
+}
+
+impl From<&BookingWithSession> for BookingResponse {
+    fn from(b: &BookingWithSession) -> Self {
+        Self {
+            id: b.id,
+            user_id: b.user_id,
+            session_id: b.session_id,
+            booking_code: b.booking_code.clone(),
+            guest_count: b.guest_count,
+            tickets_used: b.tickets_used,
+            discount_applied: b.discount_applied.parse().unwrap_or(DiscountType::None),
+            session_price_vnd: b.session_price_vnd,
+            price_paid_vnd: b.price_paid_vnd,
+            guest_price_paid_vnd: b.guest_price_paid_vnd,
+            total_paid_vnd: b.price_paid_vnd + b.guest_price_paid_vnd,
+            payment_method: b.payment_method.parse().unwrap_or(PaymentMethod::Stripe),
+            payment_status: b.payment_status.parse().unwrap_or(PaymentStatus::Pending),
+            verification_status: b
+                .verification_status
+                .as_ref()
+                .map(|s| s.parse().unwrap_or(VerificationStatus::Pending)),
+            payment_deadline: b.payment_deadline,
+            cancelled_at: b.cancelled_at,
+            created_at: b.created_at,
+            session_title: b.session_title.clone(),
+            session_date: b.session_date,
+            session_time: b.session_time,
+            session_end_time: b.session_end_time,
+            session_location: b.session_location.clone(),
         }
     }
 }
@@ -162,6 +247,7 @@ impl From<Session> for SessionResponse {
             title: s.title,
             date: s.date,
             time: s.time,
+            end_time: s.end_time,
             location: s.location,
             courts: s.courts,
             max_players_per_court: s.max_players_per_court.unwrap_or(DEFAULT_MAX_PLAYERS_PER_COURT),
@@ -187,6 +273,7 @@ impl From<&Session> for SessionResponse {
             title: s.title.clone(),
             date: s.date,
             time: s.time,
+            end_time: s.end_time,
             location: s.location.clone(),
             courts: s.courts,
             max_players_per_court: s.max_players_per_court.unwrap_or(DEFAULT_MAX_PLAYERS_PER_COURT),
@@ -256,6 +343,8 @@ impl SessionResponseExt for SessionResponse {
         self
     }
 }
+
+
 
 
 

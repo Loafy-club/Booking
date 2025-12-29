@@ -30,7 +30,7 @@
 			},
 			{
 				value: cancelled,
-				color: 'var(--color-chart-2)',
+				color: 'var(--color-destructive)',
 				label: t('admin.charts.cancelled'),
 				id: 'cancelled'
 			}

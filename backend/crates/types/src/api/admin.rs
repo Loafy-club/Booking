@@ -106,6 +106,8 @@ pub struct AdminSessionResponse {
     pub title: String,
     pub date: NaiveDate,
     pub time: NaiveTime,
+    #[ts(optional)]
+    pub end_time: Option<NaiveTime>,
     pub location: String,
     pub courts: i32,
     pub total_slots: i32,

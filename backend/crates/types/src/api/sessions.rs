@@ -24,6 +24,8 @@ pub struct SessionResponse {
     pub title: String,
     pub date: NaiveDate,
     pub time: NaiveTime,
+    #[ts(optional)]
+    pub end_time: Option<NaiveTime>,
     pub location: String,
     pub courts: i32,
     pub max_players_per_court: i32,

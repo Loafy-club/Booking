@@ -42,9 +42,11 @@
 			}
 
 			for (let i = start; i <= end; i++) {
-				if (i !== 1 && i !== total_pages) {
-					pages.push(i);
-				}
+				// Skip page 1 only if it was already added above (start > 1)
+				if (i === 1 && start > 1) continue;
+				// Skip total_pages only if it will be added below (end < total_pages)
+				if (i === total_pages && end < total_pages) continue;
+				pages.push(i);
 			}
 
 			if (end < total_pages) {

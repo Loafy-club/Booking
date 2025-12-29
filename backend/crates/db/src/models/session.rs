@@ -10,6 +10,7 @@ pub struct Session {
     pub title: String,
     pub date: NaiveDate,
     pub time: NaiveTime,
+    pub end_time: Option<NaiveTime>,
     pub location: String,
     pub courts: i32,
     pub max_players_per_court: Option<i32>,

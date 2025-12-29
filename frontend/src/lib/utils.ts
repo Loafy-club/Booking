@@ -55,6 +55,62 @@ export function formatDate(date: string | Date, format: 'short' | 'long' = 'shor
 	}).format(d);
 }
 
+/**
+ * Format date only (no time) - e.g., "Sat, Dec 28"
+ */
+export function formatDateOnly(date: string | Date): string {
+	const d = typeof date === 'string' ? new Date(date) : date;
+	return new Intl.DateTimeFormat('en-US', {
+		weekday: 'short',
+		month: 'short',
+		day: 'numeric'
+	}).format(d);
+}
+
+/**
+ * Format time only - e.g., "10:00 AM"
+ */
+export function formatTime(time: string): string {
+	// time is in "HH:MM:SS" format
+	const [hours, minutes] = time.split(':').map(Number);
+	const date = new Date();
+	date.setHours(hours, minutes, 0);
+	return new Intl.DateTimeFormat('en-US', {
+		hour: 'numeric',
+		minute: '2-digit',
+		hour12: true
+	}).format(date);
+}
+
+/**
+ * Calculate duration between start and end times
+ * Returns formatted string like "2h" or "1h 30m"
+ */
+export function formatDuration(startTime: string, endTime?: string): string | null {
+	if (!endTime) return null;
+
+	const [startHours, startMinutes] = startTime.split(':').map(Number);
+	const [endHours, endMinutes] = endTime.split(':').map(Number);
+
+	let durationMinutes = (endHours * 60 + endMinutes) - (startHours * 60 + startMinutes);
+
+	// Handle sessions crossing midnight
+	if (durationMinutes < 0) {
+		durationMinutes += 24 * 60;
+	}
+
+	const hours = Math.floor(durationMinutes / 60);
+	const minutes = durationMinutes % 60;
+
+	if (hours === 0) {
+		return `${minutes}m`;
+	} else if (minutes === 0) {
+		return `${hours}h`;
+	} else {
+		return `${hours}h ${minutes}m`;
+	}
+}
+
 // ============================================================================
 // Booking Helper Functions
 // ============================================================================
@@ -67,10 +123,11 @@ export function isBookingPending(booking: Booking): boolean {
 }
 
 /**
- * Check if a booking can be cancelled (not already cancelled and payment not confirmed)
+ * Check if a booking can be cancelled (not already cancelled)
+ * Note: Backend enforces cancellation deadline based on subscription status
  */
 export function canCancelBooking(booking: Booking): boolean {
-	return !booking.cancelled_at && booking.payment_status !== 'confirmed' && booking.payment_status !== 'cancelled';
+	return !booking.cancelled_at && booking.payment_status !== 'cancelled';
 }
 
 /**
